@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Re Panza Brain — Precision 0.95</title>
+<title>Re Panza Brain — Multi-World Precision</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
 :root { --bg:#050608; --card:#0f1216; --border:#232830; --accent:#d4a843; --text:#e6edf3; --muted:#8b949e; --green:#3fb950; --red:#f85149; }
@@ -23,16 +23,20 @@ td{ padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.05); }
 tr.cov{ opacity:0.3; background:rgba(0,255,0,0.05); }
 .chk-row{ display:flex; align-items:center; gap:10px; color:var(--text); font-size:0.8rem; margin-bottom:15px; cursor:pointer; }
 .chk-row input{ width:auto; margin:0; }
+.status-db { font-family:'Share Tech Mono'; font-size:0.7rem; margin-top:-8px; margin-bottom:10px; }
+.ok { color: var(--green); }
+.err { color: var(--red); }
 </style>
 </head>
 <body>
 
 <div class="wrap">
   <div class="card" id="pIn">
-    <h2 style="color:var(--accent); margin:0 0 15px 0; letter-spacing:2px;">RE PANZA BRAIN 327</h2>
+    <h2 style="color:var(--accent); margin:0 0 15px 0; letter-spacing:2px;">RE PANZA BRAIN</h2>
     
     <label>Link Coordinate Partenza</label>
-    <input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&327">
+    <input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&Mondo" oninput="autoLoadDB(this.value)">
+    <div id="dbStatus" class="status-db"></div>
 
     <div style="display:flex; gap:10px;">
       <div style="flex:1"><label>Data Rientro</label><input type="date" id="inDate"></div>
@@ -45,7 +49,7 @@ tr.cov{ opacity:0.3; background:rgba(0,255,0,0.05); }
     </div>
 
     <label class="chk-row">
-      <input type="checkbox" id="chkMap"> <b>Mappa Attiva (Moltiplicatore 0.95)</b>
+      <input type="checkbox" id="chkMap"> <b>Mappa Attiva (0.95x)</b>
     </label>
 
     <button class="btn" onclick="start()">CALCOLA FINESTRE DI LANCIO</button>
@@ -69,20 +73,7 @@ tr.cov{ opacity:0.3; background:rgba(0,255,0,0.05); }
 
 <script>
 const TR = { "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420, "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420 };
-let W = [], S = { myCast: null, rows: [], speed: 0 };
-
-// Caricamento database Re Panza Brain
-fetch('https://raw.githubusercontent.com/Re-Panza/lk_tool/refs/heads/main/mondo327.json')
-  .then(r=>r.json()).then(j=> W = parse(j));
-
-function parse(obj, arr=[]){
-  if(Array.isArray(obj)) obj.forEach(x => parse(x, arr));
-  else if(obj && typeof obj === 'object'){
-    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||50)});
-    else for(let k in obj) parse(obj[k], arr);
-  }
-  return arr;
-}
+let W = [], S = { myCast: null, rows: [], speed: 0, world: null };
 
 window.onload = () => {
   document.getElementById('inDate').value = new Date().toISOString().split('T')[0];
@@ -90,14 +81,60 @@ window.onload = () => {
   document.getElementById('selTroop').innerHTML = h;
 };
 
+// ================================================================
+// GESTIONE DATABASE DINAMICO
+// ================================================================
+async function autoLoadDB(val) {
+  let m = val.match(/&(\d+)/); // Cerca il numero del mondo nel link
+  if (!m) return;
+  
+  let worldNum = m[1];
+  if (S.world === worldNum) return; // Già caricato
+  
+  S.world = worldNum;
+  let statusEl = document.getElementById('dbStatus');
+  statusEl.innerHTML = `Caricamento Database Mondo ${worldNum}...`;
+
+  // Tenta prima mondo_X.json poi data_X.json
+  const baseUrl = "https://re-panza.github.io/lk_tool/";
+  let paths = [`mondo_${worldNum}.json`, `data_${worldNum}.json` ];
+  
+  W = []; 
+  for (let path of paths) {
+    try {
+      let r = await fetch(baseUrl + path);
+      if (r.ok) {
+        let j = await r.json();
+        W = parse(j);
+        statusEl.innerHTML = `<span class="ok">✓ Database Mondo ${worldNum} caricato (${W.length} castelli)</span>`;
+        return;
+      }
+    } catch (e) {}
+  }
+  statusEl.innerHTML = `<span class="err">✗ Errore: Database ${worldNum} non trovato</span>`;
+}
+
+function parse(obj, arr=[]){
+  if(Array.isArray(obj)) obj.forEach(x => parse(x, arr));
+  else if(obj && typeof obj === 'object'){
+    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||obj.pt||50)});
+    else for(let k in obj) parse(obj[k], arr);
+  }
+  return arr;
+}
+
+// ================================================================
+// LOGICA CALCOLO
+// ================================================================
 function start(){
-  let coord = document.getElementById('inCoord').value.match(/coordinates\?(\d+),(\d+)/);
+  let coordInput = document.getElementById('inCoord').value;
+  let coord = coordInput.match(/coordinates\?(\d+),(\d+)/);
   if(!coord) return alert("Copia il link delle coordinate dal gioco!");
+  if(W.length === 0) return alert("Database non pronto o mondo non trovato.");
   
   let myX = +coord[1], myY = +coord[2];
   S.myCast = W.find(c => c.x === myX && c.y === myY) || {x:myX, y:myY, p:50};
   
-  // Calcolo velocità con moltiplicatore 0.95 se flaggato
   let baseSpeed = TR[document.getElementById('selTroop').value];
   S.speed = document.getElementById('chkMap').checked ? (baseSpeed * 0.95) : baseSpeed;
   
@@ -107,7 +144,7 @@ function start(){
   S.rows = [];
   for(let t=1; t <= Math.floor(available/51); t++){
     let rEnd = new Date(baseEndTime.getTime() + (t-1) * 600000);
-    let rStart = new Date(rEnd.getTime() - 180000); // Finestra 3 min
+    let rStart = new Date(rEnd.getTime() - 180000); 
     S.rows.push({ turno: t, rStart, rEnd, covered: false });
   }
 
@@ -136,7 +173,7 @@ function getBestTgt(rStart, rEnd){
     let wait = Math.max(0, lStart - now);
     if(wait < minWait){
       minWait = wait;
-      best = { x:c.x, y:c.y, wait, lStart, lEnd, travelMs, lnk:`l+k://coordinates?${c.x},${c.y}&327` };
+      best = { x:c.x, y:c.y, wait, lStart, lEnd, travelMs, lnk:`l+k://coordinates?${c.x},${c.y}&${S.world}` };
     }
   }
   return best;
@@ -146,7 +183,7 @@ function render(){
   let h = "";
   S.rows.forEach((r, i) => {
     h += `<tr id="row-${i}">
-      <td><b>TURNO ${r.turno}</b><br><small>Rientro: ${fmtT(r.rEnd)}</small></td>
+      <td><b>T${r.turno}</b><br><small>${fmtT(r.rEnd)}</small></td>
       <td><input type="checkbox" onchange="toggle(${i})"></td>
       <td id="act-${i}"></td>
       <td id="imp-${i}"></td>
