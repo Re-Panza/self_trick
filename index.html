@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LK Battle Calculator — Mondo 327</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-deep:#0a0c0f;
+  --bg-card:#111418;
+  --bg-card2:#161b22;
+  --bg-input:#0d1117;
+  --border:#2a313a;
+  --border-focus:#3b82f6;
+  --text-primary:#e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:#484f58;
+  --accent:#3b82f6;
+  --accent-hover:#60a5fa;
+  --accent-dim:rgba(59,130,246,.15);
+  --gold:#d4a843;
+  --gold-dim:rgba(212,168,67,.12);
+  --green:#3fb950;
+  --green-dim:rgba(63,185,80,.12);
+  --red:#f85149;
+  --red-dim:rgba(248,81,73,.12);
+  --warn:#e3b341;
+  --warn-dim:rgba(227,179,65,.12);
+  --row-highlight:rgba(212,168,67,.22);
+  --row-covered:rgba(63,185,80,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  min-height:100vh;
+  padding:28px 16px;
+  line-height:1.5;
+}
+.wrap{max-width:1140px;margin:0 auto}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:34px}
+.hdr h1{
+  font-size:1.75rem;font-weight:700;letter-spacing:3px;
+  text-transform:uppercase;color:var(--gold);
+  text-shadow:0 0 24px var(--gold-dim);
+}
+.hdr p{color:var(--text-muted);font-size:.82rem;margin-top:5px;font-family:'Share Tech Mono',monospace}
+
+/* CARD */
+.card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:10px;padding:20px 24px;margin-bottom:18px;
+}
+.card-t{
+  font-size:.72rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:1.8px;color:var(--text-muted);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-t .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* FORM */
+.form-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.fg{display:flex;flex-direction:column;flex:1;min-width:155px}
+.fg label{
+  font-size:.72rem;color:var(--text-muted);margin-bottom:5px;
+  text-transform:uppercase;letter-spacing:.8px;font-weight:600;
+}
+.fg input,.fg select{
+  background:var(--bg-input);border:1px solid var(--border);border-radius:6px;
+  padding:8px 11px;color:var(--text-primary);
+  font-family:'Share Tech Mono',monospace;font-size:.8rem;
+  transition:border-color .2s;outline:none;
+}
+.fg input:focus,.fg select:focus{border-color:var(--border-focus)}
+.fg select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:28px;cursor:pointer;
+}
+.fg select option{background:var(--bg-card)}
+
+/* CHECKBOX ROW */
+.cb-row{
+  display:flex;align-items:center;gap:10px;margin-top:12px;
+  padding:9px 13px;background:var(--bg-card2);border-radius:6px;border:1px solid var(--border);
+}
+.cb-row input[type=checkbox]{
+  appearance:none;width:18px;height:18px;border:2px solid var(--border);
+  border-radius:4px;background:var(--bg-input);cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.cb-row input[type=checkbox]:checked{
+  background:var(--accent);border-color:var(--accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 3 7-7' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.cb-row .cb-lbl{font-size:.81rem;color:var(--text-secondary)}
+.cb-row .cb-lbl strong{color:var(--gold)}
+.cb-bonus{
+  margin-left:auto;font-size:.7rem;font-family:'Share Tech Mono',monospace;
+  color:var(--green);background:var(--green-dim);padding:2px 8px;border-radius:10px;
+}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:18px}
+.btn{
+  padding:9px 22px;border:none;border-radius:6px;
+  font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{background:var(--accent-hover)}
+.btn-p:disabled{background:var(--text-muted);cursor:not-allowed}
+.btn-s{background:var(--bg-card2);color:var(--text-secondary);border:1px solid var(--border)}
+.btn-s:hover{color:var(--text-primary);border-color:var(--text-muted)}
+
+/* STATUS */
+.st{font-family:'Share Tech Mono',monospace;font-size:.73rem;color:var(--text-muted);margin-top:8px;min-height:17px}
+.st .err{color:var(--red)} .st .ok{color:var(--green)} .st .wrn{color:var(--warn)}
+
+/* COORDS DISPLAY */
+.coords-disp{
+  font-family:'Share Tech Mono',monospace;font-size:.76rem;color:var(--gold);
+  margin-top:6px;padding:5px 10px;background:var(--gold-dim);border-radius:6px;display:inline-block;
+}
+
+/* BATTLE HEADER */
+.battle-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.battle-top label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.battle-top select{
+  background:var(--bg-input);border:1px solid var(--border);border-radius:6px;
+  padding:5px 26px 5px 9px;color:var(--text-primary);
+  font-family:'Share Tech Mono',monospace;font-size:.76rem;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  cursor:pointer;outline:none;transition:border-color .2s;
+}
+.battle-top select:focus{border-color:var(--border-focus)}
+.battle-top select option{background:var(--bg-card)}
+.spd-badge{
+  font-family:'Share Tech Mono',monospace;font-size:.68rem;
+  color:var(--accent);background:var(--accent-dim);padding:2px 8px;border-radius:10px;
+}
+
+/* SUMMARY */
+.sum-strip{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.sum-i{font-size:.7rem;color:var(--text-muted)}
+.sum-i strong{color:var(--text-secondary)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:.74rem}
+thead th{
+  background:var(--bg-card2);color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.7px;font-weight:600;font-size:.66rem;
+  padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);
+  white-space:nowrap;position:sticky;top:0;z-index:2;
+}
+tbody tr{border-bottom:1px solid rgba(42,49,58,.4);transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:8px 10px;color:var(--text-secondary);white-space:nowrap}
+tr.r-cov{background:var(--row-covered)}
+tr.r-clk{background:var(--row-highlight)!important}
+tr.r-gar td{color:var(--text-muted);font-style:italic}
+
+/* COV CHECKBOX */
+.cov-chk{
+  appearance:none;width:15px;height:15px;border:2px solid var(--border);
+  border-radius:3px;background:var(--bg-input);cursor:pointer;transition:all .15s;vertical-align:middle;
+}
+.cov-chk:checked{
+  background:var(--green);border-color:var(--green);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 3 7-7' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.cov-lbl{font-size:.68rem;color:var(--green);margin-left:4px}
+
+/* LINK */
+.c-link{color:var(--accent);text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:.7rem;transition:color .15s}
+.c-link:hover{color:var(--accent-hover);text-decoration:underline}
+
+/* BADGES */
+.w-badge{display:inline-block;background:var(--warn-dim);color:var(--warn);padding:2px 7px;border-radius:9px;font-size:.68rem}
+.w-badge.open{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.g-badge{display:inline-block;background:var(--red-dim);color:var(--red);padding:2px 7px;border-radius:9px;font-size:.66rem}
+
+/* SPINNER */
+.spin{
+  display:inline-block;width:14px;height:14px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:sp .55s linear infinite;vertical-align:middle;margin-right:5px;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:24px 0 14px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.4px;font-weight:600;white-space:nowrap}
+
+.hidden{display:none!important}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <h1>⚔ LK Battle Calculator</h1>
+  <p>Mondo 327 · Troop Timing &amp; Coordinate Engine</p>
+</div>
+
+<!-- ======== PHASE 1: INPUT ======== -->
+<div id="inputPhase">
+
+  <div class="card">
+    <div class="card-t"><span class="dot"></span>Player &amp; Castello</div>
+    <div class="fg" style="max-width:520px">
+      <label>Player Link</label>
+      <input type="text" id="inPlayer" placeholder="l+k://player?605&amp;327"/>
+    </div>
+    <div id="infoPlayer" style="margin-top:5px"></div>
+
+    <div style="margin-top:14px">
+      <div class="fg" style="max-width:520px">
+        <label>Coordinate Castello</label>
+        <input type="text" id="inCoord" placeholder="l+k://coordinates?16368,16350&amp;327"/>
+      </div>
+      <div id="infoCoord" style="margin-top:6px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t"><span class="dot"></span>Impatto</div>
+    <div class="form-row">
+      <div class="fg" style="max-width:195px"><label>Data</label><input type="date" id="inDate"/></div>
+      <div class="fg" style="max-width:170px"><label>Ora</label><input type="time" id="inTime" step="60"/></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t"><span class="dot"></span>Truppe &amp; Configurazione</div>
+    <div class="form-row">
+      <div class="fg"><label>Truppa</label><select id="selTroop"></select></div>
+      <div class="fg" style="max-width:210px"><label>Truppe nel castello</label><input type="number" id="inGarrison" value="1000" min="110"/></div>
+      <div class="fg" style="max-width:195px">
+        <label>Plotone</label>
+        <select id="selBatch">
+          <option value="51" selected>51 (default)</option>
+          <option value="55">55</option>
+          <option value="60">60</option>
+          <option value="76">76 (Vichinghi)</option>
+        </select>
+      </div>
+    </div>
+    <div class="cb-row">
+      <input type="checkbox" id="chkMap"/>
+      <span class="cb-lbl"><strong>Mappa dell'area</strong> — ricerca castello attiva</span>
+      <span class="cb-bonus">velocità +5%</span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-p" onclick="calculate()">⚡ Calcola</button>
+    <button class="btn btn-s" onclick="resetAll()">↺ Ricomincia</button>
+  </div>
+  <div id="mainSt" class="st"></div>
+</div>
+
+<!-- ======== PHASE 2: BATTLE OUTPUT ======== -->
+<div id="battlePhase" class="hidden">
+  <div class="divider"><span>Turni di Battaglia</span></div>
+  <div class="card">
+    <div id="sumStrip" class="sum-strip"></div>
+
+    <div class="battle-top">
+      <label>Cambia truppa:</label>
+      <select id="selBattleTroop" onchange="onTroopSwitch()"></select>
+      <span id="spdBadge" class="spd-badge"></span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:128px">Combat Happens</th>
+          <th style="width:72px">Covered</th>
+          <th style="width:190px">Drop off Time</th>
+          <th>Send resources to</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="btn-row" style="margin-top:14px">
+    <button class="btn btn-s" onclick="resetAll()">↺ Ricomincia</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+// ================================================================
+// A) TROOP TABLES
+// ================================================================
+const T_BASE = {
+  "Lanciere":            700,
+  "Balestriere":         600,
+  "Cavaliere pesante":   300,
+  "Spadaccino":          800,
+  "Arciere":             500,
+  "Cavaliere leggero":   400,
+  "Carretto a mano":     800,
+  "Carro bue":          1000,
+  "Ashigaru":            480,
+  "Arciere daikyu":      450,
+  "Samurai":             300,
+  "Berserker":           420,
+  "Arciere Nordico":     390,
+  "Cavaliere con Ascia": 360,
+  "Torre d'assedio":     480,
+  "Ballista":            450,
+  "Catapulta":           420,
+};
+
+const T_BONUS = {
+  "Lanciere":            665,
+  "Balestriere":         570,
+  "Cavaliere pesante":   285,
+  "Spadaccino":          760,
+  "Arciere":             475,
+  "Cavaliere leggero":   380,
+  "Carretto a mano":     760,
+  "Carro bue":           950,
+  "Ashigaru":            456,
+  "Arciere daikyu":      428,
+  "Samurai":             285,
+  "Berserker":           399,
+  "Arciere Nordico":     371,
+  "Cavaliere con Ascia": 342,
+  "Torre d'assedio":     456,
+  "Ballista":            428,
+  "Catapulta":           399,
+};
+
+// ================================================================
+// B) STATE
+// ================================================================
+let worldData     = null;
+let castleList    = null;   // [{x, y}, …]
+let myCastle      = null;   // {x, y}
+let worldId       = 327;
+let impactDate    = null;
+let garrisonCount = 1000;
+let batchSize     = 51;
+let mapBonus      = false;
+let curTroop      = "Lanciere";
+let rows          = [];
+let ticker        = null;
+
+// ================================================================
+// C) INIT
+// ================================================================
+window.onload = function(){
+  fillTroopDrops();
+  let now = new Date();
+  document.getElementById('inDate').value = isoDate(now);
+  document.getElementById('inTime').value = '07:00';
+  loadWorld();
+};
+
+function loadWorld(){
+  setSt('mainSt','<span class="spin"></span> Caricamento mondo 327…');
+
+  fetch('https://raw.githubusercontent.com/Re-Panza/lk_tool/refs/heads/main/mondo327.json')
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data=>{ onWorldLoaded(data); })
+    .catch(e=>{ setSt('mainSt','<span class="err">✗ Impossibile caricare mondo327.json — '+e.message+'</span>'); });
+}
+
+function onWorldLoaded(data){
+  worldData  = data;
+  castleList = extractCastles(data);
+  setSt('mainSt','<span class="ok">✓ Mondo 327 caricato — '+castleList.length+' castelli</span>');
+}
+
+// ================================================================
+// D) EXTRACT CASTLES — auto-detect any JSON structure
+// ================================================================
+function extractCastles(obj){
+  // Struttura confermata: array piatto [{x, y, p, n, pt, …}, …]
+  // Parsing diretto O(n), fallback ricorsivo se per qualche motivo non è un array piatto
+  if(Array.isArray(obj) && obj.length > 0 && typeof obj[0] === 'object' && 'x' in obj[0] && 'y' in obj[0]){
+    return obj.map(c => ({x: c.x, y: c.y, p: c.p || 0, n: c.n || ''}));
+  }
+  // Fallback: ricorsione generica
+  let res = [];
+  walk(obj, res, 0);
+  return res;
+}
+
+function walk(node, out, depth){
+  if(depth > 6 || node == null) return;
+  if(Array.isArray(node)){
+    for(let item of node) walk(item, out, depth+1);
+  } else if(typeof node === 'object'){
+    let x = readNum(node, ['x','X','cx','posX','pos_x','coordinate_x','coordX','X']);
+    let y = readNum(node, ['y','Y','cy','posY','pos_y','coordinate_y','coordY','Y']);
+    if(x !== null && y !== null){
+      out.push({x, y});
+      return;
+    }
+    for(let k in node) walk(node[k], out, depth+1);
+  }
+}
+
+function readNum(obj, keys){
+  for(let k of keys){
+    if(k in obj){
+      let v = obj[k];
+      if(typeof v === 'number') return v;
+      if(typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim())) return parseFloat(v.trim());
+    }
+  }
+  return null;
+}
+
+// ================================================================
+// E) TROOP HELPERS
+// ================================================================
+function fillTroopDrops(){
+  let html = '';
+  for(let name in T_BASE)
+    html += `<option value="${name}">${name} (${secLbl(T_BASE[name])}/campo)</option>`;
+  document.getElementById('selTroop').innerHTML       = html;
+  document.getElementById('selBattleTroop').innerHTML = html;
+}
+
+function secLbl(s){
+  let m = Math.floor(s/60), sec = s%60;
+  return sec === 0 ? m+"'" : m+"' "+sec+'"';
+}
+
+function troopSec(name){
+  return mapBonus ? T_BONUS[name] : T_BASE[name];
+}
+
+// ================================================================
+// F) PARSE LINKS
+// ================================================================
+function parsePlayer(s){
+  let m = s.match(/player\?(\d+)&(\d+)/);
+  return m ? {id:+m[1], world:+m[2]} : null;
+}
+function parseCoord(s){
+  let m = s.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+  return m ? {x:+m[1], y:+m[2], world:+m[3]} : null;
+}
+
+// ================================================================
+// G) DISTANCE
+// ================================================================
+function dist(x1,y1,x2,y2){
+  return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+}
+
+// ================================================================
+// H) CALCULATE (entry point)
+// ================================================================
+function calculate(){
+  let pStr = document.getElementById('inPlayer').value.trim();
+  let cStr = document.getElementById('inCoord').value.trim();
+  let p = parsePlayer(pStr);
+  let c = parseCoord(cStr);
+
+  if(!p){ setSt('mainSt','<span class="err">✗ Link giocatore non valido</span>'); return; }
+  if(!c){ setSt('mainSt','<span class="err">✗ Link coordinate non valido</span>'); return; }
+
+  let dv = document.getElementById('inDate').value;
+  let tv = document.getElementById('inTime').value;
+  if(!dv || !tv){ setSt('mainSt','<span class="err">✗ Inserisci data e ora</span>'); return; }
+
+  if(!castleList || castleList.length === 0){
+    setSt('mainSt','<span class="err">✗ Dati mondo non ancora caricati</span>'); return;
+  }
+
+  worldId       = c.world;
+  myCastle      = {x: c.x, y: c.y};
+  mapBonus      = document.getElementById('chkMap').checked;
+  curTroop      = document.getElementById('selTroop').value;
+  garrisonCount = Math.max(110, parseInt(document.getElementById('inGarrison').value) || 1000);
+  batchSize     = parseInt(document.getElementById('selBatch').value);
+
+  let dp = dv.split('-'), tp = tv.split(':');
+  impactDate = new Date(+dp[0], +dp[1]-1, +dp[2], +tp[0], +tp[1], 0, 0);
+
+  buildRows();
+
+  document.getElementById('inputPhase').classList.add('hidden');
+  document.getElementById('battlePhase').classList.remove('hidden');
+  document.getElementById('selBattleTroop').value = curTroop;
+  updSpdBadge();
+  renderTable();
+  startTick();
+}
+
+// ================================================================
+// I) BUILD ROWS
+// ================================================================
+function buildRows(){
+  rows = [];
+  let available = garrisonCount - 110;
+  let left      = available;
+
+  // Row 0: garrison turn (the impact time itself)
+  rows.push({
+    combatTime: new Date(impactDate),
+    isGarrison: true,
+    covered:    false,
+    clicked:    false,
+    target:     null,
+    dropW:      null
+  });
+
+  // Subsequent rows: impact + 10, +20, +30 … min
+  let turnN = 1;
+  while(left > 0 && turnN <= 120){
+    let ct    = new Date(impactDate.getTime() + turnN * 600000);
+    let batch = Math.min(batchSize, left);
+    left -= batch;
+
+    let tgt = findTarget(ct);
+    rows.push({
+      combatTime: ct,
+      isGarrison: false,
+      covered:    false,
+      clicked:    false,
+      target:     tgt ? tgt.target : null,
+      dropW:      tgt ? tgt.dropW  : null
+    });
+    turnN++;
+  }
+}
+
+// ================================================================
+// J) FIND BEST TARGET
+//    For a given combatTime, troops must arrive BACK at myCastle
+//    between combatTime + 4 min  and  combatTime + 7 min.
+//
+//    roundTrip  = 2 × distance × secPerField   (seconds)
+//    sendWindow = [ combatTime+4min − roundTrip ,  combatTime+7min − roundTrip ]
+//
+//    We pick the castle whose sendWindow END is still >= now
+//    and whose sendWindow START is closest to now (opens soonest).
+// ================================================================
+function findTarget(combatTime){
+  let secPF = troopSec(curTroop);
+  let cx    = myCastle.x, cy = myCastle.y;
+  let now   = Date.now();
+
+  let retStartMs = combatTime.getTime() + 4*60*1000;   // +4 min
+  let retEndMs   = combatTime.getTime() + 7*60*1000;   // +7 min
+
+  let best = null, bestScore = Infinity;
+
+  for(let cas of castleList){
+    if(cas.x === cx && cas.y === cy) continue;
+    let d = dist(cx, cy, cas.x, cas.y);
+    if(d < 0.001) continue;
+
+    let rtMs = 2 * d * secPF * 1000;   // round-trip in ms
+
+    let sendStartMs = retStartMs - rtMs;
+    let sendEndMs   = retEndMs   - rtMs;
+
+    // window must not be expired
+    if(sendEndMs < now) continue;
+
+    // score: how long until window opens (0 if already open)
+    let score = sendStartMs <= now ? 0 : (sendStartMs - now);
+
+    if(score < bestScore){
+      bestScore = score;
+      best = {
+        target: {
+          x: cas.x,  y: cas.y,
+          link: `l+k://coordinates?${cas.x},${cas.y}&${worldId}`
+        },
+        dropW: {
+          start: new Date(sendStartMs),
+          end:   new Date(sendEndMs)
+        }
+      };
+    }
+  }
+  return best;
+}
+
+// ================================================================
+// K) RENDER TABLE
+// ================================================================
+function renderTable(){
+  let tbody = document.getElementById('tBody');
+  tbody.innerHTML = '';
+
+  // Summary bar
+  let avail  = garrisonCount - 110;
+  let bturns = rows.length - 1;
+  document.getElementById('sumStrip').innerHTML =
+    `<span class="sum-i">Castello: <strong>(${myCastle.x}, ${myCastle.y})</strong></span>` +
+    `<span class="sum-i">Guarnigione: <strong>${garrisonCount}</strong> (min 110 riservate)</span>` +
+    `<span class="sum-i">Plotone: <strong>${batchSize}</strong></span>` +
+    `<span class="sum-i">Turni: <strong>${bturns}</strong></span>` +
+    `<span class="sum-i">Disponibili: <strong>${avail}</strong>${mapBonus?' · +5% mappa':''}</span>`;
+
+  for(let i = 0; i < rows.length; i++){
+    let r  = rows[i];
+    let tr = document.createElement('tr');
+    tr.id  = 'r'+i;
+    if(r.covered)    tr.classList.add('r-cov');
+    if(r.clicked)    tr.classList.add('r-clk');
+    if(r.isGarrison) tr.classList.add('r-gar');
+
+    // COL 1 — Combat Happens
+    let td1 = document.createElement('td');
+    td1.innerHTML = fmtDT(r.combatTime);
+    tr.appendChild(td1);
+
+    // COL 2 — Covered checkbox
+    let td2 = document.createElement('td');
+    if(!r.isGarrison){
+      td2.innerHTML =
+        `<input type="checkbox" class="cov-chk" ${r.covered?'checked':''} onchange="covToggle(${i})"/>` +
+        (r.covered ? '<span class="cov-lbl">✓ coperto</span>' : '');
+    }
+    tr.appendChild(td2);
+
+    // COL 3 — Drop off Time
+    let td3 = document.createElement('td');
+    td3.id  = 'd'+i;
+    td3.innerHTML = renderDrop(r, i);
+    tr.appendChild(td3);
+
+    // COL 4 — Send resources to
+    let td4 = document.createElement('td');
+    td4.id  = 'l'+i;
+    td4.innerHTML = renderLink(r, i);
+    tr.appendChild(td4);
+
+    tbody.appendChild(tr);
+  }
+}
+
+function renderDrop(r, i){
+  if(r.isGarrison){
+    return `<span class="g-badge">n/a: garrison (${garrisonCount})</span>`;
+  }
+  if(r.covered) return '<span style="color:var(--green)">✓ coperto</span>';
+  if(!r.dropW)  return '<span class="w-badge">—</span>';
+
+  let now = Date.now();
+  let wS  = r.dropW.start.getTime();
+  let wE  = r.dropW.end.getTime();
+
+  if(now > wE){
+    return '<span class="w-badge" style="color:var(--red)">scaduta</span>';
+  }
+  if(now >= wS){
+    // OPEN — show date-time range
+    return `<span class="w-badge open">▶ ${fmtDT(r.dropW.start)} – ${fmtT(r.dropW.end)}</span>`;
+  }
+  // Future — show countdown
+  let wait = Math.ceil((wS - now) / 1000);
+  return `<span class="w-badge">(wait ${fmtWait(wait)})</span>`;
+}
+
+function renderLink(r, i){
+  if(r.isGarrison){
+    return '<span class="g-badge" style="color:var(--text-muted)">n/a (guarnigione)</span>';
+  }
+  if(r.covered) return '<span style="color:var(--green);font-size:.68rem">✓ coperto</span>';
+  if(!r.target) return '<span class="w-badge">—</span>';
+
+  let now = Date.now();
+  let wS  = r.dropW ? r.dropW.start.getTime() : 0;
+  let wE  = r.dropW ? r.dropW.end.getTime()   : 0;
+
+  if(now > wE){
+    return '<span class="w-badge" style="color:var(--red)">scaduta</span>';
+  }
+  if(now >= wS){
+    return `<a href="#" class="c-link" onclick="linkClick(${i},event)">${r.target.link}</a>`;
+  }
+  return '<span class="w-badge">(wait)</span>';
+}
+
+// ================================================================
+// L) INTERACTIONS
+// ================================================================
+function covToggle(i){
+  let r = rows[i];
+  r.covered = !r.covered;
+  let tr = document.getElementById('r'+i);
+  if(r.covered){
+    tr.classList.add('r-cov');
+    tr.classList.remove('r-clk');
+    r.clicked = false;
+  } else {
+    tr.classList.remove('r-cov');
+  }
+  document.getElementById('d'+i).innerHTML = renderDrop(r, i);
+  document.getElementById('l'+i).innerHTML = renderLink(r, i);
+}
+
+function linkClick(i, e){
+  e.preventDefault();
+  let r = rows[i];
+  r.clicked = true;
+  document.getElementById('r'+i).classList.add('r-clk');
+  navigator.clipboard.writeText(r.target.link).catch(()=>{});
+}
+
+function onTroopSwitch(){
+  curTroop = document.getElementById('selBattleTroop').value;
+  updSpdBadge();
+  // Recalc only non-covered rows; preserve covered + clicked
+  for(let i = 1; i < rows.length; i++){
+    let r = rows[i];
+    if(r.covered) continue;
+    let wasClicked = r.clicked;
+    let tgt = findTarget(r.combatTime);
+    r.target  = tgt ? tgt.target : null;
+    r.dropW   = tgt ? tgt.dropW  : null;
+    r.clicked = wasClicked;
+  }
+  renderTable();
+}
+
+function updSpdBadge(){
+  let s = troopSec(curTroop);
+  document.getElementById('spdBadge').textContent =
+    secLbl(s) + '/campo' + (mapBonus ? ' (+5%)' : '');
+}
+
+// ================================================================
+// M) LIVE TICK — every 2 s
+// ================================================================
+function startTick(){
+  if(ticker) clearInterval(ticker);
+  ticker = setInterval(tick, 2000);
+  tick();
+}
+
+function tick(){
+  let now      = Date.now();
+  let needFull = false;
+
+  for(let i = 1; i < rows.length; i++){
+    let r = rows[i];
+    if(r.covered) continue;
+
+    // Expired or missing → recalc target
+    if(!r.dropW || now > r.dropW.end.getTime()){
+      let tgt = findTarget(r.combatTime);
+      r.target = tgt ? tgt.target : null;
+      r.dropW  = tgt ? tgt.dropW  : null;
+      needFull = true;
+      continue;
+    }
+
+    // Live-update cells
+    let dEl = document.getElementById('d'+i);
+    let lEl = document.getElementById('l'+i);
+    if(dEl) dEl.innerHTML = renderDrop(r, i);
+    if(lEl) lEl.innerHTML = renderLink(r, i);
+  }
+
+  if(needFull) renderTable();
+}
+
+// ================================================================
+// N) RESET
+// ================================================================
+function resetAll(){
+  if(ticker){ clearInterval(ticker); ticker = null; }
+  document.getElementById('inputPhase').classList.remove('hidden');
+  document.getElementById('battlePhase').classList.add('hidden');
+  rows = [];
+  document.getElementById('inPlayer').value   = '';
+  document.getElementById('inCoord').value    = '';
+  document.getElementById('inGarrison').value = '1000';
+  document.getElementById('selBatch').value   = '51';
+  document.getElementById('chkMap').checked   = false;
+  document.getElementById('selTroop').value   = 'Lanciere';
+  document.getElementById('inDate').value     = isoDate(new Date());
+  document.getElementById('inTime').value     = '07:00';
+  setSt('mainSt','');
+  myCastle = null;
+}
+
+// ================================================================
+// O) UTILS
+// ================================================================
+function isoDate(d){
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function fmtDT(d){
+  let M = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  return pad(d.getDate())+' '+M[d.getMonth()]+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function fmtT(d){ return pad(d.getHours())+':'+pad(d.getMinutes()); }
+
+function fmtWait(s){
+  if(s <= 0) return '0s';
+  let m = Math.floor(s/60), sec = s%60;
+  if(m && sec) return m+'m '+sec+'s';
+  if(m)        return m+'m';
+  return sec+'s';
+}
+
+function setSt(id, html){
+  document.getElementById(id).innerHTML = html;
+}
+
+// ================================================================
+// P) LIVE INPUT FEEDBACK
+// ================================================================
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('inPlayer').addEventListener('input', function(){
+    let p  = parsePlayer(this.value);
+    let el = document.getElementById('infoPlayer');
+    if(p)                el.innerHTML = `<span class="st"><span class="ok">✓ Giocatore ID: ${p.id} · Mondo: ${p.world}</span></span>`;
+    else if(this.value.trim()) el.innerHTML = '<span class="st"><span class="err">✗ Formato non valido</span></span>';
+    else                 el.innerHTML = '';
+  });
+
+  document.getElementById('inCoord').addEventListener('input', function(){
+    let c  = parseCoord(this.value);
+    let el = document.getElementById('infoCoord');
+    if(c)                el.innerHTML = `<div class="coords-disp">⬡ (${c.x}, ${c.y}) · Mondo ${c.world}</div>`;
+    else if(this.value.trim()) el.innerHTML = '<span class="st"><span class="err">✗ Formato non valido</span></span>';
+    else                 el.innerHTML = '';
+  });
+});
+</script>
+</body>
+</html>
