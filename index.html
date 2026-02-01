@@ -212,13 +212,11 @@ tr.r-gar td{color:var(--text-muted);font-style:italic}
 <body>
 <div class="wrap">
 
-<!-- HEADER -->
 <div class="hdr">
   <h1>⚔ LK Battle Calculator</h1>
-  <p>Mondo 327 · Troop Timing &amp; Coordinate Engine</p>
+  <p>Mondo 327 · Brain Edition</p>
 </div>
 
-<!-- ======== PHASE 1: INPUT ======== -->
 <div id="inputPhase">
 
   <div class="card">
@@ -275,7 +273,6 @@ tr.r-gar td{color:var(--text-muted);font-style:italic}
   <div id="mainSt" class="st"></div>
 </div>
 
-<!-- ======== PHASE 2: BATTLE OUTPUT ======== -->
 <div id="battlePhase" class="hidden">
   <div class="divider"><span>Turni di Battaglia</span></div>
   <div class="card">
@@ -292,7 +289,7 @@ tr.r-gar td{color:var(--text-muted);font-style:italic}
         <thead><tr>
           <th style="width:128px">Combat Happens</th>
           <th style="width:72px">Covered</th>
-          <th style="width:190px">Drop off Time</th>
+          <th style="width:210px">Invia Truppe (Finestra)</th>
           <th>Send resources to</th>
         </tr></thead>
         <tbody id="tBody"></tbody>
@@ -304,12 +301,7 @@ tr.r-gar td{color:var(--text-muted);font-style:italic}
   </div>
 </div>
 
-</div><!-- /wrap -->
-
-<!-- ============================================================
-     SCRIPT
-     ============================================================ -->
-<script>
+</div><script>
 // ================================================================
 // A) TROOP TABLES
 // ================================================================
@@ -357,7 +349,7 @@ const T_BONUS = {
 // B) STATE
 // ================================================================
 let worldData     = null;
-let castleList    = null;   // [{x, y}, …]
+let castleList    = null;   // [{x, y, p}, …]
 let myCastle      = null;   // {x, y}
 let worldId       = 327;
 let impactDate    = null;
@@ -366,7 +358,6 @@ let batchSize     = 51;
 let mapBonus      = false;
 let curTroop      = "Lanciere";
 let rows          = [];
-let ticker        = null;
 
 // ================================================================
 // C) INIT
@@ -395,15 +386,9 @@ function onWorldLoaded(data){
 }
 
 // ================================================================
-// D) EXTRACT CASTLES — auto-detect any JSON structure
+// D) EXTRACT CASTLES
 // ================================================================
 function extractCastles(obj){
-  // Struttura confermata: array piatto [{x, y, p, n, pt, …}, …]
-  // Parsing diretto O(n), fallback ricorsivo se per qualche motivo non è un array piatto
-  if(Array.isArray(obj) && obj.length > 0 && typeof obj[0] === 'object' && 'x' in obj[0] && 'y' in obj[0]){
-    return obj.map(c => ({x: c.x, y: c.y, p: c.p || 0, n: c.n || ''}));
-  }
-  // Fallback: ricorsione generica
   let res = [];
   walk(obj, res, 0);
   return res;
@@ -414,10 +399,14 @@ function walk(node, out, depth){
   if(Array.isArray(node)){
     for(let item of node) walk(item, out, depth+1);
   } else if(typeof node === 'object'){
-    let x = readNum(node, ['x','X','cx','posX','pos_x','coordinate_x','coordX','X']);
-    let y = readNum(node, ['y','Y','cy','posY','pos_y','coordinate_y','coordY','Y']);
+    // Cerchiamo Coordinate e Punti
+    let x = readNum(node, ['x','X','cx','posX','pos_x']);
+    let y = readNum(node, ['y','Y','cy','posY','pos_y']);
+    // Cerchiamo Punti: p, pt, points, score
+    let p = readNum(node, ['p','P','pt','pts','points','score']);
+
     if(x !== null && y !== null){
-      out.push({x, y});
+      out.push({x, y, p: p || 0}); // Se non ci sono punti, default 0
       return;
     }
     for(let k in node) walk(node[k], out, depth+1);
@@ -511,7 +500,7 @@ function calculate(){
   document.getElementById('selBattleTroop').value = curTroop;
   updSpdBadge();
   renderTable();
-  startTick();
+  // NESSUN TICKER AUTOMATICO
 }
 
 // ================================================================
@@ -522,20 +511,20 @@ function buildRows(){
   let available = garrisonCount - 110;
   let left      = available;
 
-  // Row 0: garrison turn (the impact time itself)
+  // Row 0: garrison turn
   rows.push({
     combatTime: new Date(impactDate),
     isGarrison: true,
     covered:    false,
     clicked:    false,
     target:     null,
-    dropW:      null
+    launchW:    null
   });
 
   // Subsequent rows: impact + 10, +20, +30 … min
   let turnN = 1;
   while(left > 0 && turnN <= 120){
-    let ct    = new Date(impactDate.getTime() + turnN * 600000);
+    let ct    = new Date(impactDate.getTime() + turnN * 600000); // +10 min per turno
     let batch = Math.min(batchSize, left);
     left -= batch;
 
@@ -546,49 +535,61 @@ function buildRows(){
       covered:    false,
       clicked:    false,
       target:     tgt ? tgt.target : null,
-      dropW:      tgt ? tgt.dropW  : null
+      launchW:    tgt ? tgt.launchW : null,
+      dist:       tgt ? tgt.dist : 0,
+      pts:        tgt ? tgt.pts : 0
     });
     turnN++;
   }
 }
 
 // ================================================================
-// J) FIND BEST TARGET
-//    For a given combatTime, troops must arrive BACK at myCastle
-//    between combatTime + 4 min  and  combatTime + 7 min.
-//
-//    roundTrip  = 2 × distance × secPerField   (seconds)
-//    sendWindow = [ combatTime+4min − roundTrip ,  combatTime+7min − roundTrip ]
-//
-//    We pick the castle whose sendWindow END is still >= now
-//    and whose sendWindow START is closest to now (opens soonest).
+// J) FIND BEST TARGET (LOGIC REWRITE)
 // ================================================================
 function findTarget(combatTime){
   let secPF = troopSec(curTroop);
   let cx    = myCastle.x, cy = myCastle.y;
   let now   = Date.now();
 
-  let retStartMs = combatTime.getTime() + 4*60*1000;   // +4 min
-  let retEndMs   = combatTime.getTime() + 7*60*1000;   // +7 min
+  // Finestra di RIENTRO desiderata: Combat +4m -> Combat +7m
+  let returnStartMs = combatTime.getTime() + 4*60*1000;
+  let returnEndMs   = combatTime.getTime() + 7*60*1000;
 
   let best = null, bestScore = Infinity;
 
   for(let cas of castleList){
     if(cas.x === cx && cas.y === cy) continue;
+    
+    // Distanza reale
     let d = dist(cx, cy, cas.x, cas.y);
     if(d < 0.001) continue;
 
-    let rtMs = 2 * d * secPF * 1000;   // round-trip in ms
+    // === NUOVA REGOLA ===
+    // Il castello target ha 'cas.p' punti.
+    // La distanza 'd' non può superare 'cas.p'.
+    if(d > cas.p) continue;
 
-    let sendStartMs = retStartMs - rtMs;
-    let sendEndMs   = retEndMs   - rtMs;
+    // Calcolo tempi viaggio
+    let travelOneWaySec = d * secPF;
+    let roundTripMs     = (travelOneWaySec * 2) * 1000;
 
-    // window must not be expired
-    if(sendEndMs < now) continue;
+    // Finestra di LANCIO (partenza)
+    // Devo partire in modo da tornare tra [returnStart, returnEnd]
+    // PartenzaMin = ReturnStart - RoundTrip
+    // PartenzaMax = ReturnEnd - RoundTrip
+    let launchStartMs = returnStartMs - roundTripMs;
+    let launchEndMs   = returnEndMs   - roundTripMs;
 
-    // score: how long until window opens (0 if already open)
-    let score = sendStartMs <= now ? 0 : (sendStartMs - now);
+    // Se la finestra di lancio è nel passato (già chiusa), non va bene
+    if(launchEndMs < now) continue;
 
+    // Score: quanto manca all'apertura? 
+    // Se è già aperta (launchStartMs <= now), score = 0 (ottimo).
+    // Altrimenti score = differenza temporale.
+    let diff = launchStartMs - now;
+    let score = (diff < 0) ? 0 : diff;
+
+    // Cerchiamo la finestra che si apre prima (o è già aperta)
     if(score < bestScore){
       bestScore = score;
       best = {
@@ -596,10 +597,12 @@ function findTarget(combatTime){
           x: cas.x,  y: cas.y,
           link: `l+k://coordinates?${cas.x},${cas.y}&${worldId}`
         },
-        dropW: {
-          start: new Date(sendStartMs),
-          end:   new Date(sendEndMs)
-        }
+        launchW: {
+          start: new Date(launchStartMs),
+          end:   new Date(launchEndMs)
+        },
+        dist: d,
+        pts:  cas.p
       };
     }
   }
@@ -613,12 +616,11 @@ function renderTable(){
   let tbody = document.getElementById('tBody');
   tbody.innerHTML = '';
 
-  // Summary bar
   let avail  = garrisonCount - 110;
   let bturns = rows.length - 1;
   document.getElementById('sumStrip').innerHTML =
     `<span class="sum-i">Castello: <strong>(${myCastle.x}, ${myCastle.y})</strong></span>` +
-    `<span class="sum-i">Guarnigione: <strong>${garrisonCount}</strong> (min 110 riservate)</span>` +
+    `<span class="sum-i">Guarnigione: <strong>${garrisonCount}</strong> (min 110 ris.)</span>` +
     `<span class="sum-i">Plotone: <strong>${batchSize}</strong></span>` +
     `<span class="sum-i">Turni: <strong>${bturns}</strong></span>` +
     `<span class="sum-i">Disponibili: <strong>${avail}</strong>${mapBonus?' · +5% mappa':''}</span>`;
@@ -631,12 +633,12 @@ function renderTable(){
     if(r.clicked)    tr.classList.add('r-clk');
     if(r.isGarrison) tr.classList.add('r-gar');
 
-    // COL 1 — Combat Happens
+    // COL 1 — Combat Time
     let td1 = document.createElement('td');
     td1.innerHTML = fmtDT(r.combatTime);
     tr.appendChild(td1);
 
-    // COL 2 — Covered checkbox
+    // COL 2 — Covered
     let td2 = document.createElement('td');
     if(!r.isGarrison){
       td2.innerHTML =
@@ -645,13 +647,13 @@ function renderTable(){
     }
     tr.appendChild(td2);
 
-    // COL 3 — Drop off Time
+    // COL 3 — Launch Window (Invia Truppe)
     let td3 = document.createElement('td');
     td3.id  = 'd'+i;
-    td3.innerHTML = renderDrop(r, i);
+    td3.innerHTML = renderLaunch(r);
     tr.appendChild(td3);
 
-    // COL 4 — Send resources to
+    // COL 4 — Link
     let td4 = document.createElement('td');
     td4.id  = 'l'+i;
     td4.innerHTML = renderLink(r, i);
@@ -661,27 +663,30 @@ function renderTable(){
   }
 }
 
-function renderDrop(r, i){
+function renderLaunch(r){
   if(r.isGarrison){
     return `<span class="g-badge">n/a: garrison (${garrisonCount})</span>`;
   }
   if(r.covered) return '<span style="color:var(--green)">✓ coperto</span>';
-  if(!r.dropW)  return '<span class="w-badge">—</span>';
+  if(!r.launchW)  return '<span class="w-badge" style="color:var(--red)">Nessun target (range/time)</span>';
 
   let now = Date.now();
-  let wS  = r.dropW.start.getTime();
-  let wE  = r.dropW.end.getTime();
+  let wS  = r.launchW.start.getTime();
+  let wE  = r.launchW.end.getTime();
+
+  // Format: HH:MM
+  let tS = fmtT(r.launchW.start);
+  let tE = fmtT(r.launchW.end);
 
   if(now > wE){
-    return '<span class="w-badge" style="color:var(--red)">scaduta</span>';
+    return `<span class="w-badge" style="color:var(--red)">Scaduto (${tE})</span>`;
   }
   if(now >= wS){
-    // OPEN — show date-time range
-    return `<span class="w-badge open">▶ ${fmtDT(r.dropW.start)} – ${fmtT(r.dropW.end)}</span>`;
+    // Finestra APERTA ADESSO
+    return `<span class="w-badge open">▶ ADESSO: ${tS} – ${tE}</span>`;
   }
-  // Future — show countdown
-  let wait = Math.ceil((wS - now) / 1000);
-  return `<span class="w-badge">(wait ${fmtWait(wait)})</span>`;
+  // Finestra FUTURA
+  return `<span class="w-badge" style="color:#fff">Invia: ${tS} – ${tE}</span>`;
 }
 
 function renderLink(r, i){
@@ -691,17 +696,15 @@ function renderLink(r, i){
   if(r.covered) return '<span style="color:var(--green);font-size:.68rem">✓ coperto</span>';
   if(!r.target) return '<span class="w-badge">—</span>';
 
-  let now = Date.now();
-  let wS  = r.dropW ? r.dropW.start.getTime() : 0;
-  let wE  = r.dropW ? r.dropW.end.getTime()   : 0;
+  let info = `<div style="font-size:0.65rem;color:var(--text-muted)">Dist: ${r.dist.toFixed(1)} (Max ${r.pts})</div>`;
 
-  if(now > wE){
-    return '<span class="w-badge" style="color:var(--red)">scaduta</span>';
-  }
+  let now = Date.now();
+  let wS  = r.launchW.start.getTime();
+  
   if(now >= wS){
-    return `<a href="#" class="c-link" onclick="linkClick(${i},event)">${r.target.link}</a>`;
+    return `<a href="#" class="c-link" onclick="linkClick(${i},event)">${r.target.link}</a>` + info;
   }
-  return '<span class="w-badge">(wait)</span>';
+  return `<span class="w-badge">(attendi orario)</span>` + info;
 }
 
 // ================================================================
@@ -718,7 +721,7 @@ function covToggle(i){
   } else {
     tr.classList.remove('r-cov');
   }
-  document.getElementById('d'+i).innerHTML = renderDrop(r, i);
+  document.getElementById('d'+i).innerHTML = renderLaunch(r);
   document.getElementById('l'+i).innerHTML = renderLink(r, i);
 }
 
@@ -733,14 +736,16 @@ function linkClick(i, e){
 function onTroopSwitch(){
   curTroop = document.getElementById('selBattleTroop').value;
   updSpdBadge();
-  // Recalc only non-covered rows; preserve covered + clicked
+  // Ricalcola solo le righe non coperte
   for(let i = 1; i < rows.length; i++){
     let r = rows[i];
     if(r.covered) continue;
     let wasClicked = r.clicked;
     let tgt = findTarget(r.combatTime);
     r.target  = tgt ? tgt.target : null;
-    r.dropW   = tgt ? tgt.dropW  : null;
+    r.launchW = tgt ? tgt.launchW : null;
+    r.dist    = tgt ? tgt.dist : 0;
+    r.pts     = tgt ? tgt.pts : 0;
     r.clicked = wasClicked;
   }
   renderTable();
@@ -753,46 +758,9 @@ function updSpdBadge(){
 }
 
 // ================================================================
-// M) LIVE TICK — every 2 s
-// ================================================================
-function startTick(){
-  if(ticker) clearInterval(ticker);
-  ticker = setInterval(tick, 2000);
-  tick();
-}
-
-function tick(){
-  let now      = Date.now();
-  let needFull = false;
-
-  for(let i = 1; i < rows.length; i++){
-    let r = rows[i];
-    if(r.covered) continue;
-
-    // Expired or missing → recalc target
-    if(!r.dropW || now > r.dropW.end.getTime()){
-      let tgt = findTarget(r.combatTime);
-      r.target = tgt ? tgt.target : null;
-      r.dropW  = tgt ? tgt.dropW  : null;
-      needFull = true;
-      continue;
-    }
-
-    // Live-update cells
-    let dEl = document.getElementById('d'+i);
-    let lEl = document.getElementById('l'+i);
-    if(dEl) dEl.innerHTML = renderDrop(r, i);
-    if(lEl) lEl.innerHTML = renderLink(r, i);
-  }
-
-  if(needFull) renderTable();
-}
-
-// ================================================================
 // N) RESET
 // ================================================================
 function resetAll(){
-  if(ticker){ clearInterval(ticker); ticker = null; }
   document.getElementById('inputPhase').classList.remove('hidden');
   document.getElementById('battlePhase').classList.add('hidden');
   rows = [];
@@ -821,14 +789,6 @@ function fmtDT(d){
   return pad(d.getDate())+' '+M[d.getMonth()]+' '+pad(d.getHours())+':'+pad(d.getMinutes());
 }
 function fmtT(d){ return pad(d.getHours())+':'+pad(d.getMinutes()); }
-
-function fmtWait(s){
-  if(s <= 0) return '0s';
-  let m = Math.floor(s/60), sec = s%60;
-  if(m && sec) return m+'m '+sec+'s';
-  if(m)        return m+'m';
-  return sec+'s';
-}
 
 function setSt(id, html){
   document.getElementById(id).innerHTML = html;
