@@ -3,225 +3,223 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Re Panza Brain — Multi-World Precision</title>
+<title>Re Panza Brain — Precision Multi-Troop</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
 :root { --bg:#050608; --card:#0f1216; --border:#232830; --accent:#d4a843; --text:#e6edf3; --muted:#8b949e; --green:#3fb950; --red:#f85149; }
-body{ font-family:'Rajdhani',sans-serif; background:var(--bg); color:var(--text); padding:15px; margin:0; }
-.wrap{ max-width:900px; margin:0 auto; }
-.card{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:15px; }
+body{ font-family:'Rajdhani',sans-serif; background:var(--bg); color:var(--text); padding:10px; margin:0; }
+.wrap{ max-width:1000px; margin:0 auto; }
+.card{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:10px; border:1px solid var(--border); }
 label{ display:block; font-size:0.7rem; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
-input, select{ width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:10px; border-radius:4px; font-family:'Share Tech Mono'; margin-bottom:12px; box-sizing:border-box; outline:none; }
-.btn{ width:100%; padding:15px; border:none; border-radius:4px; font-weight:700; text-transform:uppercase; cursor:pointer; background:var(--accent); color:#000; }
-table{ width:100%; border-collapse:collapse; font-family:'Share Tech Mono'; font-size:0.85rem; }
-th{ text-align:left; color:var(--muted); font-size:0.7rem; border-bottom:1px solid var(--border); padding:8px; }
-td{ padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.05); }
-.lnk-btn{ text-decoration:none; background:var(--green); color:#fff; padding:6px 12px; border-radius:4px; font-weight:bold; display:inline-block; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(63, 185, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); } }
-.wait-box{ color:var(--red); font-weight:bold; border:1px solid var(--red); padding:4px 8px; border-radius:4px; display:inline-block; }
+input, select{ width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:8px; border-radius:4px; font-family:'Share Tech Mono'; margin-bottom:10px; box-sizing:border-box; }
+.btn{ width:100%; padding:15px; border:none; border-radius:4px; font-weight:700; text-transform:uppercase; cursor:pointer; background:var(--accent); color:#000; font-size:1rem; }
+table{ width:100%; border-collapse:collapse; font-family:'Share Tech Mono'; font-size:0.8rem; }
+th{ text-align:left; color:var(--muted); font-size:0.65rem; border-bottom:1px solid var(--border); padding:8px; }
+td{ padding:10px 8px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.lnk-btn{ text-decoration:none; background:var(--green); color:#fff; padding:5px 10px; border-radius:4px; font-weight:bold; display:inline-block; font-size:0.75rem; }
+.wait-box{ color:var(--red); font-weight:bold; font-size:0.8rem; }
 .hidden{ display:none; }
-tr.cov{ opacity:0.3; background:rgba(0,255,0,0.05); }
-.chk-row{ display:flex; align-items:center; gap:10px; color:var(--text); font-size:0.8rem; margin-bottom:15px; cursor:pointer; }
-.chk-row input{ width:auto; margin:0; }
-.status-db { font-family:'Share Tech Mono'; font-size:0.7rem; margin-top:-8px; margin-bottom:10px; }
-.ok { color: var(--green); }
-.err { color: var(--red); }
+tr.cov{ opacity:0.25; background:rgba(0,255,0,0.05); pointer-events: none; }
+.sticky-header { position: sticky; top: 0; background: var(--bg); z-index: 100; padding: 10px 0; }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="card" id="pIn">
-    <h2 style="color:var(--accent); margin:0 0 15px 0; letter-spacing:2px;">RE PANZA BRAIN</h2>
-    
-    <label>Link Coordinate Partenza</label>
-    <input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&Mondo" oninput="autoLoadDB(this.value)">
-    <div id="dbStatus" class="status-db"></div>
-
-    <div style="display:flex; gap:10px;">
-      <div style="flex:1"><label>Data Rientro</label><input type="date" id="inDate"></div>
-      <div style="flex:1"><label>Ora Fine (es. 07:17)</label><input type="time" id="inTime" value="07:17"></div>
+  <div id="setup">
+    <div class="card">
+      <h2 style="color:var(--accent); margin:0 0 10px 0; font-size:1.2rem;">RE PANZA BRAIN - CONFIG</h2>
+      <label>Link Coordinate Partenza</label>
+      <input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&Mondo" oninput="loadDB(this.value)">
+      <div id="dbStatus" style="font-size:0.7rem; margin-bottom:10px;"></div>
+      
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1"><label>Data Rientro</label><input type="date" id="inDate"></div>
+        <div style="flex:1"><label>Ora Fine (es. 07:17)</label><input type="time" id="inTime" value="07:17"></div>
+      </div>
+      
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1"><label>Guarnigione</label><input type="number" id="inGar" value="1000"></div>
+        <div style="flex:1; padding-top:20px;">
+          <label style="display:flex; align-items:center; gap:5px;">
+            <input type="checkbox" id="chkMap" style="width:auto; margin:0;"> Mappa (0.95x)
+          </label>
+        </div>
+      </div>
+      <button class="btn" onclick="initCalculations()">GENERA TURNI</button>
     </div>
-
-    <div style="display:flex; gap:10px;">
-      <div style="flex:1"><label>Truppa</label><select id="selTroop"></select></div>
-      <div style="flex:1"><label>Guarnigione</label><input type="number" id="inGar" value="1000"></div>
-    </div>
-
-    <label class="chk-row">
-      <input type="checkbox" id="chkMap"> <b>Mappa Attiva (0.95x)</b>
-    </label>
-
-    <button class="btn" onclick="start()">CALCOLA FINESTRE DI LANCIO</button>
   </div>
 
-  <div class="card hidden" id="pOut">
-    <table>
-      <thead>
-        <tr>
-          <th>TURNO (Fine)</th>
-          <th>OK</th>
-          <th>AZIONE / COUNTDOWN</th>
-          <th>IMPATTO SU TARGET</th>
-        </tr>
-      </thead>
-      <tbody id="tBody"></tbody>
-    </table>
-    <button class="btn" style="margin-top:20px; background:#222; color:#fff;" onclick="location.reload()">NUOVO CALCOLO</button>
+  <div id="results" class="hidden">
+    <div class="card sticky-header">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="flex:2">
+          <label>Cambia Truppa (Aggiorna link e tempi)</label>
+          <select id="switchTroop" onchange="updateTroop()"></select>
+        </div>
+        <div style="flex:1">
+          <button class="btn" style="padding:8px; font-size:0.7rem; background:#222; color:#fff;" onclick="location.reload()">RESET</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>FINE FINESTRA</th>
+            <th>OK</th>
+            <th>AZIONE / ATTESA</th>
+            <th>IMPATTO (ANDATA)</th>
+            <th>TARGET</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <script>
-const TR = { "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420, "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420 };
-let W = [], S = { myCast: null, rows: [], speed: 0, world: null };
+const TRUPPE = { "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420, "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420 };
+let WORLD_DB = [], STATE = { myCast: null, rows: [], currentSpeed: 0, worldId: null };
 
 window.onload = () => {
   document.getElementById('inDate').value = new Date().toISOString().split('T')[0];
-  let h = ""; for(let k in TR) h+=`<option value="${k}">${k}</option>`;
-  document.getElementById('selTroop').innerHTML = h;
+  let h = ""; for(let k in TRUPPE) h+=`<option value="${k}">${k}</option>`;
+  document.getElementById('switchTroop').innerHTML = h;
 };
 
-// ================================================================
-// GESTIONE DATABASE DINAMICO
-// ================================================================
-async function autoLoadDB(val) {
-  let m = val.match(/&(\d+)/); // Cerca il numero del mondo nel link
+async function loadDB(val) {
+  let m = val.match(/&(\d+)/);
   if (!m) return;
+  let wid = m[1];
+  if (STATE.worldId === wid) return;
+  STATE.worldId = wid;
+  let status = document.getElementById('dbStatus');
+  status.innerText = "Caricamento database...";
   
-  let worldNum = m[1];
-  if (S.world === worldNum) return; // Già caricato
-  
-  S.world = worldNum;
-  let statusEl = document.getElementById('dbStatus');
-  statusEl.innerHTML = `Caricamento Database Mondo ${worldNum}...`;
-
-  // Tenta prima mondo_X.json poi data_X.json
   const baseUrl = "https://re-panza.github.io/lk_tool/";
-  let paths = [`mondo_${worldNum}.json`, `data_${worldNum}.json` ];
-  
-  W = []; 
-  for (let path of paths) {
+  for (let path of [`mondo_${wid}.json`, `data_${wid}.json`]){
     try {
       let r = await fetch(baseUrl + path);
-      if (r.ok) {
+      if(r.ok){
         let j = await r.json();
-        W = parse(j);
-        statusEl.innerHTML = `<span class="ok">✓ Database Mondo ${worldNum} caricato (${W.length} castelli)</span>`;
+        WORLD_DB = parse(j).filter(c => c.p && c.p !== ""); // FILTRO CASTELLI SENZA PUNTI
+        status.innerHTML = `<span style="color:var(--green)">✓ Mondo ${wid}: ${WORLD_DB.length} Target validi</span>`;
         return;
       }
-    } catch (e) {}
+    } catch(e){}
   }
-  statusEl.innerHTML = `<span class="err">✗ Errore: Database ${worldNum} non trovato</span>`;
+  status.innerHTML = `<span style="color:var(--red)">✗ Database non trovato</span>`;
 }
 
 function parse(obj, arr=[]){
   if(Array.isArray(obj)) obj.forEach(x => parse(x, arr));
   else if(obj && typeof obj === 'object'){
-    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||obj.pt||50)});
+    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:obj.p || obj.pt});
     else for(let k in obj) parse(obj[k], arr);
   }
   return arr;
 }
 
-// ================================================================
-// LOGICA CALCOLO
-// ================================================================
-function start(){
-  let coordInput = document.getElementById('inCoord').value;
-  let coord = coordInput.match(/coordinates\?(\d+),(\d+)/);
-  if(!coord) return alert("Copia il link delle coordinate dal gioco!");
-  if(W.length === 0) return alert("Database non pronto o mondo non trovato.");
+function initCalculations(){
+  let coord = document.getElementById('inCoord').value.match(/coordinates\?(\d+),(\d+)/);
+  if(!coord || WORLD_DB.length === 0) return alert("Inserisci coordinate e attendi caricamento DB");
   
   let myX = +coord[1], myY = +coord[2];
-  S.myCast = W.find(c => c.x === myX && c.y === myY) || {x:myX, y:myY, p:50};
+  STATE.myCast = WORLD_DB.find(c => c.x === myX && c.y === myY) || {x:myX, y:myY, p:50};
   
-  let baseSpeed = TR[document.getElementById('selTroop').value];
-  S.speed = document.getElementById('chkMap').checked ? (baseSpeed * 0.95) : baseSpeed;
+  updateTroop(); // Imposta la velocità iniziale
   
   let baseEndTime = new Date(document.getElementById('inDate').value + "T" + document.getElementById('inTime').value);
-  let available = (+document.getElementById('inGar').value) - 110;
+  let totalTurns = Math.floor((+document.getElementById('inGar').value - 110) / 51);
   
-  S.rows = [];
-  for(let t=1; t <= Math.floor(available/51); t++){
+  STATE.rows = [];
+  for(let t=1; t <= totalTurns; t++){
     let rEnd = new Date(baseEndTime.getTime() + (t-1) * 600000);
-    let rStart = new Date(rEnd.getTime() - 180000); 
-    S.rows.push({ turno: t, rStart, rEnd, covered: false });
+    let rStart = new Date(rEnd.getTime() - 180000);
+    STATE.rows.push({ t, rStart, rEnd, covered: false });
   }
 
   render();
-  document.getElementById('pIn').classList.add('hidden');
-  document.getElementById('pOut').classList.remove('hidden');
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
   setInterval(tick, 1000);
 }
 
-function getBestTgt(rStart, rEnd){
-  let now = Date.now();
-  let best = null;
-  let minWait = Infinity;
-
-  for(let c of W){
-    if(c.x === S.myCast.x && c.y === S.myCast.y) continue;
-    let d = Math.sqrt((c.x-S.myCast.x)**2 + (c.y-S.myCast.y)**2);
-    if(d > S.myCast.p) continue;
-
-    let travelMs = (d * S.speed * 2) * 1000;
-    let lStart = rStart.getTime() - travelMs;
-    let lEnd = rEnd.getTime() - travelMs;
-
-    if(now > lEnd) continue; 
-
-    let wait = Math.max(0, lStart - now);
-    if(wait < minWait){
-      minWait = wait;
-      best = { x:c.x, y:c.y, wait, lStart, lEnd, travelMs, lnk:`l+k://coordinates?${c.x},${c.y}&${S.world}` };
-    }
-  }
-  return best;
-}
-
-function render(){
-  let h = "";
-  S.rows.forEach((r, i) => {
-    h += `<tr id="row-${i}">
-      <td><b>T${r.turno}</b><br><small>${fmtT(r.rEnd)}</small></td>
-      <td><input type="checkbox" onchange="toggle(${i})"></td>
-      <td id="act-${i}"></td>
-      <td id="imp-${i}"></td>
-    </tr>`;
-  });
-  document.getElementById('tBody').innerHTML = h;
+function updateTroop(){
+  let base = TRUPPE[document.getElementById('switchTroop').value];
+  STATE.currentSpeed = document.getElementById('chkMap').checked ? (base * 0.95) : base;
 }
 
 function tick(){
   let now = Date.now();
-  S.rows.forEach((r, i) => {
+  STATE.rows.forEach((r, i) => {
     if(r.covered) return;
-    let data = getBestTgt(r.rStart, r.rEnd);
+    
+    let best = null;
+    let minWait = Infinity;
+
+    // CERCA IL CASTELLO PERFETTO PER QUESTA TRUPPA
+    for(let c of WORLD_DB){
+      if(c.x === STATE.myCast.x && c.y === STATE.myCast.y) continue;
+      let d = Math.sqrt((c.x-STATE.myCast.x)**2 + (c.y-STATE.myCast.y)**2);
+      if(d > STATE.myCast.p) continue;
+
+      let travelMs = (d * STATE.currentSpeed * 2) * 1000;
+      let lStart = r.rStart.getTime() - travelMs;
+      let lEnd = r.rEnd.getTime() - travelMs;
+
+      if(now > lEnd) continue; // Troppo tardi per questo villaggio
+
+      let wait = lStart - now;
+      if(wait < minWait){
+        minWait = wait;
+        best = { x:c.x, y:c.y, lStart, lEnd, travelMs, lnk:`l+k://coordinates?${c.x},${c.y}&${STATE.worldId}` };
+      }
+    }
+
     let elA = document.getElementById(`act-${i}`);
     let elI = document.getElementById(`imp-${i}`);
+    let elT = document.getElementById(`tgt-${i}`);
 
-    if(!data){
+    if(!best){
       elA.innerHTML = "<span style='color:var(--red)'>NO TARGET</span>";
-      elI.innerHTML = "--";
+      elI.innerText = "--"; elT.innerText = "--";
     } else {
-      let impT = new Date(data.lStart + (data.travelMs / 2));
-      elI.innerHTML = `<b>${fmtT(impT)}</b><br><small>Target: ${data.x},${data.y}</small>`;
+      elT.innerText = `${best.x},${best.y}`;
+      let impactTime = new Date(best.lStart + (best.travelMs/2));
+      elI.innerHTML = `<b>${fmtT(impactTime)}</b>`;
 
-      if(now >= data.lStart && now <= data.lEnd){
-        elA.innerHTML = `<a href="${data.lnk}" class="lnk-btn" target="_blank">INVIA ORA</a>`;
+      if(now >= best.lStart){
+        elA.innerHTML = `<a href="${best.lnk}" class="lnk-btn" target="_blank">INVIA ORA</a>`;
       } else {
-        let sec = Math.ceil((data.lStart - now)/1000);
-        let m = Math.floor(sec/60), s = sec%60;
-        elA.innerHTML = `<span class="wait-box">ASPETTA ${m}:${s.toString().padStart(2,'0')}</span>`;
+        let s = Math.ceil(best.wait/1000);
+        elA.innerHTML = `<span class="wait-box">-${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}</span>`;
       }
     }
   });
 }
 
+function render(){
+  let h = "";
+  STATE.rows.forEach((r, i) => {
+    h += `<tr id="row-${i}">
+      <td><b>${fmtT(r.rEnd)}</b></td>
+      <td><input type="checkbox" onchange="toggle(${i})"></td>
+      <td id="act-${i}"></td>
+      <td id="imp-${i}"></td>
+      <td id="tgt-${i}" style="color:var(--accent)"></td>
+    </tr>`;
+  });
+  document.getElementById('tBody').innerHTML = h;
+}
+
 function toggle(i){
-  S.rows[i].covered = !S.rows[i].covered;
+  STATE.rows[i].covered = !STATE.rows[i].covered;
   document.getElementById(`row-${i}`).classList.toggle('cov');
-  if(S.rows[i].covered) document.getElementById(`act-${i}`).innerHTML = "<b style='color:var(--green)'>INVIATO</b>";
+  if(STATE.rows[i].covered) document.getElementById(`act-${i}`).innerHTML = "<b>OK</b>";
 }
 
 function fmtT(d){ return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0')+":"+d.getSeconds().toString().padStart(2,'0'); }
