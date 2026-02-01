@@ -3,84 +3,83 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Re Panza Brain — Precision Calc</title>
+<title>Re Panza Brain — Precision 0.95</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
-
-:root {
-  --bg-deep:#050608;
-  --bg-card:#0f1216;
-  --border:#232830;
-  --accent:#d4a843;
-  --text-primary:#e6edf3;
-  --text-muted:#8b949e;
-  --green:#3fb950;
-  --red:#f85149;
-}
-body{ font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(--text-primary); padding:20px; }
+:root { --bg:#050608; --card:#0f1216; --border:#232830; --accent:#d4a843; --text:#e6edf3; --muted:#8b949e; --green:#3fb950; --red:#f85149; }
+body{ font-family:'Rajdhani',sans-serif; background:var(--bg); color:var(--text); padding:15px; margin:0; }
 .wrap{ max-width:900px; margin:0 auto; }
-.card{ background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:20px; }
-.fg{ margin-bottom:15px; }
-label{ display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px; }
-input, select{ width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:10px; border-radius:4px; font-family:'Share Tech Mono'; }
+.card{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:15px; }
+label{ display:block; font-size:0.7rem; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+input, select{ width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:10px; border-radius:4px; font-family:'Share Tech Mono'; margin-bottom:12px; box-sizing:border-box; outline:none; }
 .btn{ width:100%; padding:15px; border:none; border-radius:4px; font-weight:700; text-transform:uppercase; cursor:pointer; background:var(--accent); color:#000; }
-table{ width:100%; border-collapse:collapse; font-family:'Share Tech Mono'; margin-top:10px; }
-th{ text-align:left; color:var(--text-muted); font-size:0.7rem; border-bottom:1px solid var(--border); padding:10px; }
-td{ padding:12px 10px; border-bottom:1px solid rgba(255,255,255,0.05); }
-.lnk-btn{ text-decoration:none; background:var(--accent); color:#000; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:0.8rem; }
-.wait-box{ color:var(--red); font-weight:bold; }
+table{ width:100%; border-collapse:collapse; font-family:'Share Tech Mono'; font-size:0.85rem; }
+th{ text-align:left; color:var(--muted); font-size:0.7rem; border-bottom:1px solid var(--border); padding:8px; }
+td{ padding:12px 8px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.lnk-btn{ text-decoration:none; background:var(--green); color:#fff; padding:6px 12px; border-radius:4px; font-weight:bold; display:inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(63, 185, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); } }
+.wait-box{ color:var(--red); font-weight:bold; border:1px solid var(--red); padding:4px 8px; border-radius:4px; display:inline-block; }
 .hidden{ display:none; }
-tr.cov{ opacity:0.4; background:rgba(0,255,0,0.05); }
+tr.cov{ opacity:0.3; background:rgba(0,255,0,0.05); }
+.chk-row{ display:flex; align-items:center; gap:10px; color:var(--text); font-size:0.8rem; margin-bottom:15px; cursor:pointer; }
+.chk-row input{ width:auto; margin:0; }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="card" id="inputPanel">
-    <h2 style="color:var(--accent); margin-bottom:20px;">RE PANZA BRAIN - 327</h2>
-    <div class="fg"><label>Link Castello Partenza</label><input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&327"></div>
+  <div class="card" id="pIn">
+    <h2 style="color:var(--accent); margin:0 0 15px 0; letter-spacing:2px;">RE PANZA BRAIN 327</h2>
+    
+    <label>Link Coordinate Partenza</label>
+    <input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&327">
+
     <div style="display:flex; gap:10px;">
-      <div class="fg" style="flex:1;"><label>Data Impatto (Ritorno)</label><input type="date" id="inDate"></div>
-      <div class="fg" style="flex:1;"><label>Ora Fine Finestra (es 07:17)</label><input type="time" id="inTime" value="07:17"></div>
+      <div style="flex:1"><label>Data Rientro</label><input type="date" id="inDate"></div>
+      <div style="flex:1"><label>Ora Fine (es. 07:17)</label><input type="time" id="inTime" value="07:17"></div>
     </div>
+
     <div style="display:flex; gap:10px;">
-      <div class="fg" style="flex:1;"><label>Truppa</label><select id="selTroop"></select></div>
-      <div class="fg" style="flex:1;"><label>Guarnigione</label><input type="number" id="inGar" value="1000"></div>
+      <div style="flex:1"><label>Truppa</label><select id="selTroop"></select></div>
+      <div style="flex:1"><label>Guarnigione</label><input type="number" id="inGar" value="1000"></div>
     </div>
-    <button class="btn" onclick="startCalc()">CALCOLA FINESTRE</button>
+
+    <label class="chk-row">
+      <input type="checkbox" id="chkMap"> <b>Mappa Attiva (Moltiplicatore 0.95)</b>
+    </label>
+
+    <button class="btn" onclick="start()">CALCOLA FINESTRE DI LANCIO</button>
   </div>
 
-  <div class="card hidden" id="outputPanel">
-    <table id="resTable">
+  <div class="card hidden" id="pOut">
+    <table>
       <thead>
         <tr>
-          <th>TURNO (Ritorno)</th>
+          <th>TURNO (Fine)</th>
           <th>OK</th>
-          <th>AZIONE</th>
+          <th>AZIONE / COUNTDOWN</th>
           <th>IMPATTO SU TARGET</th>
         </tr>
       </thead>
       <tbody id="tBody"></tbody>
     </table>
-    <button class="btn" style="margin-top:20px; background:#222; color:#fff;" onclick="location.reload()">INDIETRO</button>
+    <button class="btn" style="margin-top:20px; background:#222; color:#fff;" onclick="location.reload()">NUOVO CALCOLO</button>
   </div>
 </div>
 
 <script>
 const TR = { "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420, "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420 };
+let W = [], S = { myCast: null, rows: [], speed: 0 };
 
-let W = [];
-let S = { myCast: null, rows: [], speed: 0 };
-
-// Caricamento DB
+// Caricamento database Re Panza Brain
 fetch('https://raw.githubusercontent.com/Re-Panza/lk_tool/refs/heads/main/mondo327.json')
-  .then(r=>r.json()).then(j=> W = parseCastles(j));
+  .then(r=>r.json()).then(j=> W = parse(j));
 
-function parseCastles(obj, arr=[]){
-  if(Array.isArray(obj)) obj.forEach(x => parseCastles(x, arr));
+function parse(obj, arr=[]){
+  if(Array.isArray(obj)) obj.forEach(x => parse(x, arr));
   else if(obj && typeof obj === 'object'){
-    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||obj.pt||50)});
-    else for(let k in obj) parseCastles(obj[k], arr);
+    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||50)});
+    else for(let k in obj) parse(obj[k], arr);
   }
   return arr;
 }
@@ -91,111 +90,101 @@ window.onload = () => {
   document.getElementById('selTroop').innerHTML = h;
 };
 
-function startCalc(){
+function start(){
   let coord = document.getElementById('inCoord').value.match(/coordinates\?(\d+),(\d+)/);
-  if(!coord) return alert("Inserisci link coordinate!");
+  if(!coord) return alert("Copia il link delle coordinate dal gioco!");
   
   let myX = +coord[1], myY = +coord[2];
   S.myCast = W.find(c => c.x === myX && c.y === myY) || {x:myX, y:myY, p:50};
-  S.speed = TR[document.getElementById('selTroop').value];
   
-  let baseTime = new Date(document.getElementById('inDate').value + "T" + document.getElementById('inTime').value);
-  let truppe = (+document.getElementById('inGar').value) - 110;
+  // Calcolo velocità con moltiplicatore 0.95 se flaggato
+  let baseSpeed = TR[document.getElementById('selTroop').value];
+  S.speed = document.getElementById('chkMap').checked ? (baseSpeed * 0.95) : baseSpeed;
+  
+  let baseEndTime = new Date(document.getElementById('inDate').value + "T" + document.getElementById('inTime').value);
+  let available = (+document.getElementById('inGar').value) - 110;
   
   S.rows = [];
-  // Turno 0 è la guarnigione, partiamo dal turno 1
-  for(let t=1; t <= Math.floor(truppe/51); t++){
-    let rEnd = new Date(baseTime.getTime() + (t-1) * 600000); // Finestra rincasata ogni 10 min
-    S.rows.push({ turno: t, time: rEnd, covered: false, data: null });
+  for(let t=1; t <= Math.floor(available/51); t++){
+    let rEnd = new Date(baseEndTime.getTime() + (t-1) * 600000);
+    let rStart = new Date(rEnd.getTime() - 180000); // Finestra 3 min
+    S.rows.push({ turno: t, rStart, rEnd, covered: false });
   }
 
   render();
-  document.getElementById('inputPanel').classList.add('hidden');
-  document.getElementById('outputPanel').classList.remove('hidden');
-  setInterval(liveUpdate, 1000);
+  document.getElementById('pIn').classList.add('hidden');
+  document.getElementById('pOut').classList.remove('hidden');
+  setInterval(tick, 1000);
 }
 
-function findIdealTarget(targetReturnTime){
+function getBestTgt(rStart, rEnd){
   let now = Date.now();
-  let maxFields = S.myCast.p;
   let best = null;
   let minWait = Infinity;
 
   for(let c of W){
     if(c.x === S.myCast.x && c.y === S.myCast.y) continue;
     let d = Math.sqrt((c.x-S.myCast.x)**2 + (c.y-S.myCast.y)**2);
-    if(d > maxFields) continue;
+    if(d > S.myCast.p) continue;
 
-    // Tempo totale viaggio (Andata + Ritorno)
     let travelMs = (d * S.speed * 2) * 1000;
-    
-    // Per tornare al "targetReturnTime", devo partire alle:
-    let launchTime = targetReturnTime.getTime() - travelMs;
-    
-    // Se il lancio è nel passato, questo castello non va bene (tornerebbe troppo tardi)
-    if(launchTime < now) continue;
+    let lStart = rStart.getTime() - travelMs;
+    let lEnd = rEnd.getTime() - travelMs;
 
-    // Vogliamo il castello che ci permette di lanciare il più presto possibile (o subito)
-    let wait = launchTime - now;
+    if(now > lEnd) continue; 
+
+    let wait = Math.max(0, lStart - now);
     if(wait < minWait){
       minWait = wait;
-      best = { x:c.x, y:c.y, wait: wait, launch: launchTime, travel: travelMs, lnk: `l+k://coordinates?${c.x},${c.y}&327` };
+      best = { x:c.x, y:c.y, wait, lStart, lEnd, travelMs, lnk:`l+k://coordinates?${c.x},${c.y}&327` };
     }
   }
   return best;
 }
 
 function render(){
-  let tb = document.getElementById('tBody');
-  tb.innerHTML = "";
+  let h = "";
   S.rows.forEach((r, i) => {
-    let tr = document.createElement('tr');
-    tr.id = `row-${i}`;
-    tr.innerHTML = `
-      <td>Turno ${r.turno}<br><small style="color:var(--text-muted)">Ritorno: ${fmtT(r.time)}</small></td>
-      <td><input type="checkbox" onchange="toggleCov(${i})"></td>
+    h += `<tr id="row-${i}">
+      <td><b>TURNO ${r.turno}</b><br><small>Rientro: ${fmtT(r.rEnd)}</small></td>
+      <td><input type="checkbox" onchange="toggle(${i})"></td>
       <td id="act-${i}"></td>
       <td id="imp-${i}"></td>
-    `;
-    tb.appendChild(tr);
+    </tr>`;
   });
+  document.getElementById('tBody').innerHTML = h;
 }
 
-function liveUpdate(){
+function tick(){
   let now = Date.now();
   S.rows.forEach((r, i) => {
     if(r.covered) return;
-    
-    let data = findIdealTarget(r.time);
-    let elAct = document.getElementById(`act-${i}`);
-    let elImp = document.getElementById(`imp-${i}`);
+    let data = getBestTgt(r.rStart, r.rEnd);
+    let elA = document.getElementById(`act-${i}`);
+    let elI = document.getElementById(`imp-${i}`);
 
     if(!data){
-      elAct.innerHTML = "<span style='color:var(--red)'>FUORI PORTATA</span>";
-      elImp.innerHTML = "--";
+      elA.innerHTML = "<span style='color:var(--red)'>NO TARGET</span>";
+      elI.innerHTML = "--";
     } else {
-      // Calcolo orario impatto (metà del viaggio)
-      let impactTime = new Date(data.launch + (data.travel / 2));
-      elImp.innerHTML = `<b>${fmtT(impactTime)}</b><br><small style="color:var(--text-muted)">su ${data.x},${data.y}</small>`;
+      let impT = new Date(data.lStart + (data.travelMs / 2));
+      elI.innerHTML = `<b>${fmtT(impT)}</b><br><small>Target: ${data.x},${data.y}</small>`;
 
-      if(data.wait <= 0){
-        elAct.innerHTML = `<a href="${data.lnk}" class="lnk-btn" target="_blank">INVIA ORA</a>`;
+      if(now >= data.lStart && now <= data.lEnd){
+        elA.innerHTML = `<a href="${data.lnk}" class="lnk-btn" target="_blank">INVIA ORA</a>`;
       } else {
-        let sec = Math.ceil(data.wait / 1000);
+        let sec = Math.ceil((data.lStart - now)/1000);
         let m = Math.floor(sec/60), s = sec%60;
-        elAct.innerHTML = `<span class="wait-box">ASPETTA ${m}:${s.toString().padStart(2,'0')}</span>`;
+        elA.innerHTML = `<span class="wait-box">ASPETTA ${m}:${s.toString().padStart(2,'0')}</span>`;
       }
     }
   });
 }
 
-function toggleCov(i){
+function toggle(i){
   S.rows[i].covered = !S.rows[i].covered;
   document.getElementById(`row-${i}`).classList.toggle('cov');
-  if(S.rows[i].covered){
-    document.getElementById(`act-${i}`).innerHTML = "<span style='color:var(--green)'>COPERTO</span>";
-    document.getElementById(`imp-${i}`).innerHTML = "✓";
-  }
+  if(S.rows[i].covered) document.getElementById(`act-${i}`).innerHTML = "<b style='color:var(--green)'>INVIATO</b>";
 }
 
 function fmtT(d){ return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0')+":"+d.getSeconds().toString().padStart(2,'0'); }
