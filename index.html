@@ -3,253 +3,160 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Re Panza Brain — Infinite Calc</title>
+<title>Re Panza Brain — Precision Calc</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
 
 :root {
   --bg-deep:#050608;
   --bg-card:#0f1216;
-  --bg-card2:#151920;
-  --bg-input:#0a0c10;
   --border:#232830;
-  --border-focus:#d4a843;
-  --text-primary:#e6edf3;
-  --text-secondary:#8b949e;
-  --text-muted:#484f58;
   --accent:#d4a843;
+  --text-primary:#e6edf3;
+  --text-muted:#8b949e;
   --green:#3fb950;
   --red:#f85149;
-  --row-cov:rgba(63,185,80,.08);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Rajdhani',sans-serif;
-  background:var(--bg-deep);
-  color:var(--text-primary);
-  min-height:100vh;
-  padding:20px 12px;
-}
-.wrap{max-width:1000px;margin:0 auto}
-
-.hdr{text-align:center;margin-bottom:25px}
-.hdr h1{font-size:1.6rem;color:var(--accent);text-transform:uppercase;letter-spacing:2px}
-
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
-.card-t{font-size:0.75rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;font-weight:700}
-
-.fg{margin-bottom:12px}
-.fg label{display:block;font-size:0.7rem;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
-.fg input, .fg select{
-  width:100%;background:var(--bg-input);border:1px solid var(--border);
-  color:var(--text-primary);padding:8px 10px;border-radius:4px;
-  font-family:'Share Tech Mono',monospace;outline:none;
-}
-.row-inp{display:flex;gap:10px}
-.row-inp .fg{flex:1}
-
-.btn{
-  width:100%;padding:12px;border:none;border-radius:4px;
-  font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;
-  cursor:pointer;font-size:0.9rem;letter-spacing:1px;margin-bottom:10px;
-}
-.btn-p{background:var(--accent);color:#000}
-.btn-s{background:var(--bg-card2);color:var(--text-secondary);border:1px solid var(--border)}
-
-.st{font-family:'Share Tech Mono',monospace;font-size:0.75rem;margin-top:6px}
-.st.err{color:var(--red)} .st.ok{color:var(--green)}
-
-.turn-stats{display:flex;gap:15px;font-size:0.75rem;color:var(--text-secondary);margin-bottom:15px}
-
-.tbl-scrol{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:0.75rem;min-width:650px}
-th{text-align:left;padding:8px;color:var(--text-muted);border-bottom:1px solid var(--border)}
-td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.05)}
-tr.cov{background:var(--row-cov)}
-
-.lnk-btn{
-  display:inline-block;text-decoration:none;padding:5px 12px;border-radius:4px;
-  background:var(--accent);color:#000;font-weight:700;font-size:0.75rem;
-}
-.lnk-wait{
-  display:inline-block;border:1px solid var(--border);padding:4px 8px;border-radius:4px;
-  font-size:0.75rem;color:var(--text-secondary);
-}
-.lnk-wait b{color:var(--red);margin-left:5px}
-
-.hidden{display:none!important}
+body{ font-family:'Rajdhani',sans-serif; background:var(--bg-deep); color:var(--text-primary); padding:20px; }
+.wrap{ max-width:900px; margin:0 auto; }
+.card{ background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:20px; }
+.fg{ margin-bottom:15px; }
+label{ display:block; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px; }
+input, select{ width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:10px; border-radius:4px; font-family:'Share Tech Mono'; }
+.btn{ width:100%; padding:15px; border:none; border-radius:4px; font-weight:700; text-transform:uppercase; cursor:pointer; background:var(--accent); color:#000; }
+table{ width:100%; border-collapse:collapse; font-family:'Share Tech Mono'; margin-top:10px; }
+th{ text-align:left; color:var(--text-muted); font-size:0.7rem; border-bottom:1px solid var(--border); padding:10px; }
+td{ padding:12px 10px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.lnk-btn{ text-decoration:none; background:var(--accent); color:#000; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:0.8rem; }
+.wait-box{ color:var(--red); font-weight:bold; }
+.hidden{ display:none; }
+tr.cov{ opacity:0.4; background:rgba(0,255,0,0.05); }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="hdr">
-    <h1>Re Panza Brain</h1>
-    <p>Calcolatore Strategico LK</p>
+  <div class="card" id="inputPanel">
+    <h2 style="color:var(--accent); margin-bottom:20px;">RE PANZA BRAIN - 327</h2>
+    <div class="fg"><label>Link Castello Partenza</label><input type="text" id="inCoord" placeholder="l+k://coordinates?X,Y&327"></div>
+    <div style="display:flex; gap:10px;">
+      <div class="fg" style="flex:1;"><label>Data Impatto (Ritorno)</label><input type="date" id="inDate"></div>
+      <div class="fg" style="flex:1;"><label>Ora Fine Finestra (es 07:17)</label><input type="time" id="inTime" value="07:17"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <div class="fg" style="flex:1;"><label>Truppa</label><select id="selTroop"></select></div>
+      <div class="fg" style="flex:1;"><label>Guarnigione</label><input type="number" id="inGar" value="1000"></div>
+    </div>
+    <button class="btn" onclick="startCalc()">CALCOLA FINESTRE</button>
   </div>
 
-  <div id="pInput">
-    <div class="card">
-      <div class="card-t">Configurazione</div>
-      <div class="fg">
-        <label>Coordinate Castello PARTENZA (Link)</label>
-        <input type="text" id="inCoord" placeholder="l+k://coordinates?123,456&327"/>
-      </div>
-      <div class="row-inp">
-        <div class="fg"><label>Data Impatto</label><input type="date" id="inDate"/></div>
-        <div class="fg"><label>Ora Impatto</label><input type="time" id="inTime"/></div>
-      </div>
-      <div class="row-inp">
-        <div class="fg"><label>Truppa</label><select id="selTroop"></select></div>
-        <div class="fg"><label>Plotone</label><input type="number" id="inBatch" value="51"/></div>
-      </div>
-      <div class="row-inp">
-        <div class="fg"><label>Guarnigione Totale</label><input type="number" id="inGar" value="1000"/></div>
-        <div class="fg" style="padding-top:25px">
-           <label style="display:inline"><input type="checkbox" id="chkMap"> Mappa (+5%)</label>
-        </div>
-      </div>
-    </div>
-    <button class="btn btn-p" onclick="doCalc()">Calcola Strategia</button>
-    <div id="gStat" class="st"></div>
-  </div>
-
-  <div id="pOut" class="hidden">
-    <div class="card">
-      <div class="turn-stats" id="turnStats"></div>
-      <div class="tbl-scrol">
-        <table>
-          <thead>
-            <tr>
-              <th>Turno (+10m)</th>
-              <th>Ok</th>
-              <th>Azione / Countdown</th>
-              <th>Finestra Invio</th>
-              <th>Target (Distanza)</th>
-            </tr>
-          </thead>
-          <tbody id="tBody"></tbody>
-        </table>
-      </div>
-    </div>
-    <button class="btn btn-s" onclick="location.reload()">Nuovo Calcolo</button>
+  <div class="card hidden" id="outputPanel">
+    <table id="resTable">
+      <thead>
+        <tr>
+          <th>TURNO (Ritorno)</th>
+          <th>OK</th>
+          <th>AZIONE</th>
+          <th>IMPATTO SU TARGET</th>
+        </tr>
+      </thead>
+      <tbody id="tBody"></tbody>
+    </table>
+    <button class="btn" style="margin-top:20px; background:#222; color:#fff;" onclick="location.reload()">INDIETRO</button>
   </div>
 </div>
 
 <script>
-const TR = {
-  "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800,
-  "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000,
-  "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420,
-  "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480,
-  "Ballista": 450, "Catapulta": 420
-};
+const TR = { "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300, "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400, "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480, "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420, "Arciere Nordico": 390, "Cavaliere con Ascia": 360, "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420 };
 
-let W = { list: [], id: 327 };
-let S = { myCast: null, rows: [], timer: null, speed: 0 };
+let W = [];
+let S = { myCast: null, rows: [], speed: 0 };
 
-window.onload = () => {
-  let d = new Date();
-  document.getElementById('inDate').value = d.toISOString().split('T')[0];
-  document.getElementById('inTime').value = "07:00";
-  let h = "";
-  for(let k in TR) h+=`<option value="${k}">${k}</option>`;
-  document.getElementById('selTroop').innerHTML = h;
-  loadWorld();
-};
-
-function loadWorld(){
-  fetch('https://raw.githubusercontent.com/Re-Panza/lk_tool/refs/heads/main/mondo327.json')
-    .then(r=>r.json()).then(j=>{
-      W.list = parseCastles(j);
-      document.getElementById('gStat').innerHTML = `<span class="ok">Database pronto: ${W.list.length} castelli.</span>`;
-    });
-}
+// Caricamento DB
+fetch('https://raw.githubusercontent.com/Re-Panza/lk_tool/refs/heads/main/mondo327.json')
+  .then(r=>r.json()).then(j=> W = parseCastles(j));
 
 function parseCastles(obj, arr=[]){
   if(Array.isArray(obj)) obj.forEach(x => parseCastles(x, arr));
   else if(obj && typeof obj === 'object'){
-    if(obj.x !== undefined && obj.y !== undefined) arr.push({x: obj.x, y: obj.y, p: (obj.p || obj.pt || 50)});
+    if(obj.x !== undefined && obj.y !== undefined) arr.push({x:obj.x, y:obj.y, p:(obj.p||obj.pt||50)});
     else for(let k in obj) parseCastles(obj[k], arr);
   }
   return arr;
 }
 
-function doCalc(){
+window.onload = () => {
+  document.getElementById('inDate').value = new Date().toISOString().split('T')[0];
+  let h = ""; for(let k in TR) h+=`<option value="${k}">${k}</option>`;
+  document.getElementById('selTroop').innerHTML = h;
+};
+
+function startCalc(){
   let coord = document.getElementById('inCoord').value.match(/coordinates\?(\d+),(\d+)/);
-  if(!coord) return alert("Inserisci il link del castello!");
+  if(!coord) return alert("Inserisci link coordinate!");
   
   let myX = +coord[1], myY = +coord[2];
-  S.myCast = W.list.find(c => c.x === myX && c.y === myY) || {x: myX, y: myY, p: 50};
-
-  let impactBase = new Date(document.getElementById('inDate').value + "T" + document.getElementById('inTime').value);
-  S.speed = TR[document.getElementById('selTroop').value] * (document.getElementById('chkMap').checked ? 0.9523 : 1);
+  S.myCast = W.find(c => c.x === myX && c.y === myY) || {x:myX, y:myY, p:50};
+  S.speed = TR[document.getElementById('selTroop').value];
   
-  let garrison = +document.getElementById('inGar').value;
-  let batch = +document.getElementById('inBatch').value;
+  let baseTime = new Date(document.getElementById('inDate').value + "T" + document.getElementById('inTime').value);
+  let truppe = (+document.getElementById('inGar').value) - 110;
   
   S.rows = [];
-  let available = garrison - 110;
-  
-  // Turno 0 (Guarnigione)
-  S.rows.push({ type:'G', time: new Date(impactBase) });
-
-  // Turni Attacco
-  for(let t=1; t <= Math.floor(available/batch); t++){
-    let tTime = new Date(impactBase.getTime() + t * 600000);
-    S.rows.push({ type:'A', time: tTime, covered: false, data: findBestTarget(tTime) });
+  // Turno 0 è la guarnigione, partiamo dal turno 1
+  for(let t=1; t <= Math.floor(truppe/51); t++){
+    let rEnd = new Date(baseTime.getTime() + (t-1) * 600000); // Finestra rincasata ogni 10 min
+    S.rows.push({ turno: t, time: rEnd, covered: false, data: null });
   }
 
   render();
-  document.getElementById('pInput').classList.add('hidden');
-  document.getElementById('pOut').classList.remove('hidden');
-  if(S.timer) clearInterval(S.timer);
-  S.timer = setInterval(liveUpdate, 1000);
-  liveUpdate();
+  document.getElementById('inputPanel').classList.add('hidden');
+  document.getElementById('outputPanel').classList.remove('hidden');
+  setInterval(liveUpdate, 1000);
 }
 
-function findBestTarget(impactTime){
+function findIdealTarget(targetReturnTime){
   let now = Date.now();
-  let rStart = impactTime.getTime() + 4*60*1000;
-  let rEnd   = impactTime.getTime() + 7*60*1000;
+  let maxFields = S.myCast.p;
   let best = null;
   let minWait = Infinity;
 
-  for(let c of W.list){
+  for(let c of W){
     if(c.x === S.myCast.x && c.y === S.myCast.y) continue;
     let d = Math.sqrt((c.x-S.myCast.x)**2 + (c.y-S.myCast.y)**2);
-    if(d > S.myCast.p) continue;
+    if(d > maxFields) continue;
 
-    let rtMs = (d * S.speed * 2) * 1000;
-    let lStart = rStart - rtMs;
-    let lEnd   = rEnd - rtMs;
+    // Tempo totale viaggio (Andata + Ritorno)
+    let travelMs = (d * S.speed * 2) * 1000;
+    
+    // Per tornare al "targetReturnTime", devo partire alle:
+    let launchTime = targetReturnTime.getTime() - travelMs;
+    
+    // Se il lancio è nel passato, questo castello non va bene (tornerebbe troppo tardi)
+    if(launchTime < now) continue;
 
-    // Se la finestra è passata, cerchiamo il prossimo castello
-    if(lEnd < now) continue;
-
-    let wait = Math.max(0, lStart - now);
+    // Vogliamo il castello che ci permette di lanciare il più presto possibile (o subito)
+    let wait = launchTime - now;
     if(wait < minWait){
       minWait = wait;
-      best = { x:c.x, y:c.y, lnk:`l+k://coordinates?${c.x},${c.y}&${W.id}`, ls:lStart, le:lEnd, d:d };
+      best = { x:c.x, y:c.y, wait: wait, launch: launchTime, travel: travelMs, lnk: `l+k://coordinates?${c.x},${c.y}&327` };
     }
   }
   return best;
 }
 
 function render(){
-  document.getElementById('turnStats').innerHTML = `Partenza: <b>${S.myCast.x},${S.myCast.y}</b> | Raggio: <b>${S.myCast.p}</b>`;
   let tb = document.getElementById('tBody');
   tb.innerHTML = "";
   S.rows.forEach((r, i) => {
     let tr = document.createElement('tr');
     tr.id = `row-${i}`;
-    if(r.type === 'G'){
-      tr.innerHTML = `<td>${fmtT(r.time)}</td><td colspan="4">Guarnigione Base</td>`;
-    } else {
-      tr.innerHTML = `<td>${fmtT(r.time)}</td>
-        <td><input type="checkbox" onchange="toggleCov(${i})"></td>
-        <td id="act-${i}"></td><td id="win-${i}"></td><td id="tgt-${i}"></td>`;
-    }
+    tr.innerHTML = `
+      <td>Turno ${r.turno}<br><small style="color:var(--text-muted)">Ritorno: ${fmtT(r.time)}</small></td>
+      <td><input type="checkbox" onchange="toggleCov(${i})"></td>
+      <td id="act-${i}"></td>
+      <td id="imp-${i}"></td>
+    `;
     tb.appendChild(tr);
   });
 }
@@ -257,28 +164,26 @@ function render(){
 function liveUpdate(){
   let now = Date.now();
   S.rows.forEach((r, i) => {
-    if(r.type === 'G' || r.covered) return;
+    if(r.covered) return;
     
-    // Se il target è scaduto o nullo, ricalcola subito
-    if(!r.data || now > r.data.le){
-      r.data = findBestTarget(r.time);
-    }
-
+    let data = findIdealTarget(r.time);
     let elAct = document.getElementById(`act-${i}`);
-    let elWin = document.getElementById(`win-${i}`);
-    let elTgt = document.getElementById(`tgt-${i}`);
+    let elImp = document.getElementById(`imp-${i}`);
 
-    if(!r.data){
-      elAct.innerHTML = "<span style='color:red'>Fuori Portata</span>";
+    if(!data){
+      elAct.innerHTML = "<span style='color:var(--red)'>FUORI PORTATA</span>";
+      elImp.innerHTML = "--";
     } else {
-      elTgt.innerHTML = `${r.data.x},${r.data.y} <span>(${r.data.d.toFixed(1)} dist)</span>`;
-      elWin.innerHTML = `${fmtT(new Date(r.data.ls))} - ${fmtT(new Date(r.data.le))}`;
-      
-      if(now >= r.data.ls){
-        elAct.innerHTML = `<a href="${r.data.lnk}" class="lnk-btn">INVIA ORA</a>`;
+      // Calcolo orario impatto (metà del viaggio)
+      let impactTime = new Date(data.launch + (data.travel / 2));
+      elImp.innerHTML = `<b>${fmtT(impactTime)}</b><br><small style="color:var(--text-muted)">su ${data.x},${data.y}</small>`;
+
+      if(data.wait <= 0){
+        elAct.innerHTML = `<a href="${data.lnk}" class="lnk-btn" target="_blank">INVIA ORA</a>`;
       } else {
-        let diff = Math.ceil((r.data.ls - now)/1000);
-        elAct.innerHTML = `<span class="lnk-wait">Attendi <b>${Math.floor(diff/60)}:${(diff%60).toString().padStart(2,'0')}</b></span>`;
+        let sec = Math.ceil(data.wait / 1000);
+        let m = Math.floor(sec/60), s = sec%60;
+        elAct.innerHTML = `<span class="wait-box">ASPETTA ${m}:${s.toString().padStart(2,'0')}</span>`;
       }
     }
   });
@@ -287,10 +192,13 @@ function liveUpdate(){
 function toggleCov(i){
   S.rows[i].covered = !S.rows[i].covered;
   document.getElementById(`row-${i}`).classList.toggle('cov');
-  if(S.rows[i].covered) document.getElementById(`act-${i}`).innerHTML = "<b style='color:green'>COPERTO</b>";
+  if(S.rows[i].covered){
+    document.getElementById(`act-${i}`).innerHTML = "<span style='color:var(--green)'>COPERTO</span>";
+    document.getElementById(`imp-${i}`).innerHTML = "✓";
+  }
 }
 
-function fmtT(d){ return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+function fmtT(d){ return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0')+":"+d.getSeconds().toString().padStart(2,'0'); }
 </script>
 </body>
 </html>
