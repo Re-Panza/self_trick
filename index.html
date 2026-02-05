@@ -65,7 +65,7 @@
     .res-row {
       display: grid; 
       grid-template-columns: 50px 1fr 90px; 
-      gap: 8px;
+      gap: 10px;
       align-items: center; padding: 10px 8px; border-bottom: 1px solid #222; background: var(--bg);
       transition: background 0.2s;
     }
@@ -195,6 +195,7 @@
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+      let st = document.getElementById('dbStatus');
       
       if(m) {
         let w = m[3];
@@ -218,6 +219,25 @@
             .catch(() => {});
         }
       }
+    }
+
+    // --- FORMULA DISTANZA REALE (L&K HEX GRID) ---
+    function getDist(x1, y1, x2, y2) {
+      // Conversione da coordinate Offset (L&K) a coordinate Cubiche
+      let cy1 = y1;
+      let cz1 = x1 - Math.floor(y1 / 2);
+      let cx1 = -cy1 - cz1;
+
+      let cy2 = y2;
+      let cz2 = x2 - Math.floor(y2 / 2);
+      let cx2 = -cy2 - cz2;
+
+      // Distanza cubica: max(abs(dx), abs(dy), abs(dz))
+      return Math.max(
+        Math.abs(cx1 - cx2),
+        Math.abs(cy1 - cy2),
+        Math.abs(cz1 - cz2)
+      );
     }
 
     // --- MAIN CALC ---
@@ -297,7 +317,7 @@
       renderList();
     }
 
-    // --- ALGORITMO DI RICERCA: HEX AXIAL DISTANCE ---
+    // --- ALGORITMO DI RICERCA ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
@@ -312,28 +332,23 @@
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; 
         
-        // 1. Distanza Esagonale (Hex Axial)
-        let dx = c.x - myCastle.x;
-        let dy = c.y - myCastle.y;
+        // USO LA FORMULA ESAGONALE CORRETTA
+        let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         
-        // Formula per griglia esagonale assiale:
-        // Distanza = max(|dx|, |dy|, |dx+dy|)
-        let dist = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dx + dy));
+        if(dist < 1) continue; // Minimo 1 campo
         
-        if(dist < 0.1) continue;
-        
-        // 2. Tempo Viaggio (Andata)
+        // Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Andata)
+        // Finestra Lancio
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        if(lEnd < now) continue; // Scaduto
+        if(lEnd < now) continue;
         
         let wait = Math.max(0, lStart - now);
         
-        // Priorità: Attesa 0 (Subito)
+        // Priorità: Attesa 0
         if(wait === 0) {
             if(minWait > 0) {
                 minWait = 0;
@@ -395,7 +410,7 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
-          // Se target nullo o scaduto, cerco nuovo
+          // BLOCCO TARGET: Cerco nuovo solo se NON ho target o se è scaduto
           if(!r.target || now > r.target.lEnd) {
             let newTgt = findTarget(r.t, speed);
             r.target = newTgt; 
@@ -456,19 +471,17 @@
       let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
       
       let wait = r.target.lStart - now;
-      let dist = Math.round(r.target.dist); 
+      let dist = r.target.dist; // Distanza esatta Hex
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
+      // Calcolo Rimbalzo (Arrivo al target)
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
+      
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
-
-      let launchT = wait > 0 ? r.target.lStart : now;
-      let arrT = new Date(launchT + r.target.travelMs);
-      let arrStr = `${pad(arrT.getDate())}/${pad(arrT.getMonth()+1)} ${pad(arrT.getHours())}:${pad(arrT.getMinutes())}:${pad(arrT.getSeconds())}`;
 
       if(wait > 0) {
         let h = Math.floor(wait / 3600000);
