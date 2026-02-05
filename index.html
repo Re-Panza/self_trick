@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>LK Battle Calculator — Mondo 337</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
@@ -33,513 +33,148 @@
       --row-covered: rgba(63, 185, 80, .09);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0 }
 
     body {
       font-family: 'Rajdhani', sans-serif;
       background: var(--bg-deep);
       color: var(--text-primary);
       min-height: 100vh;
-      padding: 28px 16px;
-      line-height: 1.5;
+      padding: 10px 6px; /* Padding minimo */
+      line-height: 1.3;
     }
 
-    .wrap {
-      max-width: 1140px;
-      margin: 0 auto
-    }
+    .wrap { max-width: 1140px; margin: 0 auto }
 
     /* HEADER */
-    .hdr {
-      text-align: center;
-      margin-bottom: 34px
-    }
-
-    .hdr h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--gold);
-      text-shadow: 0 0 24px var(--gold-dim);
-    }
-
-    .hdr p {
-      color: var(--text-muted);
-      font-size: .82rem;
-      margin-top: 5px;
-      font-family: 'Share Tech Mono', monospace
-    }
+    .hdr { text-align: center; margin-bottom: 20px }
+    .hdr h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+    .hdr p { color: var(--text-muted); font-size: .8rem; margin-top: 4px; font-family: 'Share Tech Mono', monospace }
 
     /* CARD */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px 24px;
-      margin-bottom: 18px;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
     }
 
     .card-t {
-      font-size: .72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.8px;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
     }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent) }
 
-    .card-t .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent)
+    /* FORM ELEMENTS */
+    .fg { display: flex; flex-direction: column; width: 100%; margin-bottom: 8px; }
+    .fg label { font-size: .7rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600; }
+    
+    .fg input, .fg select {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px;
+      padding: 10px; color: var(--text-primary); font-family: 'Share Tech Mono', monospace;
+      font-size: .9rem; outline: none; width: 100%;
     }
+    .fg input:focus, .fg select:focus { border-color: var(--border-focus) }
 
-    /* FORM */
-    .form-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: flex-end
-    }
+    .form-row { display: flex; gap: 8px; }
+    .form-row > .fg { flex: 1; }
 
-    .fg {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 155px
-    }
-
-    .fg label {
-      font-size: .72rem;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      font-weight: 600;
-    }
-
-    .fg input,
-    .fg select {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 11px;
-      color: var(--text-primary);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .8rem;
-      transition: border-color .2s;
-      outline: none;
-    }
-
-    .fg input:focus,
-    .fg select:focus {
-      border-color: var(--border-focus)
-    }
-
-    .fg select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 28px;
-      cursor: pointer;
-    }
-
-    .fg select option {
-      background: var(--bg-card)
-    }
-
-    /* CHECKBOX ROW */
+    /* CHECKBOX */
     .cb-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      padding: 9px 13px;
-      background: var(--bg-card2);
-      border-radius: 6px;
-      border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; padding: 10px;
+      background: var(--bg-card2); border-radius: 5px; border: 1px solid var(--border); margin-top: 5px;
     }
-
-    .cb-row input[type=checkbox] {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid var(--border);
-      border-radius: 4px;
-      background: var(--bg-input);
-      cursor: pointer;
-      transition: all .2s;
-      flex-shrink: 0;
-    }
-
-    .cb-row input[type=checkbox]:checked {
-      background: var(--accent);
-      border-color: var(--accent);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 3 7-7' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
-    .cb-row .cb-lbl {
-      font-size: .81rem;
-      color: var(--text-secondary)
-    }
-
-    .cb-row .cb-lbl strong {
-      color: var(--gold)
-    }
-
-    .cb-bonus {
-      margin-left: auto;
-      font-size: .7rem;
-      font-family: 'Share Tech Mono', monospace;
-      color: var(--green);
-      background: var(--green-dim);
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
+    .cb-row input { width: 20px; height: 20px; accent-color: var(--accent); }
+    .cb-lbl { font-size: .8rem; color: var(--text-secondary) }
 
     /* BUTTONS */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 18px
-    }
-
+    .btn-row { display: flex; gap: 8px; margin-top: 15px }
     .btn {
-      padding: 9px 22px;
-      border: none;
-      border-radius: 6px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: .88rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .2s;
+      flex: 1; padding: 14px 0; border: none; border-radius: 6px;
+      font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
     }
-
-    .btn-p {
-      background: var(--accent);
-      color: #fff
-    }
-
-    .btn-p:hover {
-      background: var(--accent-hover)
-    }
-
-    .btn-p:disabled {
-      background: var(--text-muted);
-      cursor: not-allowed
-    }
-
-    .btn-s {
-      background: var(--bg-card2);
-      color: var(--text-secondary);
-      border: 1px solid var(--border)
-    }
-
-    .btn-s:hover {
-      color: var(--text-primary);
-      border-color: var(--text-muted)
-    }
+    .btn-p { background: var(--accent); color: #fff }
+    .btn-s { background: var(--bg-card2); color: var(--text-secondary); border: 1px solid var(--border) }
 
     /* STATUS */
-    .st {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .73rem;
-      color: var(--text-muted);
-      margin-top: 8px;
-      min-height: 17px
-    }
+    .st { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--text-muted); margin-top: 10px; text-align: center; }
+    .st .err { color: var(--red) } .st .ok { color: var(--green) }
 
-    .st .err {
-      color: var(--red)
-    }
+    .coords-disp { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--gold); margin-top: 5px; text-align: center; }
 
-    .st .ok {
-      color: var(--green)
-    }
+    /* BATTLE PHASE */
+    .battle-top { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .battle-top select { width: 100%; }
+    .spd-badge { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--accent); text-align: center; display: block; }
 
-    .st .wrn {
-      color: var(--warn)
+    .sum-strip { 
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; 
+      background: var(--bg-input); padding: 8px; border-radius: 5px; justify-content: center;
     }
+    .sum-i { font-size: .7rem; color: var(--text-muted); }
+    .sum-i strong { color: var(--text-secondary); }
 
-    /* COORDS DISPLAY */
-    .coords-disp {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .76rem;
-      color: var(--gold);
-      margin-top: 6px;
-      padding: 5px 10px;
-      background: var(--gold-dim);
-      border-radius: 6px;
-      display: inline-block;
+    /* TABLE LAYOUT */
+    .tbl-wrap { border: 1px solid var(--border); border-radius: 6px; overflow-x: hidden; }
+    
+    table { 
+      width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; 
+      font-size: .75rem; table-layout: fixed; 
     }
-
-    /* BATTLE HEADER */
-    .battle-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px
-    }
-
-    .battle-top label {
-      font-size: .7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      font-weight: 600
-    }
-
-    .battle-top select {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 5px 26px 5px 9px;
-      color: var(--text-primary);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .76rem;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      cursor: pointer;
-      outline: none;
-      transition: border-color .2s;
-    }
-
-    .battle-top select:focus {
-      border-color: var(--border-focus)
-    }
-
-    .battle-top select option {
-      background: var(--bg-card)
-    }
-
-    .spd-badge {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .68rem;
-      color: var(--accent);
-      background: var(--accent-dim);
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
-
-    /* SUMMARY */
-    .sum-strip {
-      display: flex;
-      gap: 18px;
-      flex-wrap: wrap;
-      margin-bottom: 14px
-    }
-
-    .sum-i {
-      font-size: .7rem;
-      color: var(--text-muted)
-    }
-
-    .sum-i strong {
-      color: var(--text-secondary)
-    }
-
-    /* TABLE */
-    .tbl-wrap {
-      overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid var(--border)
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .74rem
-    }
-
+    
     thead th {
-      background: var(--bg-card2);
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      font-weight: 600;
-      font-size: .66rem;
-      padding: 9px 10px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid rgba(42, 49, 58, .4);
-      transition: background .12s
-    }
-
-    tbody tr:last-child {
-      border-bottom: none
+      background: var(--bg-card2); color: var(--text-muted); font-weight: 600; font-size: .65rem;
+      padding: 6px 2px; text-align: center; border-bottom: 1px solid var(--border);
+      vertical-align: middle;
     }
 
     tbody td {
-      padding: 8px 10px;
-      color: var(--text-secondary);
-      white-space: nowrap
+      padding: 6px 2px; border-bottom: 1px solid rgba(42, 49, 58, .4);
+      color: var(--text-secondary); text-align: center; vertical-align: middle;
+      word-wrap: break-word; line-height: 1.2;
     }
 
-    tr.r-cov {
-      background: var(--row-covered)
-    }
+    tr.r-cov { background: var(--row-covered) }
+    tr.r-gar td { color: var(--text-muted); font-style: italic }
 
-    tr.r-clk {
-      background: var(--row-highlight) !important
-    }
+    /* COLUMNS - MOBILE OPTIMIZED */
+    .th-combat { width: 18%; }  /* Ridotto */
+    .th-check  { width: 10%; }  /* Minimo indispensabile */
+    .th-launch { width: 44%; }  /* Spazio principale per i timer */
+    .th-target { width: 28%; }  /* Spazio per il link */
 
-    tr.r-gar td {
-      color: var(--text-muted);
-      font-style: italic
-    }
-
-    /* COV CHECKBOX */
-    .cov-chk {
-      appearance: none;
-      width: 15px;
-      height: 15px;
-      border: 2px solid var(--border);
-      border-radius: 3px;
-      background: var(--bg-input);
-      cursor: pointer;
-      transition: all .15s;
-      vertical-align: middle;
-    }
-
-    .cov-chk:checked {
-      background: var(--green);
-      border-color: var(--green);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 3 7-7' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
-    .cov-lbl {
-      font-size: .68rem;
-      color: var(--green);
-      margin-left: 4px
-    }
-
-    /* LINK */
-    .c-link {
-      color: var(--accent);
-      text-decoration: none;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: .7rem;
-      transition: color .15s
-    }
-
-    .c-link:hover {
-      color: var(--accent-hover);
-      text-decoration: underline
-    }
-
-    /* BADGES */
+    /* BADGES & LINKS */
     .w-badge {
-      display: inline-block;
-      background: var(--warn-dim);
-      color: var(--warn);
-      padding: 2px 7px;
-      border-radius: 9px;
-      font-size: .68rem
+      display: block; background: var(--warn-dim); color: var(--warn);
+      padding: 4px 2px; border-radius: 4px; font-size: .65rem; /* Font più piccolo per stare in colonna */
+    }
+    .w-badge.open { background: var(--accent); color: #fff; font-weight: bold; box-shadow: 0 0 5px rgba(59,130,246,0.5); }
+    
+    .c-link {
+      display: inline-block; text-decoration: none; color: #fff; background: rgba(59,130,246,0.2);
+      border: 1px solid var(--accent); padding: 4px 6px; border-radius: 4px;
+      font-size: .7rem; font-weight: bold; margin-bottom: 2px; width: 95%;
+    }
+    .c-link:hover { background: var(--accent); }
+
+    .g-badge { font-size: .6rem; color: var(--text-muted); }
+    .cov-chk { width: 16px; height: 16px; accent-color: var(--green); }
+
+    /* MOBILE SPECIFIC OVERRIDES */
+    @media (max-width: 600px) {
+        .hdr h1 { font-size: 1.4rem; }
+        .card { padding: 10px; }
+        
+        /* Font ancora più compatti per tabelle */
+        table { font-size: 0.7rem; }
+        
+        /* Forza a capo il testo nelle celle */
+        tbody td span { display: block; } 
     }
 
-    .w-badge.open {
-      background: var(--accent-dim);
-      color: var(--accent);
-      font-weight: 600
-    }
-
-    .g-badge {
-      display: inline-block;
-      background: var(--red-dim);
-      color: var(--red);
-      padding: 2px 7px;
-      border-radius: 9px;
-      font-size: .66rem
-    }
-
-    /* SPINNER */
-    .spin {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: sp .55s linear infinite;
-      vertical-align: middle;
-      margin-right: 5px;
-    }
-
-    @keyframes sp {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    /* DIVIDER */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 24px 0 14px
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border)
-    }
-
-    .divider span {
-      font-size: .7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
-      font-weight: 600;
-      white-space: nowrap
-    }
-
-    .hidden {
-      display: none !important
-    }
-
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px
-    }
+    .hidden { display: none !important }
   </style>
 </head>
 
@@ -547,156 +182,115 @@
   <div class="wrap">
 
     <div class="hdr">
-      <h1>⚔ LK Battle Calculator</h1>
+      <h1>⚔ LK Battle Calc</h1>
       <p>Mondo 337 · Brain Edition</p>
     </div>
 
     <div id="inputPhase">
-
       <div class="card">
-
-
-        <div class="card-t"><span class="dot"></span>Target &amp; Mondo</div>
-        <div>
-          <div class="fg" style="max-width:520px">
-            <label>Coordinate Castello</label>
-            <input type="text" id="inCoord" placeholder="l+k://coordinates?16368,16350&amp;327" />
-          </div>
-          <div id="infoCoord" style="margin-top:6px"></div>
+        <div class="card-t"><span class="dot"></span>Partenza (Mondo 337)</div>
+        <div class="fg">
+          <input type="text" id="inCoord" placeholder="Incolla link... (l+k://coordinates?x,y&337)" />
         </div>
+        <div id="infoCoord"></div>
       </div>
 
       <div class="card">
         <div class="card-t"><span class="dot"></span>Impatto</div>
         <div class="form-row">
-          <div class="fg" style="max-width:195px"><label>Data</label><input type="date" id="inDate" /></div>
-          <div class="fg" style="max-width:170px"><label>Ora</label><input type="time" id="inTime" step="60" /></div>
+          <div class="fg"><label>Data</label><input type="date" id="inDate" /></div>
+          <div class="fg"><label>Ora</label><input type="time" id="inTime" step="60" /></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-t"><span class="dot"></span>Truppe &amp; Configurazione</div>
+        <div class="card-t"><span class="dot"></span>Truppe</div>
         <div class="form-row">
-          <div class="fg"><label>Truppa</label><select id="selTroop"></select></div>
-          <div class="fg" style="max-width:210px"><label>Truppe nel castello</label><input type="number" id="inGarrison"
-              value="1000" min="110" /></div>
-          <div class="fg" style="max-width:195px">
-            <label>Plotone</label>
+          <div class="fg" style="flex:2"><label>Tipo</label><select id="selTroop"></select></div>
+          <div class="fg"><label>Guarnigione</label><input type="number" id="inGarrison" value="1000" /></div>
+        </div>
+        <div class="form-row">
+           <div class="fg"><label>Plotone</label>
             <select id="selBatch">
-              <option value="51" selected>51 (default)</option>
+              <option value="51" selected>51</option>
               <option value="55">55</option>
               <option value="60">60</option>
-              <option value="76">76 (Vichinghi)</option>
+              <option value="76">76</option>
             </select>
           </div>
         </div>
         <div class="cb-row">
           <input type="checkbox" id="chkMap" />
-          <span class="cb-lbl"><strong>Mappa dell'area</strong> — ricerca castello attiva</span>
-          <span class="cb-bonus">velocità +5%</span>
+          <span class="cb-lbl">Bonus Mappa (+5%)</span>
         </div>
       </div>
 
       <div class="btn-row">
-        <button class="btn btn-p" onclick="calculate()">⚡ Calcola</button>
-        <button class="btn btn-s" onclick="resetAll()">↺ Ricomincia</button>
+        <button class="btn btn-p" onclick="calculate()">⚡ CALCOLA</button>
+        <button class="btn btn-s" onclick="resetAll()">↺ RESET</button>
       </div>
       <div id="mainSt" class="st"></div>
     </div>
 
     <div id="battlePhase" class="hidden">
-      <div class="divider"><span>Turni di Battaglia</span></div>
-      <div class="card">
+      <div class="card" style="padding:8px">
         <div id="sumStrip" class="sum-strip"></div>
-
         <div class="battle-top">
-          <label>Cambia truppa:</label>
           <select id="selBattleTroop" onchange="onTroopSwitch()"></select>
           <span id="spdBadge" class="spd-badge"></span>
-          <div id="impactDisplay" style="flex-basis:100%; margin-top:8px; font-size:0.8rem; color:var(--gold); font-family:'Share Tech Mono',monospace"></div>
+          <div id="impactDisplay" style="text-align:center; font-size:0.75rem; color:var(--gold); font-weight:bold; margin-top:5px"></div>
         </div>
 
         <div class="tbl-wrap">
           <table>
             <thead>
               <tr>
-                <th style="width:128px">Combat Happens</th>
-                <th style="width:72px">Covered</th>
-                <th style="width:230px">Arrivo Previsto (Finestra)</th>
-                <th>Target (Coordinate)</th>
+                <th class="th-combat">Imp.</th>
+                <th class="th-check">Ok</th>
+                <th class="th-launch">Finestra / Arrivo</th>
+                <th class="th-target">Target</th>
               </tr>
             </thead>
             <tbody id="tBody"></tbody>
           </table>
         </div>
       </div>
-      <div class="btn-row" style="margin-top:14px">
-        <button class="btn btn-s" onclick="resetAll()">↺ Ricomincia</button>
+      <div class="btn-row">
+        <button class="btn btn-s" onclick="resetAll()">↺ NUOVO CALCOLO</button>
       </div>
     </div>
 
   </div>
   <script>
     // ================================================================
-    // A) TROOP TABLES
+    // A) COSTANTI
     // ================================================================
     const T_BASE = {
-      "Lanciere": 700,
-      "Balestriere": 600,
-      "Cavaliere pesante": 300,
-      "Spadaccino": 800,
-      "Arciere": 500,
-      "Cavaliere leggero": 400,
-      "Carretto a mano": 800,
-      "Carro bue": 1000,
-      "Ashigaru": 480,
-      "Arciere daikyu": 450,
-      "Samurai": 300,
-      "Berserker": 420,
-      "Arciere Nordico": 390,
-      "Cavaliere con Ascia": 360,
-      "Torre d'assedio": 480,
-      "Ballista": 450,
-      "Catapulta": 420,
+      "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300,
+      "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400,
+      "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480,
+      "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420,
+      "Arciere Nordico": 390, "Cavaliere con Ascia": 360,
+      "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420
     };
-
     const T_BONUS = {
-      "Lanciere": 665,
-      "Balestriere": 570,
-      "Cavaliere pesante": 285,
-      "Spadaccino": 760,
-      "Arciere": 475,
-      "Cavaliere leggero": 380,
-      "Carretto a mano": 760,
-      "Carro bue": 950,
-      "Ashigaru": 456,
-      "Arciere daikyu": 428,
-      "Samurai": 285,
-      "Berserker": 399,
-      "Arciere Nordico": 371,
-      "Cavaliere con Ascia": 342,
-      "Torre d'assedio": 456,
-      "Ballista": 428,
-      "Catapulta": 399,
+      "Lanciere": 665, "Balestriere": 570, "Cavaliere pesante": 285,
+      "Spadaccino": 760, "Arciere": 475, "Cavaliere leggero": 380,
+      "Carretto a mano": 760, "Carro bue": 950, "Ashigaru": 456,
+      "Arciere daikyu": 428, "Samurai": 285, "Berserker": 399,
+      "Arciere Nordico": 371, "Cavaliere con Ascia": 342,
+      "Torre d'assedio": 456, "Ballista": 428, "Catapulta": 399
     };
 
     // ================================================================
-    // B) STATE
+    // B) STATO
     // ================================================================
-    let worldData = null;
-    let castleList = null;   // [{x, y, p, pid}, …]
-    let myCastle = null;   // {x, y}
-    let worldId = null; // Inizializzato a null
-    let impactDate = null;
-    let garrisonCount = null;
-    let batchSize = null;
-    let mapBonus = false;
-    let curTroop = null;
-    let rows = [];
-    let ticker = null; // Gestione Timer
+    let worldData = null, castleList = null, myCastle = null, worldId = null;
+    let impactDate = null, garrisonCount = 1000, batchSize = 51, mapBonus = false, curTroop = null;
+    let rows = [], ticker = null;
 
     // ================================================================
-    // C) INIT
+    // C) INIT & LOADING
     // ================================================================
     window.onload = function () {
       fillTroopDrops();
@@ -705,500 +299,4 @@
       document.getElementById('inTime').value = '07:00';
     };
 
-    function loadWorld(id) {
-      if (!id) return;
-      setSt('mainSt', `<span class="spin"></span> Caricamento mondo ${id}…`);
-
-      fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${id}.json`)
-        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(data => { onWorldLoaded(data, id); })
-        .catch(e => { setSt('mainSt', `<span class="err">✗ Impossibile caricare mondo ${id} — ${e.message}</span>`); });
-    }
-
-    function onWorldLoaded(data, id) {
-      worldId = id; 
-      worldData = data;
-      castleList = extractCastles(data);
-      setSt('mainSt', `<span class="ok">✓ Mondo ${id} caricato — ${castleList.length} locations</span>`);
-    }
-
-    // ================================================================
-    // D) EXTRACT CASTLES
-    // ================================================================
-    function extractCastles(obj) {
-      let res = [];
-      walk(obj, res, 0);
-      return res;
-    }
-
-    function walk(node, out, depth) {
-      if (depth > 6 || node == null) return;
-      if (Array.isArray(node)) {
-        for (let item of node) walk(item, out, depth + 1);
-      } else if (typeof node === 'object') {
-        let x = readNum(node, ['x', 'X', 'cx', 'posX', 'pos_x']);
-        let y = readNum(node, ['y', 'Y', 'cy', 'posY', 'pos_y']);
-        let pt = readNum(node, ['pt', 'pts', 'points', 'score']);
-        let t = readNum(node, ['t', 'type']);
-        // NUOVO: Estrazione Player ID
-        let pid = readNum(node, ['p', 'pid', 'playerid', 'owner']); 
-
-        if (x !== null && y !== null) {
-          // p: Punti, pid: PlayerID (Attenzione alla nomenclatura interna!)
-          out.push({ x, y, p: pt || 0, t: t || 0, pid: pid });
-          return;
-        }
-        for (let k in node) walk(node[k], out, depth + 1);
-      }
-    }
-
-    function readNum(obj, keys) {
-      for (let k of keys) {
-        if (k in obj) {
-          let v = obj[k];
-          if (typeof v === 'number') return v;
-          if (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim())) return parseFloat(v.trim());
-        }
-      }
-      return null;
-    }
-
-    // ================================================================
-    // E) TROOP HELPERS
-    // ================================================================
-    function fillTroopDrops() {
-      let html = '';
-      for (let name in T_BASE)
-        html += `<option value="${name}">${name} (${secLbl(T_BASE[name])}/campo)</option>`;
-      document.getElementById('selTroop').innerHTML = html;
-      document.getElementById('selBattleTroop').innerHTML = html;
-    }
-
-    function secLbl(s) {
-      let m = Math.floor(s / 60), sec = s % 60;
-      return sec === 0 ? m + "'" : m + "' " + sec + '"';
-    }
-
-    function troopSec(name) {
-      return mapBonus ? T_BONUS[name] : T_BASE[name];
-    }
-
-    // ================================================================
-    // F) PARSE LINKS
-    // ================================================================
-    function parseCoord(s) {
-      let m = s.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      return m ? { x: +m[1], y: +m[2], world: +m[3] } : null;
-    }
-
-    // ================================================================
-    // G) DISTANCE (CORRETTA PER L&K RAW COORDS)
-    // ================================================================
-    function dist(x1, y1, x2, y2) {
-      // 32 RAW Units = 1 Campo
-      let rawDist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-      return rawDist / 32.0; 
-    }
-
-    // ================================================================
-    // H) CALCULATE (entry point)
-    // ================================================================
-    function calculate() {
-      if (ticker) clearInterval(ticker); // Reset timer precedente
-
-      let cStr = document.getElementById('inCoord').value.trim();
-      let c = parseCoord(cStr);
-
-      if (!c) { setSt('mainSt', '<span class="err">✗ Link coordinate non valido</span>'); return; }
-
-      let dv = document.getElementById('inDate').value;
-      let tv = document.getElementById('inTime').value;
-      if (!dv || !tv) { setSt('mainSt', '<span class="err">✗ Inserisci data e ora</span>'); return; }
-
-      if (!castleList || castleList.length === 0) {
-        setSt('mainSt', '<span class="err">✗ Dati mondo non ancora caricati</span>'); return;
-      }
-
-      worldId = c.world;
-      myCastle = { x: c.x, y: c.y };
-      mapBonus = document.getElementById('chkMap').checked;
-      curTroop = document.getElementById('selTroop').value;
-      garrisonCount = Math.max(110, parseInt(document.getElementById('inGarrison').value) || 1000);
-      batchSize = parseInt(document.getElementById('selBatch').value);
-
-      let dp = dv.split('-'), tp = tv.split(':');
-      impactDate = new Date(+dp[0], +dp[1] - 1, +dp[2], +tp[0], +tp[1], 0, 0);
-
-      buildRows();
-
-      document.getElementById('inputPhase').classList.add('hidden');
-      document.getElementById('battlePhase').classList.remove('hidden');
-      document.getElementById('selBattleTroop').value = curTroop;
-      updSpdBadge();
-      
-      // NUOVO: Mostra Impatto
-      document.getElementById('impactDisplay').innerHTML = `🎯 IMPATTO: <strong>${fmtDT(impactDate)}</strong>`;
-      
-      renderTable();
-      
-      // Avvio Ticker per countdown
-      ticker = setInterval(updateCountdowns, 1000);
-    }
-
-    // ================================================================
-    // I) BUILD ROWS
-    // ================================================================
-    function buildRows() {
-      rows = [];
-      let available = garrisonCount - 110;
-      let left = available;
-
-      rows.push({
-        combatTime: new Date(impactDate),
-        isGarrison: true,
-        covered: false,
-        clicked: false,
-        target: null,
-        launchW: null,
-        arrivalW: null
-      });
-
-      let turnN = 1;
-      while (left > 0 && turnN <= 120) {
-        let ct = new Date(impactDate.getTime() + turnN * 600000);
-        let batch = Math.min(batchSize, left);
-        left -= batch;
-
-        let tgt = findTarget(ct);
-        rows.push({
-          combatTime: ct,
-          isGarrison: false,
-          covered: false,
-          clicked: false,
-          target: tgt ? tgt.target : null,
-          launchW: tgt ? tgt.launchW : null,
-          arrivalW: tgt ? tgt.arrivalW : null,
-          dist: tgt ? tgt.dist : 0,
-          pts: tgt ? tgt.pts : 0
-        });
-        turnN++;
-      }
-    }
-
-    // ================================================================
-    // J) FIND BEST TARGET
-    // ================================================================
-    function findTarget(combatTime) {
-      let secPF = troopSec(curTroop);
-      let cx = myCastle.x, cy = myCastle.y;
-      let now = Date.now();
-
-      // Finestra di rientro (return window)
-      let returnStartMs = combatTime.getTime() + 4 * 60 * 1000;
-      let returnEndMs = combatTime.getTime() + 7 * 60 * 1000;
-
-      let best = null, bestScore = Infinity;
-
-      for (let cas of castleList) {
-        // Skip se stesso
-        if (cas.x === cx && cas.y === cy) continue;
-        
-        // NUOVO: Skip se il castello non ha un ID Giocatore (es. barbari/liberi)
-        if (!cas.pid || cas.pid <= 0) continue;
-
-        let d = dist(cx, cy, cas.x, cas.y); // Calcola distanza in Campi
-        if (d < 0.001) continue;
-        
-        let travelOneWaySec = d * secPF;
-        let travelOneWayMs = travelOneWaySec * 1000;
-        let roundTripMs = travelOneWayMs * 2;
-
-        let launchStartMs = returnStartMs - roundTripMs;
-        let launchEndMs = returnEndMs - roundTripMs;
-
-        if (launchEndMs < now) continue;
-
-        // Calcolo finestra di arrivo (solo andata)
-        let arrivalStartMs = returnStartMs - travelOneWayMs;
-        let arrivalEndMs = returnEndMs - travelOneWayMs;
-
-        let diff = launchStartMs - now;
-        let score = (diff < 0) ? 0 : diff;
-
-        if (score < bestScore) {
-          bestScore = score;
-          best = {
-            target: {
-              x: cas.x, y: cas.y,
-              // Link con coordinate arrotondate
-              link: `l+k://coordinates?${Math.round(cas.x)},${Math.round(cas.y)}&${worldId}`
-            },
-            launchW: {
-              start: new Date(launchStartMs),
-              end: new Date(launchEndMs)
-            },
-            arrivalW: {
-              start: new Date(arrivalStartMs),
-              end: new Date(arrivalEndMs)
-            },
-            dist: d,
-            pts: cas.p
-          };
-        }
-      }
-      return best;
-    }
-
-    // ================================================================
-    // K) RENDER TABLE
-    // ================================================================
-    function renderTable() {
-      let tbody = document.getElementById('tBody');
-      tbody.innerHTML = '';
-
-      let avail = garrisonCount - 110;
-      let bturns = rows.length - 1;
-      document.getElementById('sumStrip').innerHTML =
-        `<span class="sum-i">Castello: <strong>(${myCastle.x}, ${myCastle.y})</strong></span>` +
-        `<span class="sum-i">Guarnigione: <strong>${garrisonCount}</strong> (min 110 ris.)</span>` +
-        `<span class="sum-i">Plotone: <strong>${batchSize}</strong></span>` +
-        `<span class="sum-i">Turni: <strong>${bturns}</strong></span>` +
-        `<span class="sum-i">Disponibili: <strong>${avail}</strong>${mapBonus ? ' · +5% mappa' : ''}</span>`;
-
-      for (let i = 0; i < rows.length; i++) {
-        let r = rows[i];
-        let tr = document.createElement('tr');
-        tr.id = 'r' + i;
-        if (r.covered) tr.classList.add('r-cov');
-        if (r.clicked) tr.classList.add('r-clk');
-        if (r.isGarrison) tr.classList.add('r-gar');
-
-        let td1 = document.createElement('td');
-        td1.innerHTML = fmtDT(r.combatTime);
-        tr.appendChild(td1);
-
-        let td2 = document.createElement('td');
-        if (!r.isGarrison) {
-          td2.innerHTML =
-            `<input type="checkbox" class="cov-chk" ${r.covered ? 'checked' : ''} onchange="covToggle(${i})"/>` +
-            (r.covered ? '<span class="cov-lbl">✓ coperto</span>' : '');
-        }
-        tr.appendChild(td2);
-
-        let td3 = document.createElement('td');
-        td3.id = 'd' + i;
-        td3.innerHTML = renderLaunch(r);
-        tr.appendChild(td3);
-
-        let td4 = document.createElement('td');
-        td4.id = 'l' + i;
-        td4.innerHTML = renderLink(r, i);
-        tr.appendChild(td4);
-
-        tbody.appendChild(tr);
-      }
-    }
-
-    function renderLaunch(r) {
-      if (r.isGarrison) return `<span class="g-badge">n/a: garrison (${garrisonCount})</span>`;
-      if (r.covered) return '<span style="color:var(--green)">✓ coperto</span>';
-      if (!r.launchW) return '<span class="w-badge" style="color:var(--red)">Nessun target (range/time)</span>';
-
-      let now = Date.now();
-      let launchS = r.launchW.start.getTime();
-      let launchE = r.launchW.end.getTime();
-
-      let arrS_str = fmtFull(r.arrivalW.start);
-      let arrE_str = fmtFull(r.arrivalW.end);
-      
-      if (r.arrivalW.start.getDate() === r.arrivalW.end.getDate()) {
-         arrE_str = fmtTS(r.arrivalW.end);
-      }
-      
-      let rangeStr = `${arrS_str} – ${arrE_str}`;
-
-      if (now > launchE) return `<span class="w-badge" style="color:var(--red)">Scaduto (Arr: ${rangeStr})</span>`;
-      
-      if (now >= launchS) {
-        return `<span class="w-badge open">▶ LANCIA ORA<br><span style="font-size:0.6rem;font-weight:400">Arrivo: ${rangeStr}</span></span>`;
-      }
-      
-      return `<span class="w-badge" style="color:#fff">Arrivo: ${rangeStr}</span>`;
-    }
-
-    function renderLink(r, i) {
-      if (r.isGarrison) return '<span class="g-badge" style="color:var(--text-muted)">n/a (guarnigione)</span>';
-      if (r.covered) return '<span style="color:var(--green);font-size:.68rem">✓ coperto</span>';
-      if (!r.target) return '<span class="w-badge">—</span>';
-
-      // Mostra coordinate nel target
-      let targetCoords = `(${Math.round(r.target.x)}, ${Math.round(r.target.y)})`;
-      let info = `<div style="font-size:0.65rem;color:var(--text-muted)">Dist: ${r.dist.toFixed(1)} campi · ${targetCoords}</div>`;
-      
-      let now = Date.now();
-      let wS = r.launchW.start.getTime();
-
-      if (now >= wS) {
-        return `<a href="#" class="c-link" onclick="linkClick(${i},event)">${r.target.link}</a>` + info;
-      }
-      
-      let diff = wS - now;
-      let min = Math.floor(diff / 60000);
-      let sec = Math.floor((diff % 60000) / 1000);
-      return `<span class="w-badge" style="color:var(--warn)">⏳ Attendi: ${min}m ${sec}s</span>` + info;
-    }
-
-    function updateCountdowns() {
-      let now = Date.now();
-      
-      for (let i = 0; i < rows.length; i++) {
-        let r = rows[i];
-        if (!r.isGarrison && !r.covered && r.target && r.launchW) {
-          let wS = r.launchW.start.getTime();
-          let wE = r.launchW.end.getTime();
-          
-          if (now < wS || (now >= wS && now <= wE + 1000)) {
-             document.getElementById('l' + i).innerHTML = renderLink(r, i);
-             document.getElementById('d' + i).innerHTML = renderLaunch(r);
-          }
-        }
-      }
-    }
-
-    // ================================================================
-    // L) INTERACTIONS
-    // ================================================================
-    function covToggle(i) {
-      let r = rows[i];
-      r.covered = !r.covered;
-      let tr = document.getElementById('r' + i);
-      if (r.covered) {
-        tr.classList.add('r-cov');
-        tr.classList.remove('r-clk');
-        r.clicked = false;
-      } else {
-        tr.classList.remove('r-cov');
-      }
-      document.getElementById('d' + i).innerHTML = renderLaunch(r);
-      document.getElementById('l' + i).innerHTML = renderLink(r, i);
-    }
-
-    function linkClick(i, e) {
-      e.preventDefault();
-      let r = rows[i];
-      r.clicked = true;
-      document.getElementById('r' + i).classList.add('r-clk');
-      navigator.clipboard.writeText(r.target.link).catch(() => { });
-    }
-
-    function onTroopSwitch() {
-      curTroop = document.getElementById('selBattleTroop').value;
-      updSpdBadge();
-      for (let i = 1; i < rows.length; i++) {
-        let r = rows[i];
-        if (r.covered) continue;
-        let wasClicked = r.clicked;
-        let tgt = findTarget(r.combatTime);
-        r.target = tgt ? tgt.target : null;
-        r.launchW = tgt ? tgt.launchW : null;
-        r.arrivalW = tgt ? tgt.arrivalW : null;
-        r.dist = tgt ? tgt.dist : 0;
-        r.pts = tgt ? tgt.pts : 0;
-        r.clicked = wasClicked;
-      }
-      renderTable();
-    }
-
-    function updSpdBadge() {
-      let s = troopSec(curTroop);
-      document.getElementById('spdBadge').textContent =
-        secLbl(s) + '/campo' + (mapBonus ? ' (+5%)' : '');
-    }
-
-    // ================================================================
-    // N) RESET
-    // ================================================================
-    function resetAll() {
-      if (ticker) clearInterval(ticker);
-      document.getElementById('inputPhase').classList.remove('hidden');
-      document.getElementById('battlePhase').classList.add('hidden');
-      rows = [];
-      document.getElementById('inCoord').value = '';
-      document.getElementById('inGarrison').value = '1000';
-      document.getElementById('selBatch').value = '51';
-      document.getElementById('chkMap').checked = false;
-      document.getElementById('selTroop').value = 'Lanciere';
-      document.getElementById('inDate').value = isoDate(new Date());
-      document.getElementById('inTime').value = '07:00';
-      setSt('mainSt', '');
-      myCastle = null;
-    }
-
-    // ================================================================
-    // O) UTILS
-    // ================================================================
-    function isoDate(d) {
-      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-    }
-    function pad(n) { return String(n).padStart(2, '0'); }
-
-    function fmtDT(d) {
-      let M = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-      return pad(d.getDate()) + ' ' + M[d.getMonth()] + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-    }
-    function fmtTS(d) { 
-        return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); 
-    }
-    function fmtFull(d) {
-      return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-    }
-    function fmtT(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
-
-    function setSt(id, html) {
-      document.getElementById(id).innerHTML = html;
-    }
-
-    // ================================================================
-    // P) LIVE INPUT FEEDBACK
-    // ================================================================
-    document.addEventListener('DOMContentLoaded', function () {
-      document.getElementById('inCoord').addEventListener('input', function () {
-        let c = parseCoord(this.value);
-        let el = document.getElementById('infoCoord');
-        if (c) {
-          if (c.world !== worldId) {
-            worldId = c.world;
-            loadWorld(worldId);
-          }
-          let locInfo = '';
-          if (castleList) {
-            let found = castleList.find(k => k.x === c.x && k.y === c.y);
-            if (found) {
-              let typeStr = getCastleType(found.t, found.p);
-              locInfo = ` · <span style="color:var(--gold)">${typeStr}</span> (${found.p} pt)`;
-            } else {
-              locInfo = ` · <span style="color:var(--text-muted)">? (Non in DB)</span>`;
-            }
-          }
-          el.innerHTML = `<div class="coords-disp">⬡ (${c.x}, ${c.y}) · Mondo ${c.world}${locInfo}</div>`;
-        }
-        else if (this.value.trim()) el.innerHTML = '<span class="st"><span class="err">✗ Formato non valido</span></span>';
-        else el.innerHTML = '';
-      });
-    });
-
-    function getCastleType(t, pts) {
-      if (t === 1) return "Castello";
-      if (t === 2) return "Fortezza";
-      if (t === 3) return "Città";
-      if (t === 4) return "Metropoli";
-      if (pts < 50) return "Castello (Start)";
-      if (pts < 1000) return "Castello";
-      if (pts < 10000) return "Fortezza";
-      if (pts < 50000) return "Città";
-      return "Metropoli";
-    }
-  </script>
-</body>
-
-</html>
+    function loadWorld(id
