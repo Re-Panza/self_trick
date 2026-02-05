@@ -34,17 +34,17 @@
 
     /* CONTROLLI */
     .controls {
-      background: var(--card); padding: 10px; border-bottom: 1px solid var(--border);
+      background: var(--card); padding: 12px; border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .col { flex: 1; }
     
-    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
     
     input, select {
       width: 100%; background: #080808; color: #fff; border: 1px solid #444; 
-      border-radius: 4px; padding: 8px; font-size: 14px; outline: none; font-weight: bold;
+      border-radius: 4px; padding: 10px; font-size: 15px; outline: none; font-weight: bold;
     }
     input:focus { border-color: var(--gold); }
 
@@ -54,15 +54,22 @@
       text-transform: uppercase; font-size: 14px; margin-top: 5px; cursor: pointer;
     }
 
+    /* HEADER RISULTATI */
+    .res-header-info {
+      background: #1a1a1a; padding: 10px; border-bottom: 1px solid #333;
+      text-align: center; font-size: 13px; color: #ccc;
+    }
+    .res-header-info a { color: var(--gold); text-decoration: none; font-weight: bold; }
+
     /* LISTA RISULTATI */
     .res-row {
       display: grid; 
       grid-template-columns: 50px 1fr 90px; 
       gap: 10px;
-      align-items: center; padding: 8px; border-bottom: 1px solid #222; background: var(--bg);
+      align-items: center; padding: 10px; border-bottom: 1px solid #222; background: var(--bg);
       transition: background 0.2s;
     }
-    .res-row:nth-child(even) { background: #0a0a0a; }
+    .res-row:nth-child(even) { background: #0b0b0b; }
     
     /* STILE SELEZIONATO */
     .res-row.selected {
@@ -74,37 +81,43 @@
 
     /* COLONNE */
     .col-time { text-align: center; border-right: 1px solid #222; padding-right: 5px; }
-    .t-label { font-size: 10px; color: #888; }
-    .t-val { font-size: 15px; color: #fff; font-weight: bold; }
+    .t-label { font-size: 9px; color: #888; text-transform: uppercase; }
+    .t-val { font-size: 16px; color: #fff; font-weight: bold; line-height: 1.2; }
 
     .col-info { display: flex; flex-direction: column; justify-content: center; }
     .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
     .info-sub { font-size: 11px; color: #888; line-height: 1.3; }
     .info-sub span { color: #ccc; }
-    .bounce-win { color: var(--gold); font-weight: bold; } /* Stile per Rimbalzo */
+    .bounce-win { color: var(--gold); font-weight: bold; }
 
     .col-action { display: flex; flex-direction: column; gap: 5px; }
 
     /* BOTTONI */
     .lnk-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 28px; background: rgba(68, 138, 255, 0.15); 
+      width: 100%; height: 32px; background: rgba(68, 138, 255, 0.15); 
       border: 1px solid var(--blue); color: var(--blue); text-decoration: none; 
-      font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
+      font-size: 12px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
       cursor: pointer;
     }
     .lnk-btn:active { background: var(--blue); color: white; }
 
     .chk-cover {
-      width: 100%; height: 22px; display: flex; align-items: center; justify-content: center;
-      background: #151515; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
+      width: 100%; height: 24px; display: flex; align-items: center; justify-content: center;
+      background: #181818; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
     }
     .chk-cover.active { background: #222; color: var(--green); border-color: var(--green); }
+
+    /* MESSAGGIO FINE */
+    .end-msg {
+      padding: 20px; text-align: center; color: var(--red); font-weight: bold; 
+      font-size: 13px; text-transform: uppercase; border-top: 1px solid #333;
+    }
 
     /* STATUS COLORS */
     .st-wait { color: #aaa; }
     .st-now { color: var(--green); animation: pulse 1s infinite; }
-    .st-err { color: var(--red); }
+    .st-err { color: var(--red); font-size: 11px; }
 
     @keyframes pulse { 50% { opacity: 0.6; } }
     .hidden { display: none !important; }
@@ -116,9 +129,12 @@
 
   <div id="inputArea" class="controls">
     <div class="row">
-      <input type="text" id="inCoord" placeholder="Link Partenza (l+k://...)" oninput="checkDB()">
+      <div class="col">
+        <label>Inserisci castello attaccato</label>
+        <input type="text" id="inCoord" placeholder="l+k://coordinates?x,y&337" oninput="checkDB()">
+      </div>
     </div>
-    <div id="dbStatus" class="status-bar">In attesa link...</div>
+    <div id="dbStatus" class="status-bar" style="display:none"></div>
 
     <div class="row">
       <div class="col"><label>Data Impatto</label><input type="date" id="inDate"></div>
@@ -129,7 +145,7 @@
       <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
       <div class="col"><label>Plotone</label>
         <select id="selBatch">
-          <option value="51">51</option><option value="55">55</option>
+          <option value="51" selected>51</option><option value="55">55</option>
           <option value="60">60</option><option value="76">76</option>
         </select>
       </div>
@@ -140,8 +156,8 @@
         <input type="checkbox" id="chkMap" style="width:18px; height:18px"> Bonus Mappa (+5%)
       </label>
       <div style="display:flex; align-items:center; gap:5px">
-        <label style="margin:0">Guarnigione:</label>
-        <input type="number" id="inGarrison" value="1000" style="width:60px; text-align:center">
+        <label style="margin:0">Truppe Totali:</label>
+        <input type="number" id="inGarrison" style="width:70px; text-align:center" placeholder="Es. 1000">
       </div>
     </div>
 
@@ -149,6 +165,9 @@
   </div>
 
   <div id="resArea" class="hidden">
+    
+    <div id="resHeaderInfo" class="res-header-info"></div>
+
     <div style="background:#151515; padding:8px; border-bottom:1px solid #333; display:flex; gap:10px; position:sticky; top:0; z-index:100">
       <button onclick="reset()" style="background:#333; color:#fff; border:none; padding:0 12px; font-weight:bold; border-radius:4px; font-size:16px">←</button>
       <select id="selBattleTroop" onchange="changeTroopLive()" style="background:#000; color:#fff; border:1px solid #444"></select>
@@ -168,14 +187,16 @@
 
     // --- INIT ---
     window.onload = () => {
-      let d = new Date();
-      document.getElementById('inDate').value = d.toISOString().split('T')[0];
-      document.getElementById('inTime').value = '07:00';
-      
       let html = "";
       for(let k in T_BASE) html += `<option value="${k}">${k}</option>`;
       document.getElementById('selTroop').innerHTML = html;
       document.getElementById('selBattleTroop').innerHTML = html;
+      
+      // Campi INPUT VUOTI all'inizio
+      document.getElementById('inDate').value = "";
+      document.getElementById('inTime').value = "";
+      document.getElementById('inGarrison').value = "";
+      document.getElementById('inCoord').value = "";
     };
 
     // --- DB LOAD ---
@@ -188,7 +209,8 @@
         let w = m[3];
         if(w !== worldId) {
           worldId = w;
-          st.innerHTML = `<span style="color:var(--gold)">Scarico Mondo ${w}...</span>`;
+          // st.style.display = 'block'; // User ha chiesto di togliere dicitura
+          // st.innerHTML = `<span style="color:var(--gold)">Scarico DB...</span>`;
           fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`)
             .then(r => r.json())
             .then(d => {
@@ -197,49 +219,75 @@
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
                   n.p = n.p || n.pid || n.playerid || 0;
+                  n.pt = n.pt || n.points || 0;
                   DB.push(n); 
                 }
                 else if(typeof n==='object') Object.values(n).forEach(flat); 
               };
               flat(d);
-              st.innerHTML = `<span style="color:var(--green)">✓ DB Pronto (${DB.length} castelli)</span>`;
+              // st.innerHTML = "";
             })
-            .catch(() => st.innerHTML = `<span style="color:var(--red)">Errore DB</span>`);
+            .catch(() => {});
         }
       }
     }
 
     // --- MAIN CALC ---
     function startCalc() {
-      if(!DB.length) return alert("Attendi il DB!");
+      if(!DB.length) return alert("Attendi il caricamento del DB (inserisci link valido)!");
+      
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      if(!m) return alert("Link non valido");
+      if(!m) return alert("Link castello non valido");
       
       myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
       
-      let d = document.getElementById('inDate').value;
-      let t = document.getElementById('inTime').value;
-      let startT = new Date(d + "T" + t);
+      // VALIDAZIONI
+      let dVal = document.getElementById('inDate').value;
+      let tVal = document.getElementById('inTime').value;
       
-      let garrison = parseInt(document.getElementById('inGarrison').value) || 1000;
+      if(!dVal || !tVal) return alert("Inserisci Data e Ora!");
+      
+      let startT = new Date(dVal + "T" + tVal);
+      if(startT < new Date()) return alert("Non possiamo tornare nel passato! 🕰️");
+      
+      let garrison = parseInt(document.getElementById('inGarrison').value);
+      if(!garrison) return alert("Inserisci le Truppe Totali!");
+      if(garrison > 4066) return alert("Non ci possono essere così tante truppe! (Max 4066)");
+      
       let batch = parseInt(document.getElementById('selBatch').value);
       
+      // SETUP UI
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
       document.getElementById('inputArea').classList.add('hidden');
       document.getElementById('resArea').classList.remove('hidden');
       
+      // Header Castello Attaccato
+      let dateStr = `${startT.getDate()}/${startT.getMonth()+1}`;
+      let timeStr = `${pad(startT.getHours())}:${pad(startT.getMinutes())}`;
+      document.getElementById('resHeaderInfo').innerHTML = `
+        Target: <a href="${val}">(${myCastle.x},${myCastle.y})</a> &nbsp;|&nbsp; 
+        Impatto: <span style="color:#fff">${dateStr} ${timeStr}</span>
+      `;
+      
+      // LOGICA GENERAZIONE
       rows = [];
       selectedRowIndex = -1; 
-      let left = garrison - 110;
       
+      // Riserva 110 per il castello
+      let available = garrison - 110;
+      if(available < 0) available = 0;
+      
+      // Riga 0: Guarnigione (Impatto)
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
-      while(left > 0 && step < 120) {
+      
+      // Genera finchè ci sono truppe o limite 120 turni
+      while(available >= batch && step < 120) {
         let combatT = new Date(startT.getTime() + (step * 600000)); 
         rows.push({ t: combatT, type: 'wave', target: null, covered: false });
-        left -= Math.min(batch, left);
+        available -= batch;
         step++;
       }
       
@@ -266,7 +314,7 @@
       renderList();
     }
 
-    // --- ALGORITMO DI RICERCA OTTIMIZZATO ---
+    // --- ALGORITMO DI RICERCA ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
@@ -279,41 +327,34 @@
       
       for(let c of DB) {
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
-        if(!c.p) continue; // Solo attivi
+        if(!c.p) continue; // Solo habitat con Player ID
         
-        // 1. Distanza Reale (1 raw = 1 campo) -> NO DIVISIONE
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
+        let dist = Math.sqrt(dx*dx + dy*dy); // Cartesiana pura 1:1
         
         if(dist < 0.1) continue;
         
-        // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Andata)
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Se la finestra di lancio è scaduta, scarta
         if(lEnd < now) continue;
         
-        // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
-        // PRIORITÀ: Cerca attesa 0 (lancio immediato)
+        // Cerca attesa 0 (SUBITO) o minima
         if(wait === 0) {
             if(minWait > 0) {
                 minWait = 0;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             } else {
-                // Se entrambi pronti, preferisco finestra più lunga
                 if(lEnd > best.lEnd) {
                     best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
                 }
             }
         } else {
-            // Se devo aspettare, prendo quello con meno attesa
             if(minWait > 0 && wait < minWait) {
                 minWait = wait;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
@@ -337,7 +378,7 @@
         let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
         
         if(r.type === 'garrison') {
-          div.innerHTML = `${colTime}<div class="col-info" style="color:#666">Guarnigione base</div><div class="col-action"></div>`;
+          div.innerHTML = `${colTime}<div class="col-info" style="color:#666">Coperto da Guarnigione</div><div class="col-action"></div>`;
           el.appendChild(div);
           return;
         }
@@ -355,6 +396,12 @@
         
         updateRow(i);
       });
+
+      // MESSAGGIO FINE LISTA
+      let endMsg = document.createElement('div');
+      endMsg.className = "end-msg";
+      endMsg.innerText = "Le tue truppe totali non possono coprire oltre questo turno";
+      el.appendChild(endMsg);
     }
 
     function loop() {
@@ -424,19 +471,20 @@
       let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
       
       let wait = r.target.lStart - now;
-      let dist = Math.round(r.target.dist); // ARROTONDAMENTO STANDARD
+      let dist = Math.round(r.target.dist); 
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
-      // Calcolo finestra di RIMBALZO (Arrivo al target)
-      // Bounce Start = ReturnStart - Travel
-      // Bounce End = ReturnEnd - Travel
+      // Calcolo RIMBALZO (Arrivo al target)
+      let bounceTimeMs = r.target.rStart - r.target.travelMs;
+      
+      // Finestra Rimbalzo: Il ritorno deve essere tra rStart e rEnd
+      // Quindi il rimbalzo deve avvenire tra (rStart - travel) e (rEnd - travel)
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
       
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       
-      // Formattazione "Rimbalzo: 12:14 - 12:17"
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
 
       if(wait > 0) {
