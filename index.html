@@ -4,299 +4,509 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>LK Battle Calculator — Mondo 337</title>
+  <title>LK Brain 337 - Self Trickle</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 
     :root {
-      --bg-deep: #0a0c0f;
-      --bg-card: #111418;
-      --bg-card2: #161b22;
-      --bg-input: #0d1117;
-      --border: #2a313a;
-      --border-focus: #3b82f6;
-      --text-primary: #e6edf3;
-      --text-secondary: #8b949e;
-      --text-muted: #484f58;
-      --accent: #3b82f6;
-      --accent-hover: #60a5fa;
-      --accent-dim: rgba(59, 130, 246, .15);
+      --bg: #121212;
+      --text: #e0e0e0;
       --gold: #d4a843;
-      --gold-dim: rgba(212, 168, 67, .12);
-      --green: #3fb950;
-      --green-dim: rgba(63, 185, 80, .12);
-      --red: #f85149;
-      --red-dim: rgba(248, 81, 73, .12);
-      --warn: #e3b341;
-      --warn-dim: rgba(227, 179, 65, .12);
-      --row-highlight: rgba(212, 168, 67, .22);
-      --row-covered: rgba(63, 185, 80, .09);
+      --green: #4caf50;
+      --red: #f44336;
+      --border: #333;
+      --accent: #2196f3;
+      --card-bg: #1e1e1e;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0 }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: 'Rajdhani', sans-serif;
-      background: var(--bg-deep);
-      color: var(--text-primary);
-      min-height: 100vh;
-      padding: 10px 6px; /* Padding minimo */
-      line-height: 1.3;
+      font-family: 'Roboto Condensed', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      padding-bottom: 30px;
     }
 
-    .wrap { max-width: 1140px; margin: 0 auto }
+    .container { max-width: 100%; margin: 0 auto; }
 
-    /* HEADER */
-    .hdr { text-align: center; margin-bottom: 20px }
-    .hdr h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
-    .hdr p { color: var(--text-muted); font-size: .8rem; margin-top: 4px; font-family: 'Share Tech Mono', monospace }
-
-    /* CARD */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
+    /* INPUT SECTION */
+    .controls {
+      padding: 10px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 20;
     }
 
-    .card-t {
-      font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
-      color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .col { flex: 1; }
+
+    input, select {
+      width: 100%; background: #000; color: #fff; border: 1px solid #444;
+      padding: 8px; border-radius: 4px; font-size: 14px; outline: none;
     }
-    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent) }
+    input:focus { border-color: var(--gold); }
 
-    /* FORM ELEMENTS */
-    .fg { display: flex; flex-direction: column; width: 100%; margin-bottom: 8px; }
-    .fg label { font-size: .7rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600; }
-    
-    .fg input, .fg select {
-      background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px;
-      padding: 10px; color: var(--text-primary); font-family: 'Share Tech Mono', monospace;
-      font-size: .9rem; outline: none; width: 100%;
-    }
-    .fg input:focus, .fg select:focus { border-color: var(--border-focus) }
-
-    .form-row { display: flex; gap: 8px; }
-    .form-row > .fg { flex: 1; }
-
-    /* CHECKBOX */
-    .cb-row {
-      display: flex; align-items: center; gap: 10px; padding: 10px;
-      background: var(--bg-card2); border-radius: 5px; border: 1px solid var(--border); margin-top: 5px;
-    }
-    .cb-row input { width: 20px; height: 20px; accent-color: var(--accent); }
-    .cb-lbl { font-size: .8rem; color: var(--text-secondary) }
-
-    /* BUTTONS */
-    .btn-row { display: flex; gap: 8px; margin-top: 15px }
     .btn {
-      flex: 1; padding: 14px 0; border: none; border-radius: 6px;
-      font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
-    }
-    .btn-p { background: var(--accent); color: #fff }
-    .btn-s { background: var(--bg-card2); color: var(--text-secondary); border: 1px solid var(--border) }
-
-    /* STATUS */
-    .st { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--text-muted); margin-top: 10px; text-align: center; }
-    .st .err { color: var(--red) } .st .ok { color: var(--green) }
-
-    .coords-disp { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--gold); margin-top: 5px; text-align: center; }
-
-    /* BATTLE PHASE */
-    .battle-top { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-    .battle-top select { width: 100%; }
-    .spd-badge { font-family: 'Share Tech Mono', monospace; font-size: .75rem; color: var(--accent); text-align: center; display: block; }
-
-    .sum-strip { 
-      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; 
-      background: var(--bg-input); padding: 8px; border-radius: 5px; justify-content: center;
-    }
-    .sum-i { font-size: .7rem; color: var(--text-muted); }
-    .sum-i strong { color: var(--text-secondary); }
-
-    /* TABLE LAYOUT */
-    .tbl-wrap { border: 1px solid var(--border); border-radius: 6px; overflow-x: hidden; }
-    
-    table { 
-      width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; 
-      font-size: .75rem; table-layout: fixed; 
+      width: 100%; padding: 12px; background: var(--gold); color: #000;
+      font-weight: bold; border: none; border-radius: 4px; text-transform: uppercase;
+      font-size: 14px; letter-spacing: 1px;
     }
     
-    thead th {
-      background: var(--bg-card2); color: var(--text-muted); font-weight: 600; font-size: .65rem;
-      padding: 6px 2px; text-align: center; border-bottom: 1px solid var(--border);
-      vertical-align: middle;
+    /* GRID TABLE LAYOUT */
+    .grid-table {
+      display: grid;
+      /* Combat | Check | Timer/Launch | Target/Link */
+      grid-template-columns: 50px 30px 1fr 90px; 
+      width: 100%;
     }
 
-    tbody td {
-      padding: 6px 2px; border-bottom: 1px solid rgba(42, 49, 58, .4);
-      color: var(--text-secondary); text-align: center; vertical-align: middle;
-      word-wrap: break-word; line-height: 1.2;
+    .grid-head {
+      font-weight: bold; color: #888; font-size: 10px; text-transform: uppercase;
+      padding: 8px 2px; border-bottom: 1px solid var(--border);
+      background: #121212; position: sticky; top: 0; z-index: 10; text-align: center;
     }
 
-    tr.r-cov { background: var(--row-covered) }
-    tr.r-gar td { color: var(--text-muted); font-style: italic }
-
-    /* COLUMNS - MOBILE OPTIMIZED */
-    .th-combat { width: 18%; }  /* Ridotto */
-    .th-check  { width: 10%; }  /* Minimo indispensabile */
-    .th-launch { width: 44%; }  /* Spazio principale per i timer */
-    .th-target { width: 28%; }  /* Spazio per il link */
-
-    /* BADGES & LINKS */
-    .w-badge {
-      display: block; background: var(--warn-dim); color: var(--warn);
-      padding: 4px 2px; border-radius: 4px; font-size: .65rem; /* Font più piccolo per stare in colonna */
+    .grid-row {
+      display: contents; 
     }
-    .w-badge.open { background: var(--accent); color: #fff; font-weight: bold; box-shadow: 0 0 5px rgba(59,130,246,0.5); }
+
+    .cell {
+      padding: 8px 2px;
+      border-bottom: 1px solid #222;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-size: 13px;
+      text-align: center;
+      min-height: 50px;
+    }
+
+    /* Column Specific Styles */
+    .c-time { color: #ccc; font-size: 11px; line-height: 1.2; }
+    .c-time span { color: #fff; font-weight: bold; font-size: 13px; }
     
-    .c-link {
-      display: inline-block; text-decoration: none; color: #fff; background: rgba(59,130,246,0.2);
-      border: 1px solid var(--accent); padding: 4px 6px; border-radius: 4px;
-      font-size: .7rem; font-weight: bold; margin-bottom: 2px; width: 95%;
-    }
-    .c-link:hover { background: var(--accent); }
-
-    .g-badge { font-size: .6rem; color: var(--text-muted); }
-    .cov-chk { width: 16px; height: 16px; accent-color: var(--green); }
-
-    /* MOBILE SPECIFIC OVERRIDES */
-    @media (max-width: 600px) {
-        .hdr h1 { font-size: 1.4rem; }
-        .card { padding: 10px; }
-        
-        /* Font ancora più compatti per tabelle */
-        table { font-size: 0.7rem; }
-        
-        /* Forza a capo il testo nelle celle */
-        tbody td span { display: block; } 
+    .c-check input {
+      width: 20px; height: 20px; border-radius: 4px;
+      accent-color: var(--green); cursor: pointer;
     }
 
-    .hidden { display: none !important }
+    .c-launch { align-items: flex-start; padding-left: 5px; text-align: left; }
+    
+    /* Rows Styling */
+    .grid-row:nth-child(even) .cell { background: rgba(255,255,255,0.02); }
+    .grid-row.covered .cell { color: #555; background: #0a0a0a; }
+    .grid-row.covered .c-time span { color: #555; }
+
+    /* LINK BUTTON */
+    .lnk-btn {
+      display: block; width: 100%; text-decoration: none;
+      background: rgba(33, 150, 243, 0.15); border: 1px solid var(--accent); color: var(--accent);
+      font-size: 11px; padding: 6px 0; text-align: center; border-radius: 4px;
+      font-weight: bold; margin-bottom: 2px;
+    }
+    .lnk-btn:active { background: var(--accent); color: #fff; }
+
+    .dist-info { font-size: 10px; color: #666; }
+
+    /* BADGES */
+    .badge {
+      display: inline-block; padding: 4px 6px; border-radius: 4px;
+      font-size: 11px; font-weight: bold; line-height: 1.2;
+    }
+    .b-wait { color: #aaa; font-weight: normal; }
+    .b-now { background: var(--green); color: #000; animation: pulse 1.5s infinite; }
+    .b-err { color: var(--red); }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+    .status-bar { text-align: center; font-size: 11px; margin-top: 4px; color: #888; height: 15px; }
+    .hidden { display: none !important; }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
 
-    <div class="hdr">
-      <h1>⚔ LK Battle Calc</h1>
-      <p>Mondo 337 · Brain Edition</p>
+  <div id="inputArea" class="controls">
+    <div class="row">
+      <input type="text" id="inCoord" placeholder="Link Partenza (l+k://...)" oninput="checkDB()">
+    </div>
+    <div id="dbStatus" class="status-bar"></div>
+
+    <div class="row" style="margin-top:10px">
+      <div class="col">
+        <label style="font-size:10px; color:#888; text-transform:uppercase">Data Impatto</label>
+        <input type="date" id="inDate">
+      </div>
+      <div class="col">
+        <label style="font-size:10px; color:#888; text-transform:uppercase">Ora Impatto</label>
+        <input type="time" id="inTime" step="60">
+      </div>
     </div>
 
-    <div id="inputPhase">
-      <div class="card">
-        <div class="card-t"><span class="dot"></span>Partenza (Mondo 337)</div>
-        <div class="fg">
-          <input type="text" id="inCoord" placeholder="Incolla link... (l+k://coordinates?x,y&337)" />
-        </div>
-        <div id="infoCoord"></div>
+    <div class="row">
+      <div class="col" style="flex:2">
+        <label style="font-size:10px; color:#888; text-transform:uppercase">Truppa</label>
+        <select id="selTroop"></select>
       </div>
-
-      <div class="card">
-        <div class="card-t"><span class="dot"></span>Impatto</div>
-        <div class="form-row">
-          <div class="fg"><label>Data</label><input type="date" id="inDate" /></div>
-          <div class="fg"><label>Ora</label><input type="time" id="inTime" step="60" /></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-t"><span class="dot"></span>Truppe</div>
-        <div class="form-row">
-          <div class="fg" style="flex:2"><label>Tipo</label><select id="selTroop"></select></div>
-          <div class="fg"><label>Guarnigione</label><input type="number" id="inGarrison" value="1000" /></div>
-        </div>
-        <div class="form-row">
-           <div class="fg"><label>Plotone</label>
-            <select id="selBatch">
-              <option value="51" selected>51</option>
-              <option value="55">55</option>
-              <option value="60">60</option>
-              <option value="76">76</option>
-            </select>
-          </div>
-        </div>
-        <div class="cb-row">
-          <input type="checkbox" id="chkMap" />
-          <span class="cb-lbl">Bonus Mappa (+5%)</span>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-p" onclick="calculate()">⚡ CALCOLA</button>
-        <button class="btn btn-s" onclick="resetAll()">↺ RESET</button>
-      </div>
-      <div id="mainSt" class="st"></div>
-    </div>
-
-    <div id="battlePhase" class="hidden">
-      <div class="card" style="padding:8px">
-        <div id="sumStrip" class="sum-strip"></div>
-        <div class="battle-top">
-          <select id="selBattleTroop" onchange="onTroopSwitch()"></select>
-          <span id="spdBadge" class="spd-badge"></span>
-          <div id="impactDisplay" style="text-align:center; font-size:0.75rem; color:var(--gold); font-weight:bold; margin-top:5px"></div>
-        </div>
-
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="th-combat">Imp.</th>
-                <th class="th-check">Ok</th>
-                <th class="th-launch">Finestra / Arrivo</th>
-                <th class="th-target">Target</th>
-              </tr>
-            </thead>
-            <tbody id="tBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-s" onclick="resetAll()">↺ NUOVO CALCOLO</button>
+      <div class="col">
+        <label style="font-size:10px; color:#888; text-transform:uppercase">Plotone</label>
+        <select id="selBatch">
+          <option value="51">51</option>
+          <option value="55">55</option>
+          <option value="60">60</option>
+          <option value="76">76</option>
+        </select>
       </div>
     </div>
+    
+    <div class="row" style="align-items:center; justify-content:space-between; margin-top:10px">
+      <label style="color:#aaa; font-size:12px; display:flex; align-items:center; gap:5px;">
+        <input type="checkbox" id="chkMap" style="width:auto"> Bonus Mappa (+5%)
+      </label>
+      <input type="number" id="inGarrison" value="1000" style="width:70px; text-align:center" placeholder="Guar.">
+    </div>
+
+    <button class="btn" onclick="startCalc()" style="margin-top:10px">CALCOLA</button>
+  </div>
+
+  <div id="resArea" class="hidden">
+    
+    <div style="padding:10px; background:#1e1e1e; border-bottom:1px solid #333; position:sticky; top:0; z-index:20; display:flex; gap:10px; align-items:center">
+      <button onclick="reset()" style="background:#333; color:#fff; border:none; padding:8px 12px; border-radius:4px; font-weight:bold">←</button>
+      <div style="flex:1">
+        <select id="selBattleTroop" onchange="changeTroopLive()" style="border-color:#444"></select>
+      </div>
+    </div>
+
+    <div class="grid-table">
+      <div class="grid-head">Combat</div>
+      <div class="grid-head">Ok</div>
+      <div class="grid-head" style="text-align:left; padding-left:8px">Stato / Timer</div>
+      <div class="grid-head">Target</div>
+    </div>
+
+    <div id="gridBody" class="grid-table"></div>
 
   </div>
+
   <script>
-    // ================================================================
-    // A) COSTANTI
-    // ================================================================
-    const T_BASE = {
-      "Lanciere": 700, "Balestriere": 600, "Cavaliere pesante": 300,
-      "Spadaccino": 800, "Arciere": 500, "Cavaliere leggero": 400,
-      "Carretto a mano": 800, "Carro bue": 1000, "Ashigaru": 480,
-      "Arciere daikyu": 450, "Samurai": 300, "Berserker": 420,
-      "Arciere Nordico": 390, "Cavaliere con Ascia": 360,
-      "Torre d'assedio": 480, "Ballista": 450, "Catapulta": 420
-    };
-    const T_BONUS = {
-      "Lanciere": 665, "Balestriere": 570, "Cavaliere pesante": 285,
-      "Spadaccino": 760, "Arciere": 475, "Cavaliere leggero": 380,
-      "Carretto a mano": 760, "Carro bue": 950, "Ashigaru": 456,
-      "Arciere daikyu": 428, "Samurai": 285, "Berserker": 399,
-      "Arciere Nordico": 371, "Cavaliere con Ascia": 342,
-      "Torre d'assedio": 456, "Ballista": 428, "Catapulta": 399
-    };
+    // --- COSTANTI ---
+    const T_BASE = { "Lanciere":700, "Balestriere":600, "Cav. Pesante":300, "Spadaccino":800, "Arciere":500, "Cav. Leggero":400, "Carro":1000, "Torre":480, "Catapulta":420 };
+    const T_BONUS = { "Lanciere":665, "Balestriere":570, "Cav. Pesante":285, "Spadaccino":760, "Arciere":475, "Cav. Leggero":380, "Carro":950, "Torre":456, "Catapulta":399 };
 
-    // ================================================================
-    // B) STATO
-    // ================================================================
-    let worldData = null, castleList = null, myCastle = null, worldId = null;
-    let impactDate = null, garrisonCount = 1000, batchSize = 51, mapBonus = false, curTroop = null;
-    let rows = [], ticker = null;
-
-    // ================================================================
-    // C) INIT & LOADING
-    // ================================================================
-    window.onload = function () {
-      fillTroopDrops();
-      let now = new Date();
-      document.getElementById('inDate').value = isoDate(now);
+    // --- VARIABILI GLOBALI ---
+    let DB = [];
+    let myCastle = null;
+    let worldId = null;
+    let rows = []; 
+    let ticker = null;
+    
+    // --- INIT ---
+    window.onload = () => {
+      let d = new Date();
+      document.getElementById('inDate').value = d.toISOString().split('T')[0];
       document.getElementById('inTime').value = '07:00';
+      
+      let html = "";
+      for(let k in T_BASE) html += `<option value="${k}">${k}</option>`;
+      document.getElementById('selTroop').innerHTML = html;
+      document.getElementById('selBattleTroop').innerHTML = html;
     };
 
-    function loadWorld(id
+    // --- DOWNLOAD DB ---
+    function checkDB() {
+      let val = document.getElementById('inCoord').value;
+      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+      let st = document.getElementById('dbStatus');
+      
+      if(m) {
+        let w = m[3];
+        if(w !== worldId) {
+          worldId = w;
+          st.innerHTML = `<span style="color:var(--accent)">⌛ Scarico Mondo ${w}...</span>`;
+          fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`)
+            .then(r=>r.json())
+            .then(d => {
+              DB = [];
+              // Flattening ricorsivo se necessario
+              const flat = (n) => { if(Array.isArray(n)) n.forEach(flat); else if(n && n.x) DB.push(n); else if(typeof n==='object') Object.values(n).forEach(flat); };
+              flat(d);
+              st.innerHTML = `<span style="color:var(--green)">✓ DB Caricato (${DB.length} castelli)</span>`;
+            })
+            .catch(() => st.innerHTML = `<span style="color:var(--red)">Errore DB</span>`);
+        }
+      }
+    }
+
+    // --- START CALCOLO ---
+    function startCalc() {
+      if(!DB.length) return alert("Attendi il caricamento del DB!");
+      
+      let val = document.getElementById('inCoord').value;
+      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+      if(!m) return alert("Link non valido");
+      
+      myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
+      
+      let d = document.getElementById('inDate').value;
+      let t = document.getElementById('inTime').value;
+      let startT = new Date(d + "T" + t);
+      
+      let garrison = parseInt(document.getElementById('inGarrison').value) || 1000;
+      let batch = parseInt(document.getElementById('selBatch').value);
+      
+      let troop = document.getElementById('selTroop').value;
+      document.getElementById('selBattleTroop').value = troop;
+      
+      // Inizializza UI
+      document.getElementById('inputArea').classList.add('hidden');
+      document.getElementById('resArea').classList.remove('hidden');
+      
+      // Genera Righe Vuote (Skeleton)
+      rows = [];
+      let left = garrison - 110;
+      
+      // Riga 0: Guarnigione
+      rows.push({ type: 'garrison', t: new Date(startT) });
+      
+      let step = 1;
+      while(left > 0 && step < 100) {
+        let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
+        rows.push({
+          type: 'wave',
+          t: combatT,
+          covered: false,
+          target: null // Sarà calcolato dopo
+        });
+        left -= Math.min(batch, left);
+        step++;
+      }
+      
+      // Primo Calcolo Totale
+      reCalcTargets();
+      
+      // Avvia Loop
+      if(ticker) clearInterval(ticker);
+      ticker = setInterval(loop, 1000);
+      renderGrid();
+    }
+
+    // --- LOGICA CAMBIO TRUPPA ---
+    function changeTroopLive() {
+      // Quando cambio truppa, ricalcolo SOLO le righe non coperte
+      reCalcTargets();
+      // Aggiorno la vista
+      updateDOM();
+    }
+
+    // --- CALCOLO TARGET PER TUTTE LE RIGHE ---
+    function reCalcTargets() {
+      let troop = document.getElementById('selBattleTroop').value;
+      let bonus = document.getElementById('chkMap').checked;
+      let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
+      
+      rows.forEach(r => {
+        if(r.type === 'wave' && !r.covered) {
+          // Cerca il miglior target ORA con la NUOVA velocità
+          r.target = findBestTarget(r.t, speed);
+        }
+      });
+    }
+
+    // --- RICERCA HABITAT (Motore) ---
+    function findBestTarget(combatTime, secPerField) {
+      let now = Date.now();
+      
+      // Finestra Rientro: Combat +4m -> +7m
+      // Esempio: Se combatte alle 12:00, deve tornare tra 12:04 e 12:07
+      let rStart = combatTime.getTime() + (4 * 60000);
+      let rEnd = combatTime.getTime() + (7 * 60000);
+      
+      let best = null;
+      let minWait = Infinity;
+      
+      // Scorro tutto il DB
+      for(let c of DB) {
+        // Salta me stesso e inattivi
+        if(c.x === myCastle.x && c.y === myCastle.y) continue;
+        if(!c.pid) continue; 
+        
+        // Calcolo Distanza Reale (32 unità = 1 campo)
+        let rawDist = Math.sqrt(Math.pow(c.x - myCastle.x, 2) + Math.pow(c.y - myCastle.y, 2));
+        let dist = rawDist / 32.0;
+        
+        if(dist < 0.1) continue;
+        
+        // Tempo Viaggio (Andata)
+        let travelMs = dist * secPerField * 1000;
+        
+        // Finestra Lancio
+        // Devo partire a [Start] per arrivare a [rStart] tornando indietro
+        // No aspetta, il trick è: Parto -> Arrivo -> Torno
+        // Tempo totale = Travel * 2
+        // Quindi se devo tornare a rStart, devo partire a rStart - (Travel*2)
+        
+        let lStart = rStart - (travelMs * 2);
+        let lEnd = rEnd - (travelMs * 2);
+        
+        // Se la finestra di lancio è già finita nel passato, questo castello è bruciato
+        if(lEnd < now) continue;
+        
+        // Se la finestra è valida, calcolo quanto devo aspettare per lanciarla
+        // Se lStart < now, significa che è GIÀ APERTA (wait = 0)
+        let wait = Math.max(0, lStart - now);
+        
+        // Cerco quella con l'attesa minore (la più vicina ad aprire o già aperta)
+        if(wait < minWait) {
+          minWait = wait;
+          best = {
+            c: c,
+            dist: dist,
+            lStart: lStart,
+            lEnd: lEnd
+          };
+        }
+      }
+      return best;
+    }
+
+    // --- LOOP PRINCIPALE (Ogni secondo) ---
+    function loop() {
+      let now = Date.now();
+      let needsRender = false;
+      let troop = document.getElementById('selBattleTroop').value;
+      let bonus = document.getElementById('chkMap').checked;
+      let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
+
+      rows.forEach((r, i) => {
+        if(r.type === 'wave' && !r.covered) {
+          
+          // Caso 1: Non ho target
+          if(!r.target) {
+            r.target = findBestTarget(r.t, speed);
+            needsRender = true;
+          }
+          // Caso 2: Ho target ma è SCADUTO
+          else if(now > r.target.lEnd) {
+            // Cerco subito un altro
+            let newTgt = findBestTarget(r.t, speed);
+            // Se trovo un nuovo target diverso o nullo, aggiorno
+            if(newTgt || r.target) {
+              r.target = newTgt;
+              needsRender = true; // Forza ridisegno link/coordinate
+            }
+          }
+          
+          // Aggiorno solo il timer DOM se non serve full render
+          if(!needsRender) updateRowDOM(i, r, now);
+        }
+      });
+
+      if(needsRender) renderGrid();
+    }
+
+    // --- RENDER GRID (Struttura) ---
+    function renderGrid() {
+      let container = document.getElementById('gridBody');
+      container.innerHTML = "";
+      
+      rows.forEach((r, i) => {
+        // Colonna 1: Combat Time
+        let dStr = r.t.getDate() + "/" + (r.t.getMonth()+1);
+        let tStr = pad(r.t.getHours()) + ":" + pad(r.t.getMinutes());
+        
+        let col1 = `<div class="cell c-time">${dStr}<br><span>${tStr}</span></div>`;
+        
+        // Colonna 2: Checkbox
+        let col2 = "";
+        if(r.type === 'garrison') {
+          col2 = `<div class="cell c-check"><input type="checkbox" checked disabled></div>`;
+        } else {
+          col2 = `<div class="cell c-check"><input type="checkbox" class="cov-chk" ${r.covered?'checked':''} onchange="toggle(${i})"></div>`;
+        }
+        
+        // Colonna 3 & 4 (Placeholder, riempiti da updateRowDOM)
+        let col3 = `<div class="cell c-launch" id="dom_launch_${i}"></div>`;
+        let col4 = `<div class="cell c-link" id="dom_link_${i}"></div>`;
+        
+        let rowDiv = document.createElement('div');
+        rowDiv.className = r.covered ? "grid-row covered" : "grid-row";
+        rowDiv.innerHTML = col1 + col2 + col3 + col4;
+        container.appendChild(rowDiv);
+      });
+      
+      // Prima passata di dati
+      let now = Date.now();
+      rows.forEach((r, i) => updateRowDOM(i, r, now));
+    }
+
+    // --- AGGIORNAMENTO DOM SINGOLA RIGA (Leggero) ---
+    function updateRowDOM(i, r, now) {
+      let elL = document.getElementById(`dom_launch_${i}`);
+      let elK = document.getElementById(`dom_link_${i}`);
+      if(!elL || !elK) return;
+
+      if(r.type === 'garrison') {
+        elL.innerHTML = `<span style="color:#666">Guarnigione</span>`;
+        elK.innerHTML = `—`;
+        return;
+      }
+
+      if(r.covered) {
+        elL.innerHTML = `<span style="color:#666">Coperto</span>`;
+        elK.innerHTML = `—`;
+        return;
+      }
+
+      if(!r.target) {
+        elL.innerHTML = `<span class="b-err">Nessun Target</span>`;
+        elK.innerHTML = `—`;
+        return;
+      }
+
+      // Calcolo Stati
+      let wait = r.target.lStart - now;
+      
+      if(wait > 0) {
+        // FASE ATTESA
+        let m = Math.floor(wait / 60000);
+        let s = Math.floor((wait % 60000) / 1000);
+        elL.innerHTML = `<span class="b-wait">Attendi: ${m}m ${s}s</span>`;
+        
+        // Link Nascosto, solo info distanza
+        let dist = Math.round(r.target.dist);
+        elK.innerHTML = `<span class="dist-info">${dist} campi</span>`;
+        
+      } else if (now <= r.target.lEnd) {
+        // FASE LANCIO (Link Visibile)
+        elL.innerHTML = `<span class="badge b-now">LANCIA ORA</span>`;
+        
+        let dist = Math.round(r.target.dist);
+        // Link Coordinate
+        let url = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
+        elK.innerHTML = `<a href="${url}" class="lnk-btn">APRI LINK</a>
+                         <span class="dist-info">${dist} campi (${r.target.c.x},${r.target.c.y})</span>`;
+      } else {
+        // FASE SCADUTO (Momentanea, prima del ricalcolo)
+        elL.innerHTML = `<span class="b-err">Ricalcolo...</span>`;
+      }
+    }
+
+    function toggle(i) {
+      rows[i].covered = !rows[i].covered;
+      // Ridisegna la classe della riga
+      renderGrid();
+    }
+
+    function reset() {
+      document.getElementById('resArea').classList.add('hidden');
+      document.getElementById('inputArea').classList.remove('hidden');
+      if(ticker) clearInterval(ticker);
+    }
+
+    function pad(n) { return n<10?'0'+n:n; }
+  </script>
+
+</body>
+</html>
