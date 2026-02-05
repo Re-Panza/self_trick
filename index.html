@@ -65,7 +65,7 @@
     .res-row {
       display: grid; 
       grid-template-columns: 50px 1fr 90px; 
-      gap: 10px;
+      gap: 8px;
       align-items: center; padding: 10px 8px; border-bottom: 1px solid #222; background: var(--bg);
       transition: background 0.2s;
     }
@@ -195,7 +195,6 @@
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      let st = document.getElementById('dbStatus');
       
       if(m) {
         let w = m[3];
@@ -273,13 +272,15 @@
         step++;
       }
       
-      reCalcAll();
+      // Primo Calcolo FORZATO
+      forceRecalcTargets();
+      
       if(ticker) clearInterval(ticker);
       ticker = setInterval(loop, 1000);
       renderList();
     }
 
-    function reCalcAll() {
+    function forceRecalcTargets() {
       let troop = document.getElementById('selBattleTroop').value;
       let bonus = document.getElementById('chkMap').checked;
       let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
@@ -292,15 +293,15 @@
     }
 
     function changeTroopLive() {
-      reCalcAll();
+      forceRecalcTargets();
       renderList();
     }
 
-    // --- ALGORITMO DI RICERCA (CARTESIANO PURO 1:1) ---
+    // --- ALGORITMO DI RICERCA: HEX AXIAL DISTANCE ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // Finestra Rientro Target (combat + 4min a combat + 7min)
+      // Finestra Rientro: Combat +4m -> +7m
       let rStart = combatTime.getTime() + (4 * 60000);
       let rEnd = combatTime.getTime() + (7 * 60000);
       
@@ -311,43 +312,38 @@
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; 
         
-        // 1. Distanza Cartesiana Pura (1 coord = 1 campo)
+        // 1. Distanza Esagonale (Hex Axial)
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
-        let dist = Math.sqrt(dx*dx + dy*dy); 
+        
+        // Formula per griglia esagonale assiale:
+        // Distanza = max(|dx|, |dy|, |dx+dy|)
+        let dist = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dx + dy));
         
         if(dist < 0.1) continue;
         
         // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Quando devo partire per tornare nel range)
-        // LancioStart = RientroStart - 2*Viaggio
-        // LancioEnd = RientroEnd - 2*Viaggio
+        // 3. Finestra Lancio (Andata)
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Se l'ultimo istante utile per lanciare è già passato, salta
-        if(lEnd < now) continue;
+        if(lEnd < now) continue; // Scaduto
         
-        // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
-        // LOGICA DI SCELTA:
-        // Cerca l'attesa più bassa possibile (meglio se 0).
-        // Se trovo attesa 0, è la priorità assoluta.
+        // Priorità: Attesa 0 (Subito)
         if(wait === 0) {
             if(minWait > 0) {
                 minWait = 0;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             } else {
-                // Se ho già un target "subito", prendo quello con la finestra di lancio più ampia (più comodo)
                 if(lEnd > best.lEnd) {
                     best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
                 }
             }
         } else {
-            // Se devo aspettare, prendo quello che mi fa aspettare meno
             if(minWait > 0 && wait < minWait) {
                 minWait = wait;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
@@ -377,12 +373,7 @@
         }
         
         let colInfo = `<div class="col-info" id="info_${i}"></div>`;
-        
-        let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">
-                        ${r.covered ? '✓ OK' : 'COPRI'}
-                      </div>`;
-                      
-        let colAct = `<div class="col-action" id="act_${i}">${btnCov}</div>`;
+        let colAct = `<div class="col-action" id="act_${i}"></div>`;
         
         div.innerHTML = colTime + colInfo + colAct;
         el.appendChild(div);
@@ -404,7 +395,7 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
-          // Check scadenza o mancanza target
+          // Se target nullo o scaduto, cerco nuovo
           if(!r.target || now > r.target.lEnd) {
             let newTgt = findTarget(r.t, speed);
             r.target = newTgt; 
@@ -468,17 +459,18 @@
       let dist = Math.round(r.target.dist); 
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
-      // Calcolo Rimbalzo (Arrivo al target)
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
-      
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
 
+      let launchT = wait > 0 ? r.target.lStart : now;
+      let arrT = new Date(launchT + r.target.travelMs);
+      let arrStr = `${pad(arrT.getDate())}/${pad(arrT.getMonth()+1)} ${pad(arrT.getHours())}:${pad(arrT.getMinutes())}:${pad(arrT.getSeconds())}`;
+
       if(wait > 0) {
-        // ATTESA
         let h = Math.floor(wait / 3600000);
         let m = Math.floor((wait % 3600000) / 60000);
         let s = Math.floor((wait % 60000) / 1000);
@@ -488,13 +480,12 @@
           <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
           <div class="info-sub">
             <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi
+            <span>Target:</span> ${dist} campi (${coord})
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.add('hidden');
 
       } else if(now <= r.target.lEnd) {
-        // LANCIO
         infoDiv.innerHTML = `
           <div class="info-status st-now">▶ LANCIA ORA!</div>
           <div class="info-sub">
@@ -505,7 +496,6 @@
         if(lnkBtn) lnkBtn.classList.remove('hidden');
 
       } else {
-        // SCADUTO
         infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
         if(lnkBtn) lnkBtn.classList.add('hidden');
       }
