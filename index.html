@@ -623,7 +623,7 @@
                 <th style="width:128px">Combat Happens</th>
                 <th style="width:72px">Covered</th>
                 <th style="width:230px">Arrivo Previsto (Finestra)</th>
-                <th>Send resources to</th>
+                <th>Target (Coordinate)</th>
               </tr>
             </thead>
             <tbody id="tBody"></tbody>
@@ -684,7 +684,7 @@
     // B) STATE
     // ================================================================
     let worldData = null;
-    let castleList = null;   // [{x, y, p}, …]
+    let castleList = null;   // [{x, y, p, pid}, …]
     let myCastle = null;   // {x, y}
     let worldId = null; // Inizializzato a null
     let impactDate = null;
@@ -740,9 +740,12 @@
         let y = readNum(node, ['y', 'Y', 'cy', 'posY', 'pos_y']);
         let pt = readNum(node, ['pt', 'pts', 'points', 'score']);
         let t = readNum(node, ['t', 'type']);
+        // NUOVO: Estrazione Player ID
+        let pid = readNum(node, ['p', 'pid', 'playerid', 'owner']); 
 
         if (x !== null && y !== null) {
-          out.push({ x, y, p: pt || 0, t: t || 0 });
+          // p: Punti, pid: PlayerID (Attenzione alla nomenclatura interna!)
+          out.push({ x, y, p: pt || 0, t: t || 0, pid: pid });
           return;
         }
         for (let k in node) walk(node[k], out, depth + 1);
@@ -789,10 +792,12 @@
     }
 
     // ================================================================
-    // G) DISTANCE
+    // G) DISTANCE (CORRETTA PER L&K RAW COORDS)
     // ================================================================
     function dist(x1, y1, x2, y2) {
-      return Math.round(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2));
+      // 32 RAW Units = 1 Campo
+      let rawDist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      return rawDist / 32.0; 
     }
 
     // ================================================================
@@ -895,12 +900,15 @@
       let best = null, bestScore = Infinity;
 
       for (let cas of castleList) {
+        // Skip se stesso
         if (cas.x === cx && cas.y === cy) continue;
+        
+        // NUOVO: Skip se il castello non ha un ID Giocatore (es. barbari/liberi)
+        if (!cas.pid || cas.pid <= 0) continue;
 
-        let d = dist(cx, cy, cas.x, cas.y);
+        let d = dist(cx, cy, cas.x, cas.y); // Calcola distanza in Campi
         if (d < 0.001) continue;
-        if (d > cas.p) continue;
-
+        
         let travelOneWaySec = d * secPF;
         let travelOneWayMs = travelOneWaySec * 1000;
         let roundTripMs = travelOneWayMs * 2;
@@ -922,7 +930,8 @@
           best = {
             target: {
               x: cas.x, y: cas.y,
-              link: `l+k://coordinates?${cas.x},${cas.y}&${worldId}`
+              // Link con coordinate arrotondate
+              link: `l+k://coordinates?${Math.round(cas.x)},${Math.round(cas.y)}&${worldId}`
             },
             launchW: {
               start: new Date(launchStartMs),
@@ -999,11 +1008,9 @@
       let launchS = r.launchW.start.getTime();
       let launchE = r.launchW.end.getTime();
 
-      // NUOVO: Mostra Data + Ora arrivo
       let arrS_str = fmtFull(r.arrivalW.start);
       let arrE_str = fmtFull(r.arrivalW.end);
       
-      // Se è lo stesso giorno, mostra solo l'ora nel secondo
       if (r.arrivalW.start.getDate() === r.arrivalW.end.getDate()) {
          arrE_str = fmtTS(r.arrivalW.end);
       }
@@ -1024,7 +1031,10 @@
       if (r.covered) return '<span style="color:var(--green);font-size:.68rem">✓ coperto</span>';
       if (!r.target) return '<span class="w-badge">—</span>';
 
-      let info = `<div style="font-size:0.65rem;color:var(--text-muted)">Dist: ${r.dist.toFixed(1)} (Max ${r.pts})</div>`;
+      // Mostra coordinate nel target
+      let targetCoords = `(${Math.round(r.target.x)}, ${Math.round(r.target.y)})`;
+      let info = `<div style="font-size:0.65rem;color:var(--text-muted)">Dist: ${r.dist.toFixed(1)} campi · ${targetCoords}</div>`;
+      
       let now = Date.now();
       let wS = r.launchW.start.getTime();
 
@@ -1032,7 +1042,6 @@
         return `<a href="#" class="c-link" onclick="linkClick(${i},event)">${r.target.link}</a>` + info;
       }
       
-      // LOGICA COUNTDOWN (Quanto manca al LANCIO)
       let diff = wS - now;
       let min = Math.floor(diff / 60000);
       let sec = Math.floor((diff % 60000) / 1000);
