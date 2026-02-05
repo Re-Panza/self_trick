@@ -185,7 +185,6 @@
       document.getElementById('selTroop').innerHTML = html;
       document.getElementById('selBattleTroop').innerHTML = html;
       
-      // Reset Input
       document.getElementById('inDate').value = "";
       document.getElementById('inTime').value = "";
       document.getElementById('inGarrison').value = "";
@@ -263,7 +262,6 @@
       let available = garrison - 110;
       if(available < 0) available = 0;
       
-      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
@@ -275,16 +273,13 @@
         step++;
       }
       
-      // Primo Calcolo: Forza reset target
-      forceRecalcTargets();
-      
+      reCalcAll();
       if(ticker) clearInterval(ticker);
       ticker = setInterval(loop, 1000);
       renderList();
     }
 
-    // Forza ricalcolo (usato solo all'inizio o cambio truppa)
-    function forceRecalcTargets() {
+    function reCalcAll() {
       let troop = document.getElementById('selBattleTroop').value;
       let bonus = document.getElementById('chkMap').checked;
       let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
@@ -297,13 +292,15 @@
     }
 
     function changeTroopLive() {
-      forceRecalcTargets();
+      reCalcAll();
       renderList();
     }
 
-    // --- ALGORITMO DI RICERCA ---
+    // --- ALGORITMO DI RICERCA (CARTESIANO PURO 1:1) ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
+      
+      // Finestra Rientro Target (combat + 4min a combat + 7min)
       let rStart = combatTime.getTime() + (4 * 60000);
       let rEnd = combatTime.getTime() + (7 * 60000);
       
@@ -314,30 +311,43 @@
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; 
         
+        // 1. Distanza Cartesiana Pura (1 coord = 1 campo)
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
+        let dist = Math.sqrt(dx*dx + dy*dy); 
         
         if(dist < 0.1) continue;
         
+        // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
+        
+        // 3. Finestra Lancio (Quando devo partire per tornare nel range)
+        // LancioStart = RientroStart - 2*Viaggio
+        // LancioEnd = RientroEnd - 2*Viaggio
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
+        // Se l'ultimo istante utile per lanciare è già passato, salta
         if(lEnd < now) continue;
         
+        // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
+        // LOGICA DI SCELTA:
+        // Cerca l'attesa più bassa possibile (meglio se 0).
+        // Se trovo attesa 0, è la priorità assoluta.
         if(wait === 0) {
             if(minWait > 0) {
                 minWait = 0;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             } else {
+                // Se ho già un target "subito", prendo quello con la finestra di lancio più ampia (più comodo)
                 if(lEnd > best.lEnd) {
                     best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
                 }
             }
         } else {
+            // Se devo aspettare, prendo quello che mi fa aspettare meno
             if(minWait > 0 && wait < minWait) {
                 minWait = wait;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
@@ -377,7 +387,6 @@
         div.innerHTML = colTime + colInfo + colAct;
         el.appendChild(div);
         
-        // Popola i dati (senza ricalcolare)
         updateRow(i);
       });
 
@@ -395,19 +404,12 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
-          
-          // LOGICA BLOCCO:
-          // Se ho un target valido, LO TENGO. Non cerco di meglio.
-          // Cerco solo se:
-          // 1. Non ho un target (null)
-          // 2. Il target che ho è SCADUTO (lEnd < now)
-          
+          // Check scadenza o mancanza target
           if(!r.target || now > r.target.lEnd) {
             let newTgt = findTarget(r.t, speed);
-            r.target = newTgt; // Aggiorno il target
-            updateRow(i);      // Ridisegno Link e Info (perché è cambiato il castello)
+            r.target = newTgt; 
+            updateRow(i); 
           } else {
-            // Se il target è ancora valido, aggiorno solo il Timer
             updateTimer(i); 
           }
         }
@@ -466,16 +468,14 @@
       let dist = Math.round(r.target.dist); 
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
+      // Calcolo Rimbalzo (Arrivo al target)
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
+      
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
-
-      let launchT = wait > 0 ? r.target.lStart : now;
-      let arrT = new Date(launchT + r.target.travelMs);
-      let arrStr = `${pad(arrT.getDate())}/${pad(arrT.getMonth()+1)} ${pad(arrT.getHours())}:${pad(arrT.getMinutes())}:${pad(arrT.getSeconds())}`;
 
       if(wait > 0) {
         // ATTESA
@@ -488,7 +488,7 @@
           <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
           <div class="info-sub">
             <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi (${coord})
+            <span>Target:</span> ${dist} campi
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.add('hidden');
