@@ -228,9 +228,18 @@
           fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`)
             .then(r=>r.json())
             .then(d => {
+              // Pulizia e Normalizzazione Dati (FIX IMPORTANTE)
               DB = [];
-              // Flattening ricorsivo se necessario
-              const flat = (n) => { if(Array.isArray(n)) n.forEach(flat); else if(n && n.x) DB.push(n); else if(typeof n==='object') Object.values(n).forEach(flat); };
+              const flat = (n) => { 
+                if(Array.isArray(n)) n.forEach(flat); 
+                else if(n && n.x) {
+                  // Normalizza il nome della proprietà Player ID
+                  // Il JSON può avere 'p' (comune), 'pid', o 'playerid'
+                  n.pid = n.p || n.pid || n.playerid || 0;
+                  DB.push(n); 
+                }
+                else if(typeof n==='object') Object.values(n).forEach(flat); 
+              };
               flat(d);
               st.innerHTML = `<span style="color:var(--green)">✓ DB Caricato (${DB.length} castelli)</span>`;
             })
@@ -271,7 +280,7 @@
       rows.push({ type: 'garrison', t: new Date(startT) });
       
       let step = 1;
-      while(left > 0 && step < 100) {
+      while(left > 0 && step < 120) {
         let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
         rows.push({
           type: 'wave',
@@ -319,7 +328,6 @@
       let now = Date.now();
       
       // Finestra Rientro: Combat +4m -> +7m
-      // Esempio: Se combatte alle 12:00, deve tornare tra 12:04 e 12:07
       let rStart = combatTime.getTime() + (4 * 60000);
       let rEnd = combatTime.getTime() + (7 * 60000);
       
@@ -330,7 +338,7 @@
       for(let c of DB) {
         // Salta me stesso e inattivi
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
-        if(!c.pid) continue; 
+        if(!c.pid) continue; // FIX APPLICATO: pid ora è popolato correttamente
         
         // Calcolo Distanza Reale (32 unità = 1 campo)
         let rawDist = Math.sqrt(Math.pow(c.x - myCastle.x, 2) + Math.pow(c.y - myCastle.y, 2));
@@ -341,23 +349,17 @@
         // Tempo Viaggio (Andata)
         let travelMs = dist * secPerField * 1000;
         
-        // Finestra Lancio
-        // Devo partire a [Start] per arrivare a [rStart] tornando indietro
-        // No aspetta, il trick è: Parto -> Arrivo -> Torno
-        // Tempo totale = Travel * 2
-        // Quindi se devo tornare a rStart, devo partire a rStart - (Travel*2)
-        
+        // Finestra Lancio (Andata) per tornare in tempo
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
         // Se la finestra di lancio è già finita nel passato, questo castello è bruciato
         if(lEnd < now) continue;
         
-        // Se la finestra è valida, calcolo quanto devo aspettare per lanciarla
-        // Se lStart < now, significa che è GIÀ APERTA (wait = 0)
+        // Calcolo attesa
         let wait = Math.max(0, lStart - now);
         
-        // Cerco quella con l'attesa minore (la più vicina ad aprire o già aperta)
+        // Cerco il target con attesa minore (più vicino al lancio)
         if(wait < minWait) {
           minWait = wait;
           best = {
@@ -387,15 +389,13 @@
             r.target = findBestTarget(r.t, speed);
             needsRender = true;
           }
-          // Caso 2: Ho target ma è SCADUTO
+          // Caso 2: Ho target ma è SCADUTO (tempo passato)
           else if(now > r.target.lEnd) {
-            // Cerco subito un altro
+            // Cerco subito un altro target valido per questo slot
             let newTgt = findBestTarget(r.t, speed);
-            // Se trovo un nuovo target diverso o nullo, aggiorno
-            if(newTgt || r.target) {
-              r.target = newTgt;
-              needsRender = true; // Forza ridisegno link/coordinate
-            }
+            // Aggiorno sempre per cercare di recuperare il turno
+            r.target = newTgt;
+            needsRender = true; 
           }
           
           // Aggiorno solo il timer DOM se non serve full render
@@ -460,7 +460,7 @@
       }
 
       if(!r.target) {
-        elL.innerHTML = `<span class="b-err">Nessun Target</span>`;
+        elL.innerHTML = `<span class="b-err">No Target</span>`;
         elK.innerHTML = `—`;
         return;
       }
@@ -486,16 +486,22 @@
         // Link Coordinate
         let url = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
         elK.innerHTML = `<a href="${url}" class="lnk-btn">APRI LINK</a>
-                         <span class="dist-info">${dist} campi (${r.target.c.x},${r.target.c.y})</span>`;
+                         <span class="dist-info">${dist} campi</span>`;
       } else {
         // FASE SCADUTO (Momentanea, prima del ricalcolo)
-        elL.innerHTML = `<span class="b-err">Ricalcolo...</span>`;
+        elL.innerHTML = `<span class="b-err">...</span>`;
       }
     }
 
     function toggle(i) {
       rows[i].covered = !rows[i].covered;
       // Ridisegna la classe della riga
+      renderGrid();
+    }
+
+    function updateDOM() {
+      // Wrapper per aggiornare tutto senza ricostruire HTML se possibile
+      // Ma con cambio truppa, meglio rifare renderGrid per sicurezza
       renderGrid();
     }
 
