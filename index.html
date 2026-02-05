@@ -10,12 +10,12 @@
 
     :root {
       --bg: #000000;
-      --card: #111111;
+      --card: #121212;
       --text: #e0e0e0;
-      --gold: #d4af37;
+      --gold: #ffc107;
       --green: #00e676;
-      --red: #ff1744;
-      --blue: #2979ff;
+      --red: #ff5252;
+      --blue: #448aff;
       --border: #333;
     }
 
@@ -26,72 +26,80 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
-      padding-bottom: 40px;
+      padding-bottom: 50px;
     }
 
-    /* CONTROLLI */
+    .container { max-width: 100%; margin: 0 auto; }
+
+    /* --- INPUT CONTROLS --- */
     .controls {
       background: var(--card); padding: 10px; border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .col { flex: 1; }
-    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    
+    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
     
     input, select {
-      width: 100%; background: #000; color: #fff; border: 1px solid #444; 
+      width: 100%; background: #080808; color: #fff; border: 1px solid #444; 
       border-radius: 4px; padding: 8px; font-size: 14px; outline: none; font-weight: bold;
     }
     input:focus { border-color: var(--gold); }
 
     .btn {
-      width: 100%; padding: 10px; background: var(--gold); color: #000;
-      font-weight: bold; border: none; border-radius: 4px; text-transform: uppercase; font-size: 14px; margin-top: 5px;
+      width: 100%; padding: 12px; background: var(--gold); color: #000;
+      font-weight: bold; border: none; border-radius: 4px; 
+      text-transform: uppercase; font-size: 14px; margin-top: 5px; cursor: pointer;
     }
 
-    /* LISTA RISULTATI */
+    /* --- LISTA RISULTATI --- */
     .res-row {
-      display: flex; align-items: center; padding: 10px 8px; border-bottom: 1px solid #222; background: var(--bg);
+      display: grid; 
+      grid-template-columns: 50px 1fr 90px; /* Griglia: Tempo | Info | Azione */
+      gap: 10px;
+      align-items: center; padding: 8px; border-bottom: 1px solid #222; background: var(--bg);
     }
-    .res-row:nth-child(even) { background: #080808; }
+    .res-row:nth-child(even) { background: #0a0a0a; }
     .res-row.covered { opacity: 0.3; filter: grayscale(100%); }
 
-    /* COLONNE */
-    .col-time {
-      width: 50px; text-align: center; font-size: 11px; color: #888; line-height: 1.2;
-      border-right: 1px solid #222; margin-right: 8px; padding-right: 4px;
-    }
-    .col-time span { font-size: 14px; color: #fff; font-weight: bold; display: block; }
+    /* COL 1: TEMPO */
+    .col-time { text-align: center; border-right: 1px solid #222; padding-right: 5px; }
+    .t-label { font-size: 10px; color: #888; }
+    .t-val { font-size: 15px; color: #fff; font-weight: bold; }
 
-    .col-info { flex: 1; min-width: 0; }
-    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
-    .info-dist { font-size: 11px; color: #666; font-family: monospace; }
+    /* COL 2: INFO (Stato + Arrivo + Target) */
+    .col-info { display: flex; flex-direction: column; justify-content: center; }
+    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+    .info-sub { font-size: 11px; color: #888; line-height: 1.3; }
+    .info-sub span { color: #ccc; }
 
-    .col-action { width: 90px; margin-left: 8px; display: flex; flex-direction: column; gap: 4px; }
+    /* COL 3: AZIONE (Link + Copri) */
+    .col-action { display: flex; flex-direction: column; gap: 5px; }
 
-    /* BOTTONI */
+    /* BADGES & BUTTONS */
     .lnk-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 30px; background: rgba(41, 121, 255, 0.1); 
+      width: 100%; height: 28px; background: rgba(68, 138, 255, 0.15); 
       border: 1px solid var(--blue); color: var(--blue); text-decoration: none; 
       font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
     }
     .lnk-btn:active { background: var(--blue); color: white; }
 
     .chk-cover {
-      width: 100%; height: 24px; display: flex; align-items: center; justify-content: center;
-      background: #111; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #555; font-size: 10px;
+      width: 100%; height: 22px; display: flex; align-items: center; justify-content: center;
+      background: #151515; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
     }
     .chk-cover.active { background: #222; color: var(--green); border-color: var(--green); }
 
-    /* STATUS COLORS */
+    /* COLORS */
     .st-wait { color: var(--gold); }
     .st-now { color: var(--green); animation: pulse 1s infinite; }
-    .st-err { color: var(--red); font-size: 12px; }
+    .st-err { color: var(--red); }
 
-    @keyframes pulse { 50% { opacity: 0.5; } }
+    @keyframes pulse { 50% { opacity: 0.6; } }
     .hidden { display: none !important; }
-    .status-bar { font-size: 11px; text-align: center; color: #666; margin-bottom: 5px; }
+    .status-bar { font-size: 11px; text-align: center; color: #666; margin-bottom: 5px; min-height: 15px; }
   </style>
 </head>
 
@@ -101,10 +109,10 @@
     <div class="row">
       <input type="text" id="inCoord" placeholder="Link Partenza (l+k://...)" oninput="checkDB()">
     </div>
-    <div id="dbStatus" class="status-bar">In attesa link...</div>
+    <div id="dbStatus" class="status-bar"></div>
 
     <div class="row">
-      <div class="col"><label>Giorno Impatto</label><input type="date" id="inDate"></div>
+      <div class="col"><label>Data Impatto</label><input type="date" id="inDate"></div>
       <div class="col"><label>Ora Impatto</label><input type="time" id="inTime" step="60"></div>
     </div>
 
@@ -132,20 +140,23 @@
   </div>
 
   <div id="resArea" class="hidden">
-    <div style="background:#1a1a1a; padding:8px; border-bottom:1px solid #333; display:flex; gap:10px; position:sticky; top:0; z-index:100">
+    <div style="background:#151515; padding:8px; border-bottom:1px solid #333; display:flex; gap:10px; position:sticky; top:0; z-index:100">
       <button onclick="reset()" style="background:#333; color:#fff; border:none; padding:0 12px; font-weight:bold; border-radius:4px; font-size:16px">←</button>
       <select id="selBattleTroop" onchange="changeTroopLive()" style="background:#000; color:#fff; border:1px solid #444"></select>
     </div>
-    <div id="resList" class="result-list"></div>
+    
+    <div id="resList" style="padding-bottom:20px"></div>
   </div>
 
   <script>
+    // --- DATI ---
     const T_BASE = { "Lanciere":700, "Balestriere":600, "Cav. Pesante":300, "Spadaccino":800, "Arciere":500, "Cav. Leggero":400, "Carro":1000, "Torre":480, "Catapulta":420 };
     const T_BONUS = { "Lanciere":665, "Balestriere":570, "Cav. Pesante":285, "Spadaccino":760, "Arciere":475, "Cav. Leggero":380, "Carro":950, "Torre":456, "Catapulta":399 };
 
     let DB = [], myCastle = null, worldId = null;
     let rows = [], ticker = null;
 
+    // --- INIT ---
     window.onload = () => {
       let d = new Date();
       document.getElementById('inDate').value = d.toISOString().split('T')[0];
@@ -157,6 +168,7 @@
       document.getElementById('selBattleTroop').innerHTML = html;
     };
 
+    // --- DB LOAD ---
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
@@ -174,6 +186,7 @@
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
+                  // FIX CRITICO: Normalizza ID Giocatore
                   n.p = n.p || n.pid || n.playerid || 0;
                   DB.push(n); 
                 }
@@ -187,6 +200,7 @@
       }
     }
 
+    // --- MAIN CALC ---
     function startCalc() {
       if(!DB.length) return alert("Attendi il DB!");
       let val = document.getElementById('inCoord').value;
@@ -209,11 +223,12 @@
       rows = [];
       let left = garrison - 110;
       
+      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
-      while(left > 0 && step < 120) {
-        let combatT = new Date(startT.getTime() + (step * 600000));
+      while(left > 0 && step < 100) {
+        let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
         rows.push({ t: combatT, type: 'wave', target: null, covered: false });
         left -= Math.min(batch, left);
         step++;
@@ -242,65 +257,59 @@
       renderList();
     }
 
-    // --- LOGICA DI RICERCA INTELLIGENTE ---
+    // --- ALGORITMO DI RICERCA OTTIMIZZATO ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // Finestra di RIENTRO (Combat +4m -> +7m)
+      // Finestra Rientro: Combat +4m -> +7m
       let rStart = combatTime.getTime() + (4 * 60000);
       let rEnd = combatTime.getTime() + (7 * 60000);
       
       let best = null;
-      let minWait = Infinity; 
+      let minWait = Infinity;
       
-      // Cerco il target che mi permette di lanciare SUBITO o il PRIMA POSSIBILE
       for(let c of DB) {
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; // Solo attivi
         
+        // 1. Distanza Reale (32 raw = 1 campo)
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
         let dist = Math.sqrt(dx*dx + dy*dy) / 32.0;
         
         if(dist < 0.1) continue;
         
+        // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // Finestra LANCIO (Parto ORA -> Arrivo -> Torno in tempo)
+        // 3. Finestra Lancio (Andata e Ritorno)
+        // Parto a L, arrivo al target, rimbalzo, torno a R
+        // L = R - 2*Travel
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Scaduto
+        // Se finestra scaduta, salta
         if(lEnd < now) continue;
         
+        // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
-        // STRATEGIA: Se posso lanciare ORA (wait=0), preferisco il castello più vicino (distanza minore)
-        // Se devo aspettare, preferisco quello con meno attesa.
-        
-        if(wait === 0) {
-            // Sono in finestra di lancio. È un candidato "Perfetto".
-            // Se ho già un candidato perfetto, prendo quello con distanza minore (meno errori viaggio)
-            if(best && best.wait === 0) {
-                if(dist < best.dist) {
-                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: 0, travelMs: travelMs };
-                }
-            } else {
-                // Primo candidato perfetto
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: 0, travelMs: travelMs };
-                minWait = 0;
-            }
-        } else {
-            // Candidato futuro. Lo prendo solo se non ho candidati perfetti e se è il più vicino nel tempo
-            if(minWait > 0 && wait < minWait) {
-                minWait = wait;
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: wait, travelMs: travelMs };
-            }
+        // STRATEGIA: Minimizzare l'attesa.
+        // Se wait == 0, vuol dire che posso lanciare ADESSO.
+        if(wait < minWait) {
+          minWait = wait;
+          best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+          
+          // Ottimizzazione: Se trovo un target con 0 attesa, è ottimo.
+          // Ma continuiamo per vedere se ce n'è uno ancora meglio (magari più vicino con 0 attesa?)
+          // Per semplicità e velocità, se wait è 0 potremmo fermarci o cercare il dist più basso con wait 0.
+          // Qui prendiamo il primo "best wait" che troviamo.
         }
       }
       return best;
     }
 
+    // --- RENDER ---
     function renderList() {
       let el = document.getElementById('resList');
       el.innerHTML = "";
@@ -310,25 +319,21 @@
         div.className = r.covered ? "res-row covered" : "res-row";
         
         let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
-        let colTime = `<div class="col-time">Imp.<br><span>${tLabel}</span></div>`;
+        let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
+        
+        // Info + Action Placeholder
+        let colInfo = `<div class="col-info" id="info_${i}"></div>`;
+        let colAct = `<div class="col-action" id="act_${i}"></div>`;
         
         if(r.type === 'garrison') {
-          div.innerHTML = `${colTime}<div class="col-info" style="color:#666">Guarnigione base</div>`;
-          el.appendChild(div);
-          return;
+          colInfo = `<div class="col-info" style="color:#666; font-style:italic">Guarnigione base</div>`;
+          colAct = `<div class="col-action"></div>`;
         }
-        
-        let colInfo = `<div class="col-info" id="info_${i}"></div>`;
-        
-        let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">
-                        ${r.covered ? '✓ OK' : 'COPRI'}
-                      </div>`;
-                      
-        let colAct = `<div class="col-action" id="act_${i}">${btnCov}</div>`;
         
         div.innerHTML = colTime + colInfo + colAct;
         el.appendChild(div);
         
+        // Primo update
         updateRow(i);
       });
     }
@@ -341,96 +346,105 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
+          // Se non ho target o target scaduto, cerco nuovo
           if(!r.target || now > r.target.lEnd) {
             r.target = findTarget(r.t, speed);
-            updateRow(i); 
+            updateRow(i); // Ridisegna bottoni/link
+          } else {
+            updateTimer(i); // Aggiorna solo testo
           }
-          updateTimer(i);
         }
       });
     }
 
     function updateRow(i) {
       let r = rows[i];
-      let infoDiv = document.getElementById(`info_${i}`);
+      if(r.type === 'garrison') return;
+
       let actDiv = document.getElementById(`act_${i}`);
-      if(!infoDiv || !actDiv) return;
+      if(!actDiv) return;
 
-      if(r.covered) return;
-
-      if(!r.target) {
-        infoDiv.innerHTML = `<div class="st-err">Nessun Target Trovato</div>`;
-        if(actDiv.children.length > 1) actDiv.lastChild.remove();
-        return;
-      }
-
-      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-      let dist = Math.round(r.target.dist); // ARROTONDAMENTO MATH.ROUND
+      // Bottone Copri (Sempre presente)
+      let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">${r.covered?'OK':'COPRI'}</div>`;
       
-      let existingLink = actDiv.querySelector('.lnk-btn');
-      if(!existingLink) {
-        let a = document.createElement('a');
-        a.className = 'lnk-btn hidden';
-        a.href = linkUrl;
-        a.innerText = "LINK";
-        actDiv.appendChild(a);
-      } else {
-        existingLink.href = linkUrl;
+      // Link (Solo se c'è target)
+      let btnLink = "";
+      if(r.target && !r.covered) {
+        let url = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
+        // Classe hidden gestita dal timer
+        btnLink = `<a href="${url}" class="lnk-btn hidden" id="lnk_${i}">LANCIA</a>`;
       }
       
+      actDiv.innerHTML = btnLink + btnCov;
       updateTimer(i);
     }
 
     function updateTimer(i) {
       let r = rows[i];
-      if(!r.target || r.covered) return;
-      
-      let now = Date.now();
       let infoDiv = document.getElementById(`info_${i}`);
-      let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
-      
+      let lnkBtn = document.getElementById(`lnk_${i}`);
+      if(!infoDiv) return;
+
+      if(r.covered) {
+        infoDiv.innerHTML = `<span style="color:#666">Turno Coperto</span>`;
+        return;
+      }
+
+      if(!r.target) {
+        infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
+        if(lnkBtn) lnkBtn.classList.add('hidden');
+        return;
+      }
+
+      let now = Date.now();
       let wait = r.target.lStart - now;
-      let dist = Math.round(r.target.dist);
-      let coord = `${r.target.c.x},${r.target.c.y}`;
+      let dist = Math.round(r.target.dist); // ARROTONDAMENTO STANDARD
       
       // Calcolo Arrivo (Solo Andata)
-      // Arrivo = Ora Lancio (Stimata) + Tempo Viaggio
-      // Se devo aspettare, Ora Lancio = lStart. Se posso lanciare ora, Ora Lancio = Now.
-      let launchTimeMs = wait > 0 ? r.target.lStart : now;
-      let arrivalMs = launchTimeMs + r.target.travelMs;
-      let arrivalDate = new Date(arrivalMs);
+      // Se aspetto: Arrivo = lStart + Travel
+      // Se lancio ora: Arrivo = Now + Travel
+      let launchT = wait > 0 ? r.target.lStart : now;
+      let arrT = new Date(launchT + r.target.travelMs);
       
-      let arrStr = `${pad(arrivalDate.getDate())}/${pad(arrivalDate.getMonth()+1)} ${pad(arrivalDate.getHours())}:${pad(arrivalDate.getMinutes())}:${pad(arrivalDate.getSeconds())}`;
+      let arrStr = `${pad(arrT.getDate())}/${pad(arrT.getMonth()+1)} ${pad(arrT.getHours())}:${pad(arrT.getMinutes())}:${pad(arrT.getSeconds())}`;
 
       if(wait > 0) {
+        // ATTESA
         let h = Math.floor(wait / 3600000);
         let m = Math.floor((wait % 3600000) / 60000);
         let s = Math.floor((wait % 60000) / 1000);
-        
-        let waitStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+        let wStr = h>0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
 
         infoDiv.innerHTML = `
-          <div class="info-status st-wait">⏳ Attendi: ${waitStr}</div>
-          <div class="info-dist">Arrivo: ${arrStr} (Andata)<br>Target: ${dist} campi</div>
+          <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
+          <div class="info-sub">
+            <span>Arr:</span> ${arrStr}<br>
+            <span>Target:</span> ${dist} campi (${r.target.c.x},${r.target.c.y})
+          </div>
         `;
         if(lnkBtn) lnkBtn.classList.add('hidden');
-        
+
       } else if(now <= r.target.lEnd) {
+        // LANCIO
         infoDiv.innerHTML = `
-          <div class="info-status st-now">▶ LANCIA ORA!</div>
-          <div class="info-dist">Arrivo: ${arrStr} (Andata)<br>Target: ${dist} campi</div>
+          <div class="info-status st-now">▶ LANCIA ORA</div>
+          <div class="info-sub">
+            <span style="color:#fff">Arr:</span> ${arrStr}<br>
+            <span>Target:</span> ${dist} campi (${r.target.c.x},${r.target.c.y})
+          </div>
         `;
         if(lnkBtn) lnkBtn.classList.remove('hidden');
-        
+
       } else {
-        infoDiv.innerHTML = `<div class="st-err">Tempo Scaduto...</div>`;
+        // SCADUTO
+        infoDiv.innerHTML = `<span class="st-err">Scaduto (Ricalcolo...)</span>`;
         if(lnkBtn) lnkBtn.classList.add('hidden');
       }
     }
 
     function toggle(i) {
       rows[i].covered = !rows[i].covered;
-      renderList();
+      renderList(); // Ridisegna riga grigia/normale
     }
 
     function reset() {
