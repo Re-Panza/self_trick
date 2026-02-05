@@ -10,13 +10,14 @@
 
     :root {
       --bg: #000000;
-      --card: #151515;
+      --card: #121212;
       --text: #e0e0e0;
       --gold: #ffc107;
       --green: #00e676;
       --red: #ff5252;
       --blue: #448aff;
       --border: #333;
+      --selected-bg: #1a1a1a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -26,24 +27,24 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
-      padding-bottom: 50px;
+      padding-bottom: 60px;
     }
 
     .container { max-width: 100%; margin: 0 auto; }
 
     /* CONTROLLI */
     .controls {
-      background: var(--card); padding: 12px; border-bottom: 1px solid var(--border);
+      background: var(--card); padding: 10px; border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .col { flex: 1; }
     
-    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
+    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
     
     input, select {
       width: 100%; background: #080808; color: #fff; border: 1px solid #444; 
-      border-radius: 4px; padding: 10px; font-size: 15px; outline: none; font-weight: bold;
+      border-radius: 4px; padding: 8px; font-size: 14px; outline: none; font-weight: bold;
     }
     input:focus { border-color: var(--gold); }
 
@@ -56,47 +57,54 @@
     /* LISTA RISULTATI */
     .res-row {
       display: grid; 
-      /* Grid Layout: Ora | Info | Azione */
       grid-template-columns: 50px 1fr 90px; 
       gap: 10px;
-      align-items: center; padding: 10px; border-bottom: 1px solid #222; background: var(--bg);
+      align-items: center; padding: 8px; border-bottom: 1px solid #222; background: var(--bg);
+      transition: background 0.2s;
     }
-    .res-row:nth-child(even) { background: #0b0b0b; }
+    .res-row:nth-child(even) { background: #0a0a0a; }
+    
+    /* STILE SELEZIONATO */
+    .res-row.selected {
+      background: var(--selected-bg) !important;
+      border-left: 3px solid var(--gold);
+    }
+    
     .res-row.covered { opacity: 0.3; filter: grayscale(100%); }
 
-    /* COL 1: TEMPO */
+    /* COLONNE */
     .col-time { text-align: center; border-right: 1px solid #222; padding-right: 5px; }
-    .t-label { font-size: 9px; color: #888; text-transform: uppercase; }
-    .t-val { font-size: 16px; color: #fff; font-weight: bold; line-height: 1.2; }
+    .t-label { font-size: 10px; color: #888; }
+    .t-val { font-size: 15px; color: #fff; font-weight: bold; }
 
-    /* COL 2: INFO */
-    .col-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 3px; white-space: nowrap; }
-    .info-sub { font-size: 11px; color: #999; line-height: 1.3; }
+    .col-info { display: flex; flex-direction: column; justify-content: center; }
+    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+    .info-sub { font-size: 11px; color: #888; line-height: 1.3; }
     .info-sub span { color: #ccc; }
+    .bounce-win { color: var(--gold); font-weight: bold; } /* Stile per Rimbalzo */
 
-    /* COL 3: AZIONE */
-    .col-action { display: flex; flex-direction: column; gap: 6px; }
+    .col-action { display: flex; flex-direction: column; gap: 5px; }
 
     /* BOTTONI */
     .lnk-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 32px; background: rgba(68, 138, 255, 0.1); 
+      width: 100%; height: 28px; background: rgba(68, 138, 255, 0.15); 
       border: 1px solid var(--blue); color: var(--blue); text-decoration: none; 
-      font-size: 12px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
+      font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
+      cursor: pointer;
     }
     .lnk-btn:active { background: var(--blue); color: white; }
 
     .chk-cover {
-      width: 100%; height: 24px; display: flex; align-items: center; justify-content: center;
-      background: #181818; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
+      width: 100%; height: 22px; display: flex; align-items: center; justify-content: center;
+      background: #151515; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
     }
     .chk-cover.active { background: #222; color: var(--green); border-color: var(--green); }
 
-    /* STATUS COLORI */
-    .st-wait { color: var(--gold); }
+    /* STATUS COLORS */
+    .st-wait { color: #aaa; }
     .st-now { color: var(--green); animation: pulse 1s infinite; }
-    .st-err { color: var(--red); font-size: 11px; }
+    .st-err { color: var(--red); }
 
     @keyframes pulse { 50% { opacity: 0.6; } }
     .hidden { display: none !important; }
@@ -156,6 +164,7 @@
 
     let DB = [], myCastle = null, worldId = null;
     let rows = [], ticker = null;
+    let selectedRowIndex = -1; 
 
     // --- INIT ---
     window.onload = () => {
@@ -187,7 +196,6 @@
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
-                  // Mappa Player ID
                   n.p = n.p || n.pid || n.playerid || 0;
                   DB.push(n); 
                 }
@@ -222,14 +230,14 @@
       document.getElementById('resArea').classList.remove('hidden');
       
       rows = [];
+      selectedRowIndex = -1; 
       let left = garrison - 110;
       
-      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
       while(left > 0 && step < 120) {
-        let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
+        let combatT = new Date(startT.getTime() + (step * 600000)); 
         rows.push({ t: combatT, type: 'wave', target: null, covered: false });
         left -= Math.min(batch, left);
         step++;
@@ -269,7 +277,6 @@
       let best = null;
       let minWait = Infinity;
       
-      // Scorro TUTTO il DB per trovare il miglior candidato
       for(let c of DB) {
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; // Solo attivi
@@ -277,52 +284,39 @@
         // 1. Distanza Reale (1 raw = 1 campo) -> NO DIVISIONE
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
-        let dist = Math.sqrt(dx*dx + dy*dy); // <--- CORRETTO (Pitagora puro)
+        let dist = Math.sqrt(dx*dx + dy*dy);
         
         if(dist < 0.1) continue;
         
         // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Andata) per tornare nel range
-        // Devo partire a [Start] per arrivare a target, poi tornare a [rStart]
-        // Quindi Tempo Totale (A+R) = 2 * Travel
-        // Launch Start = Return Start - 2 * Travel
+        // 3. Finestra Lancio (Andata)
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Se la finestra di lancio è scaduta (nel passato), salta
+        // Se la finestra di lancio è scaduta, scarta
         if(lEnd < now) continue;
         
-        // 4. Calcolo Attesa
-        // Se lStart <= now, vuol dire che la finestra è APERTA (posso lanciare subito). Attesa = 0.
+        // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
-        // LOGICA PRIORITÀ:
-        // 1. Cerchiamo attesa 0 (lancio immediato).
-        // 2. Se abbiamo più attese 0, prendiamo quella con la finestra più ampia rimasta (lEnd - now).
-        // 3. Se non abbiamo attese 0, prendiamo quella con attesa minore.
-        
+        // PRIORITÀ: Cerca attesa 0 (lancio immediato)
         if(wait === 0) {
-            // Candidato perfetto (LANCIO SUBITO)
-            // Se non avevamo candidati perfetti prima, o se questo ha una finestra migliore (più sicura)
             if(minWait > 0) {
-                // Trovato il primo candidato perfetto! Resetto tutto e prendo questo.
                 minWait = 0;
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             } else {
-                // Avevo già un candidato perfetto? Confrontiamo.
-                // Preferisco quello che rimane aperto più a lungo (lEnd maggiore) per comodità
+                // Se entrambi pronti, preferisco finestra più lunga
                 if(lEnd > best.lEnd) {
-                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
                 }
             }
         } else {
-            // Candidato futuro (devo aspettare).
-            // Lo considero SOLO se non ho ancora trovato un candidato perfetto (minWait > 0)
+            // Se devo aspettare, prendo quello con meno attesa
             if(minWait > 0 && wait < minWait) {
                 minWait = wait;
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             }
         }
       }
@@ -336,7 +330,8 @@
       
       rows.forEach((r, i) => {
         let div = document.createElement('div');
-        div.className = r.covered ? "res-row covered" : "res-row";
+        div.className = r.covered ? "res-row covered" : (i === selectedRowIndex ? "res-row selected" : "res-row");
+        div.id = `row_${i}`;
         
         let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
         let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
@@ -347,14 +342,17 @@
           return;
         }
         
-        // Info + Action Placeholder
         let colInfo = `<div class="col-info" id="info_${i}"></div>`;
-        let colAct = `<div class="col-action" id="act_${i}"></div>`;
+        
+        let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">
+                        ${r.covered ? '✓ OK' : 'COPRI'}
+                      </div>`;
+                      
+        let colAct = `<div class="col-action" id="act_${i}">${btnCov}</div>`;
         
         div.innerHTML = colTime + colInfo + colAct;
         el.appendChild(div);
         
-        // Primo update
         updateRow(i);
       });
     }
@@ -367,12 +365,11 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
-          // Se non ho target o target scaduto, cerco nuovo
           if(!r.target || now > r.target.lEnd) {
             r.target = findTarget(r.t, speed);
             updateRow(i); 
           } else {
-            updateTimer(i); // Aggiorna solo testo
+            updateTimer(i);
           }
         }
       });
@@ -386,7 +383,6 @@
       let infoDiv = document.getElementById(`info_${i}`);
       if(!actDiv) return;
 
-      // Reset bottoni se necessario
       if(!actDiv.querySelector('.chk-cover')) {
          actDiv.innerHTML = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">${r.covered?'OK':'COPRI'}</div>`;
       }
@@ -410,7 +406,8 @@
         a.className = 'lnk-btn hidden';
         a.href = linkUrl;
         a.innerText = "LANCIA";
-        actDiv.prepend(a); // Mette sopra il COPRI
+        a.onclick = function() { selectRow(i); };
+        actDiv.prepend(a); 
       } else {
         existingLink.href = linkUrl;
       }
@@ -427,18 +424,22 @@
       let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
       
       let wait = r.target.lStart - now;
-      let dist = Math.round(r.target.dist); // ARROTONDAMENTO MATH.ROUND
+      let dist = Math.round(r.target.dist); // ARROTONDAMENTO STANDARD
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
-      // Calcolo Arrivo (Solo Andata)
-      // Se lancio ORA (o appena scatta timer), arrivo tra travelMs
-      let launchT = wait > 0 ? r.target.lStart : now;
-      let arrT = new Date(launchT + r.target.travelMs);
+      // Calcolo finestra di RIMBALZO (Arrivo al target)
+      // Bounce Start = ReturnStart - Travel
+      // Bounce End = ReturnEnd - Travel
+      let bStartMs = r.target.rStart - r.target.travelMs;
+      let bEndMs = r.target.rEnd - r.target.travelMs;
       
-      let arrStr = `${pad(arrT.getDate())}/${pad(arrT.getMonth()+1)} ${pad(arrT.getHours())}:${pad(arrT.getMinutes())}:${pad(arrT.getSeconds())}`;
+      let bStartD = new Date(bStartMs);
+      let bEndD = new Date(bEndMs);
+      
+      // Formattazione "Rimbalzo: 12:14 - 12:17"
+      let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
 
       if(wait > 0) {
-        // ATTESA
         let h = Math.floor(wait / 3600000);
         let m = Math.floor((wait % 3600000) / 60000);
         let s = Math.floor((wait % 60000) / 1000);
@@ -447,32 +448,44 @@
         infoDiv.innerHTML = `
           <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
           <div class="info-sub">
-            <span>Arr:</span> ${arrStr}<br>
-            <span>Dist:</span> ${dist} campi (${coord})
+            <span class="bounce-win">Rimbalzo: ${bStr}</span><br>
+            <span>Target:</span> ${dist} campi
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.add('hidden');
 
       } else if(now <= r.target.lEnd) {
-        // LANCIO
         infoDiv.innerHTML = `
           <div class="info-status st-now">▶ LANCIA ORA!</div>
           <div class="info-sub">
-            <span style="color:#fff">Arr:</span> ${arrStr}<br>
-            <span>Dist:</span> ${dist} campi (${coord})
+            <span class="bounce-win">Rimbalzo: ${bStr}</span><br>
+            <span>Target:</span> ${dist} campi (${coord})
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.remove('hidden');
 
       } else {
-        // SCADUTO
         infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
         if(lnkBtn) lnkBtn.classList.add('hidden');
       }
     }
 
+    function selectRow(i) {
+        selectedRowIndex = i;
+        rows.forEach((r, idx) => {
+            let el = document.getElementById(`row_${idx}`);
+            if(el) {
+                if(idx === selectedRowIndex && !r.covered) el.classList.add('selected');
+                else el.classList.remove('selected');
+            }
+        });
+    }
+
     function toggle(i) {
       rows[i].covered = !rows[i].covered;
+      if(rows[i].covered && selectedRowIndex === i) {
+          selectedRowIndex = -1;
+      }
       renderList();
     }
 
