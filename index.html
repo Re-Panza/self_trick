@@ -195,7 +195,6 @@
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      let st = document.getElementById('dbStatus');
       
       if(m) {
         let w = m[3];
@@ -221,9 +220,8 @@
       }
     }
 
-    // --- FORMULA DISTANZA REALE (L&K HEX GRID) ---
+    // --- HEX AXIAL DISTANCE ---
     function getDist(x1, y1, x2, y2) {
-      // Conversione da coordinate Offset (L&K) a coordinate Cubiche
       let cy1 = y1;
       let cz1 = x1 - Math.floor(y1 / 2);
       let cx1 = -cy1 - cz1;
@@ -232,12 +230,7 @@
       let cz2 = x2 - Math.floor(y2 / 2);
       let cx2 = -cy2 - cz2;
 
-      // Distanza cubica: max(abs(dx), abs(dy), abs(dz))
-      return Math.max(
-        Math.abs(cx1 - cx2),
-        Math.abs(cy1 - cy2),
-        Math.abs(cz1 - cz2)
-      );
+      return Math.max(Math.abs(cx1 - cx2), Math.abs(cy1 - cy2), Math.abs(cz1 - cz2));
     }
 
     // --- MAIN CALC ---
@@ -317,13 +310,15 @@
       renderList();
     }
 
-    // --- ALGORITMO DI RICERCA ---
+    // --- ALGORITMO DI RICERCA (04:00 - 07:00) ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // Finestra Rientro: Combat +4m -> +7m
+      // FINESTRA TARGET: Da +4 a +7
+      // rStart = Tempo in cui la truppa DEVE tornare (Minimo)
+      // rEnd = Tempo in cui la truppa DEVE tornare (Massimo)
       let rStart = combatTime.getTime() + (4 * 60000);
-      let rEnd = combatTime.getTime() + (7 * 60000);
+      let rEnd = combatTime.getTime() + (7 * 60000); 
       
       let best = null;
       let minWait = Infinity;
@@ -332,28 +327,34 @@
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
         if(!c.p) continue; 
         
-        // USO LA FORMULA ESAGONALE CORRETTA
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         
-        if(dist < 1) continue; // Minimo 1 campo
+        if(dist < 1) continue; 
         
-        // Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // Finestra Lancio
+        // Calcolo finestra di Lancio
+        // Se parto a lStart, torno a rStart (minuto 04)
+        // Se parto a lEnd, torno a rEnd (minuto 07)
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
+        // Se lEnd è nel passato, la finestra 07 è chiusa. SCARTA.
         if(lEnd < now) continue;
         
+        // Attesa per il minuto 04
         let wait = Math.max(0, lStart - now);
         
-        // Priorità: Attesa 0
+        // PRIORITÀ:
+        // 1. Attesa 0 (Significa che sono già tra lStart e lEnd, cioè tra il minuto 04 e 07 del ritorno)
+        // 2. Se devo aspettare, prendo quello con l'attesa minore.
+        
         if(wait === 0) {
             if(minWait > 0) {
                 minWait = 0;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
             } else {
+                // Se entrambi pronti, preferisco quello che ha ancora più tempo (lEnd maggiore)
                 if(lEnd > best.lEnd) {
                     best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
                 }
@@ -410,7 +411,9 @@
 
       rows.forEach((r, i) => {
         if(r.type !== 'garrison' && !r.covered) {
-          // BLOCCO TARGET: Cerco nuovo solo se NON ho target o se è scaduto
+          // BLOCCO TARGET: 
+          // Se target non c'è -> Cerca
+          // Se target c'è ma lEnd (fine finestra 07) è passato -> Cerca Nuovo
           if(!r.target || now > r.target.lEnd) {
             let newTgt = findTarget(r.t, speed);
             r.target = newTgt; 
@@ -470,20 +473,21 @@
       let infoDiv = document.getElementById(`info_${i}`);
       let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
       
+      // Calcolo Attesa (riferito a lStart, che è il momento per tornare al minuto 04)
       let wait = r.target.lStart - now;
-      let dist = r.target.dist; // Distanza esatta Hex
+      let dist = r.target.dist; 
       let coord = `${r.target.c.x},${r.target.c.y}`;
       
-      // Calcolo Rimbalzo (Arrivo al target)
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
-      
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       
+      // Visualizzo Finestra Rimbalzo
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
 
       if(wait > 0) {
+        // --- FASE ATTESA (Prima del minuto 04) ---
         let h = Math.floor(wait / 3600000);
         let m = Math.floor((wait % 3600000) / 60000);
         let s = Math.floor((wait % 60000) / 1000);
@@ -493,12 +497,13 @@
           <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
           <div class="info-sub">
             <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi (${coord})
+            <span>Target:</span> ${dist} campi
           </div>
         `;
-        if(lnkBtn) lnkBtn.classList.add('hidden');
+        if(lnkBtn) lnkBtn.classList.add('hidden'); // LINK NASCOSTO
 
       } else if(now <= r.target.lEnd) {
+        // --- FASE LANCIO (Tra minuto 04 e minuto 07) ---
         infoDiv.innerHTML = `
           <div class="info-status st-now">▶ LANCIA ORA!</div>
           <div class="info-sub">
@@ -506,9 +511,10 @@
             <span>Target:</span> ${dist} campi (${coord})
           </div>
         `;
-        if(lnkBtn) lnkBtn.classList.remove('hidden');
+        if(lnkBtn) lnkBtn.classList.remove('hidden'); // LINK VISIBILE
 
       } else {
+        // --- FASE SCADUTA (Dopo minuto 07) ---
         infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
         if(lnkBtn) lnkBtn.classList.add('hidden');
       }
