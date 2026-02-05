@@ -10,7 +10,7 @@
 
     :root {
       --bg: #000000;
-      --card: #121212;
+      --card: #151515;
       --text: #e0e0e0;
       --gold: #ffc107;
       --green: #00e676;
@@ -31,19 +31,19 @@
 
     .container { max-width: 100%; margin: 0 auto; }
 
-    /* --- INPUT CONTROLS --- */
+    /* CONTROLLI INPUT */
     .controls {
-      background: var(--card); padding: 10px; border-bottom: 1px solid var(--border);
+      background: var(--card); padding: 12px; border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .col { flex: 1; }
     
-    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; letter-spacing: 0.5px; }
+    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 3px; letter-spacing: 0.5px; }
     
     input, select {
       width: 100%; background: #080808; color: #fff; border: 1px solid #444; 
-      border-radius: 4px; padding: 8px; font-size: 14px; outline: none; font-weight: bold;
+      border-radius: 4px; padding: 10px; font-size: 15px; outline: none; font-weight: bold;
     }
     input:focus { border-color: var(--gold); }
 
@@ -53,49 +53,50 @@
       text-transform: uppercase; font-size: 14px; margin-top: 5px; cursor: pointer;
     }
 
-    /* --- LISTA RISULTATI --- */
+    /* LISTA RISULTATI */
     .res-row {
       display: grid; 
-      grid-template-columns: 50px 1fr 90px; /* Griglia: Tempo | Info | Azione */
+      /* Grid Layout: Ora | Info | Azione */
+      grid-template-columns: 50px 1fr 90px; 
       gap: 10px;
-      align-items: center; padding: 8px; border-bottom: 1px solid #222; background: var(--bg);
+      align-items: center; padding: 10px; border-bottom: 1px solid #222; background: var(--bg);
     }
-    .res-row:nth-child(even) { background: #0a0a0a; }
+    .res-row:nth-child(even) { background: #0b0b0b; }
     .res-row.covered { opacity: 0.3; filter: grayscale(100%); }
 
     /* COL 1: TEMPO */
     .col-time { text-align: center; border-right: 1px solid #222; padding-right: 5px; }
-    .t-label { font-size: 10px; color: #888; }
-    .t-val { font-size: 15px; color: #fff; font-weight: bold; }
+    .t-label { font-size: 9px; color: #888; text-transform: uppercase; }
+    .t-val { font-size: 16px; color: #fff; font-weight: bold; line-height: 1.2; }
 
-    /* COL 2: INFO (Stato + Arrivo + Target) */
-    .col-info { display: flex; flex-direction: column; justify-content: center; }
-    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
-    .info-sub { font-size: 11px; color: #888; line-height: 1.3; }
+    /* COL 2: INFO */
+    .col-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 3px; white-space: nowrap; }
+    .info-sub { font-size: 11px; color: #999; line-height: 1.3; }
     .info-sub span { color: #ccc; }
 
-    /* COL 3: AZIONE (Link + Copri) */
-    .col-action { display: flex; flex-direction: column; gap: 5px; }
+    /* COL 3: AZIONE */
+    .col-action { display: flex; flex-direction: column; gap: 6px; }
 
-    /* BADGES & BUTTONS */
+    /* BOTTONI */
     .lnk-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 28px; background: rgba(68, 138, 255, 0.15); 
+      width: 100%; height: 32px; background: rgba(68, 138, 255, 0.1); 
       border: 1px solid var(--blue); color: var(--blue); text-decoration: none; 
-      font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
+      font-size: 12px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
     }
     .lnk-btn:active { background: var(--blue); color: white; }
 
     .chk-cover {
-      width: 100%; height: 22px; display: flex; align-items: center; justify-content: center;
-      background: #151515; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
+      width: 100%; height: 24px; display: flex; align-items: center; justify-content: center;
+      background: #181818; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #666; font-size: 10px; text-transform: uppercase;
     }
     .chk-cover.active { background: #222; color: var(--green); border-color: var(--green); }
 
-    /* COLORS */
+    /* STATUS COLORI */
     .st-wait { color: var(--gold); }
     .st-now { color: var(--green); animation: pulse 1s infinite; }
-    .st-err { color: var(--red); }
+    .st-err { color: var(--red); font-size: 11px; }
 
     @keyframes pulse { 50% { opacity: 0.6; } }
     .hidden { display: none !important; }
@@ -109,7 +110,7 @@
     <div class="row">
       <input type="text" id="inCoord" placeholder="Link Partenza (l+k://...)" oninput="checkDB()">
     </div>
-    <div id="dbStatus" class="status-bar"></div>
+    <div id="dbStatus" class="status-bar">In attesa link...</div>
 
     <div class="row">
       <div class="col"><label>Data Impatto</label><input type="date" id="inDate"></div>
@@ -149,7 +150,7 @@
   </div>
 
   <script>
-    // --- DATI ---
+    // --- COSTANTI ---
     const T_BASE = { "Lanciere":700, "Balestriere":600, "Cav. Pesante":300, "Spadaccino":800, "Arciere":500, "Cav. Leggero":400, "Carro":1000, "Torre":480, "Catapulta":420 };
     const T_BONUS = { "Lanciere":665, "Balestriere":570, "Cav. Pesante":285, "Spadaccino":760, "Arciere":475, "Cav. Leggero":380, "Carro":950, "Torre":456, "Catapulta":399 };
 
@@ -183,12 +184,25 @@
             .then(r => r.json())
             .then(d => {
               DB = [];
+              // Funzione per appiattire il DB e normalizzare i dati
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
-                  // FIX CRITICO: Normalizza ID Giocatore
-                  n.p = n.p || n.pid || n.playerid || 0;
-                  DB.push(n); 
+                  // Normalizza ID Player su 'p'
+                  // Il DB potrebbe usare 'p', 'pid', 'owner' o 'playerid'
+                  // Se n.p è usato per punti, cerchiamo pid. Se non c'è, n.p è player.
+                  // Nel dubbio, se n.p esiste lo usiamo come discriminante
+                  
+                  let playerId = n.p || n.pid || n.playerid || 0;
+                  let points = n.pt || n.pts || n.points || 0;
+                  
+                  // Aggiungiamo solo se coordinate valide
+                  DB.push({
+                    x: n.x, 
+                    y: n.y, 
+                    p: playerId, // ID Giocatore
+                    pt: points   // Punti
+                  }); 
                 }
                 else if(typeof n==='object') Object.values(n).forEach(flat); 
               };
@@ -223,11 +237,10 @@
       rows = [];
       let left = garrison - 110;
       
-      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
-      while(left > 0 && step < 100) {
+      while(left > 0 && step < 120) {
         let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
         rows.push({ t: combatT, type: 'wave', target: null, covered: false });
         left -= Math.min(batch, left);
@@ -268,21 +281,28 @@
       let best = null;
       let minWait = Infinity;
       
+      // Cerco il target che mi permette di lanciare SUBITO o il PRIMA POSSIBILE
       for(let c of DB) {
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
-        if(!c.p) continue; // Solo attivi
         
-        // 1. Distanza Reale (32 raw = 1 campo)
+        // FILTRO ID PLAYER: Se c.p (Player ID) è 0 o null, salta
+        if(!c.p) continue; 
+        
+        // 1. Distanza (32 unità raw = 1 campo)
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
         let dist = Math.sqrt(dx*dx + dy*dy) / 32.0;
         
         if(dist < 0.1) continue;
         
+        // FILTRO PUNTI (Se richiesto): Distanza non deve superare i punti del target
+        // c.pt sono i punti
+        if(c.pt && dist > c.pt) continue;
+
         // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Andata e Ritorno)
+        // 3. Finestra Lancio (Andata)
         // Parto a L, arrivo al target, rimbalzo, torno a R
         // L = R - 2*Travel
         let lStart = rStart - (travelMs * 2);
@@ -294,16 +314,28 @@
         // 4. Attesa
         let wait = Math.max(0, lStart - now);
         
-        // STRATEGIA: Minimizzare l'attesa.
-        // Se wait == 0, vuol dire che posso lanciare ADESSO.
-        if(wait < minWait) {
-          minWait = wait;
-          best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
-          
-          // Ottimizzazione: Se trovo un target con 0 attesa, è ottimo.
-          // Ma continuiamo per vedere se ce n'è uno ancora meglio (magari più vicino con 0 attesa?)
-          // Per semplicità e velocità, se wait è 0 potremmo fermarci o cercare il dist più basso con wait 0.
-          // Qui prendiamo il primo "best wait" che troviamo.
+        // PRIORITY LOGIC:
+        // Voglio l'attesa PIÙ BASSA (0 è il top).
+        
+        if(wait === 0) {
+            // Trovato candidato perfetto (LANCIO SUBITO)
+            // Se ne avevo già uno perfetto, prendo quello con distanza MINORE (più veloce/sicuro)
+            if(minWait === 0) {
+                if(best && dist < best.dist) {
+                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+                }
+            } else {
+                // Primo candidato perfetto trovato
+                minWait = 0;
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+            }
+        } else {
+            // Candidato futuro (devo aspettare).
+            // Lo considero SOLO se non ho ancora trovato un candidato perfetto (minWait > 0)
+            if(minWait > 0 && wait < minWait) {
+                minWait = wait;
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+            }
         }
       }
       return best;
@@ -321,14 +353,15 @@
         let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
         let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
         
+        if(r.type === 'garrison') {
+          div.innerHTML = `${colTime}<div class="col-info" style="color:#666">Guarnigione base</div><div class="col-action"></div>`;
+          el.appendChild(div);
+          return;
+        }
+        
         // Info + Action Placeholder
         let colInfo = `<div class="col-info" id="info_${i}"></div>`;
         let colAct = `<div class="col-action" id="act_${i}"></div>`;
-        
-        if(r.type === 'garrison') {
-          colInfo = `<div class="col-info" style="color:#666; font-style:italic">Guarnigione base</div>`;
-          colAct = `<div class="col-action"></div>`;
-        }
         
         div.innerHTML = colTime + colInfo + colAct;
         el.appendChild(div);
@@ -349,7 +382,7 @@
           // Se non ho target o target scaduto, cerco nuovo
           if(!r.target || now > r.target.lEnd) {
             r.target = findTarget(r.t, speed);
-            updateRow(i); // Ridisegna bottoni/link
+            updateRow(i); 
           } else {
             updateTimer(i); // Aggiorna solo testo
           }
@@ -362,47 +395,55 @@
       if(r.type === 'garrison') return;
 
       let actDiv = document.getElementById(`act_${i}`);
+      let infoDiv = document.getElementById(`info_${i}`);
       if(!actDiv) return;
 
-      // Bottone Copri (Sempre presente)
-      let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">${r.covered?'OK':'COPRI'}</div>`;
-      
-      // Link (Solo se c'è target)
-      let btnLink = "";
-      if(r.target && !r.covered) {
-        let url = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-        // Classe hidden gestita dal timer
-        btnLink = `<a href="${url}" class="lnk-btn hidden" id="lnk_${i}">LANCIA</a>`;
+      // Reset bottoni se necessario
+      if(!actDiv.querySelector('.chk-cover')) {
+         actDiv.innerHTML = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">${r.covered?'OK':'COPRI'}</div>`;
       }
-      
-      actDiv.innerHTML = btnLink + btnCov;
-      updateTimer(i);
-    }
-
-    function updateTimer(i) {
-      let r = rows[i];
-      let infoDiv = document.getElementById(`info_${i}`);
-      let lnkBtn = document.getElementById(`lnk_${i}`);
-      if(!infoDiv) return;
 
       if(r.covered) {
-        infoDiv.innerHTML = `<span style="color:#666">Turno Coperto</span>`;
+        infoDiv.innerHTML = `<span style="color:#666; font-style:italic">Turno Coperto</span>`;
         return;
       }
 
       if(!r.target) {
         infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
-        if(lnkBtn) lnkBtn.classList.add('hidden');
+        if(actDiv.querySelector('.lnk-btn')) actDiv.querySelector('.lnk-btn').remove();
         return;
       }
 
+      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
+      
+      let existingLink = actDiv.querySelector('.lnk-btn');
+      if(!existingLink) {
+        let a = document.createElement('a');
+        a.className = 'lnk-btn hidden';
+        a.href = linkUrl;
+        a.innerText = "LANCIA";
+        actDiv.prepend(a); // Mette sopra il COPRI
+      } else {
+        existingLink.href = linkUrl;
+      }
+      
+      updateTimer(i);
+    }
+
+    function updateTimer(i) {
+      let r = rows[i];
+      if(!r.target || r.covered) return;
+      
       let now = Date.now();
+      let infoDiv = document.getElementById(`info_${i}`);
+      let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
+      
       let wait = r.target.lStart - now;
-      let dist = Math.round(r.target.dist); // ARROTONDAMENTO STANDARD
+      let dist = Math.round(r.target.dist); // ARROTONDAMENTO MATH.ROUND
+      let coord = `${r.target.c.x},${r.target.c.y}`;
       
       // Calcolo Arrivo (Solo Andata)
-      // Se aspetto: Arrivo = lStart + Travel
-      // Se lancio ora: Arrivo = Now + Travel
+      // Se lancio ORA (o appena scatta timer), arrivo tra travelMs
       let launchT = wait > 0 ? r.target.lStart : now;
       let arrT = new Date(launchT + r.target.travelMs);
       
@@ -419,7 +460,7 @@
           <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
           <div class="info-sub">
             <span>Arr:</span> ${arrStr}<br>
-            <span>Target:</span> ${dist} campi (${r.target.c.x},${r.target.c.y})
+            <span>Dist:</span> ${dist} campi (${coord})
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.add('hidden');
@@ -427,24 +468,24 @@
       } else if(now <= r.target.lEnd) {
         // LANCIO
         infoDiv.innerHTML = `
-          <div class="info-status st-now">▶ LANCIA ORA</div>
+          <div class="info-status st-now">▶ LANCIA ORA!</div>
           <div class="info-sub">
             <span style="color:#fff">Arr:</span> ${arrStr}<br>
-            <span>Target:</span> ${dist} campi (${r.target.c.x},${r.target.c.y})
+            <span>Dist:</span> ${dist} campi (${coord})
           </div>
         `;
         if(lnkBtn) lnkBtn.classList.remove('hidden');
 
       } else {
         // SCADUTO
-        infoDiv.innerHTML = `<span class="st-err">Scaduto (Ricalcolo...)</span>`;
+        infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
         if(lnkBtn) lnkBtn.classList.add('hidden');
       }
     }
 
     function toggle(i) {
       rows[i].covered = !rows[i].covered;
-      renderList(); // Ridisegna riga grigia/normale
+      renderList();
     }
 
     function reset() {
