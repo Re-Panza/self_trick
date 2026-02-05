@@ -31,7 +31,7 @@
 
     .container { max-width: 100%; margin: 0 auto; }
 
-    /* CONTROLLI INPUT */
+    /* CONTROLLI */
     .controls {
       background: var(--card); padding: 12px; border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -150,7 +150,7 @@
   </div>
 
   <script>
-    // --- COSTANTI ---
+    // --- DATI ---
     const T_BASE = { "Lanciere":700, "Balestriere":600, "Cav. Pesante":300, "Spadaccino":800, "Arciere":500, "Cav. Leggero":400, "Carro":1000, "Torre":480, "Catapulta":420 };
     const T_BONUS = { "Lanciere":665, "Balestriere":570, "Cav. Pesante":285, "Spadaccino":760, "Arciere":475, "Cav. Leggero":380, "Carro":950, "Torre":456, "Catapulta":399 };
 
@@ -184,25 +184,12 @@
             .then(r => r.json())
             .then(d => {
               DB = [];
-              // Funzione per appiattire il DB e normalizzare i dati
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
-                  // Normalizza ID Player su 'p'
-                  // Il DB potrebbe usare 'p', 'pid', 'owner' o 'playerid'
-                  // Se n.p è usato per punti, cerchiamo pid. Se non c'è, n.p è player.
-                  // Nel dubbio, se n.p esiste lo usiamo come discriminante
-                  
-                  let playerId = n.p || n.pid || n.playerid || 0;
-                  let points = n.pt || n.pts || n.points || 0;
-                  
-                  // Aggiungiamo solo se coordinate valide
-                  DB.push({
-                    x: n.x, 
-                    y: n.y, 
-                    p: playerId, // ID Giocatore
-                    pt: points   // Punti
-                  }); 
+                  // Mappa Player ID
+                  n.p = n.p || n.pid || n.playerid || 0;
+                  DB.push(n); 
                 }
                 else if(typeof n==='object') Object.values(n).forEach(flat); 
               };
@@ -237,6 +224,7 @@
       rows = [];
       let left = garrison - 110;
       
+      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
@@ -281,53 +269,53 @@
       let best = null;
       let minWait = Infinity;
       
-      // Cerco il target che mi permette di lanciare SUBITO o il PRIMA POSSIBILE
+      // Scorro TUTTO il DB per trovare il miglior candidato
       for(let c of DB) {
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
+        if(!c.p) continue; // Solo attivi
         
-        // FILTRO ID PLAYER: Se c.p (Player ID) è 0 o null, salta
-        if(!c.p) continue; 
-        
-        // 1. Distanza (32 unità raw = 1 campo)
+        // 1. Distanza Reale (1 raw = 1 campo) -> NO DIVISIONE
         let dx = c.x - myCastle.x;
         let dy = c.y - myCastle.y;
-        let dist = Math.sqrt(dx*dx + dy*dy) / 32.0;
+        let dist = Math.sqrt(dx*dx + dy*dy); // <--- CORRETTO (Pitagora puro)
         
         if(dist < 0.1) continue;
         
-        // FILTRO PUNTI (Se richiesto): Distanza non deve superare i punti del target
-        // c.pt sono i punti
-        if(c.pt && dist > c.pt) continue;
-
         // 2. Tempo Viaggio (Andata)
         let travelMs = dist * speed * 1000;
         
-        // 3. Finestra Lancio (Andata)
-        // Parto a L, arrivo al target, rimbalzo, torno a R
-        // L = R - 2*Travel
+        // 3. Finestra Lancio (Andata) per tornare nel range
+        // Devo partire a [Start] per arrivare a target, poi tornare a [rStart]
+        // Quindi Tempo Totale (A+R) = 2 * Travel
+        // Launch Start = Return Start - 2 * Travel
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Se finestra scaduta, salta
+        // Se la finestra di lancio è scaduta (nel passato), salta
         if(lEnd < now) continue;
         
-        // 4. Attesa
+        // 4. Calcolo Attesa
+        // Se lStart <= now, vuol dire che la finestra è APERTA (posso lanciare subito). Attesa = 0.
         let wait = Math.max(0, lStart - now);
         
-        // PRIORITY LOGIC:
-        // Voglio l'attesa PIÙ BASSA (0 è il top).
+        // LOGICA PRIORITÀ:
+        // 1. Cerchiamo attesa 0 (lancio immediato).
+        // 2. Se abbiamo più attese 0, prendiamo quella con la finestra più ampia rimasta (lEnd - now).
+        // 3. Se non abbiamo attese 0, prendiamo quella con attesa minore.
         
         if(wait === 0) {
-            // Trovato candidato perfetto (LANCIO SUBITO)
-            // Se ne avevo già uno perfetto, prendo quello con distanza MINORE (più veloce/sicuro)
-            if(minWait === 0) {
-                if(best && dist < best.dist) {
-                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
-                }
-            } else {
-                // Primo candidato perfetto trovato
+            // Candidato perfetto (LANCIO SUBITO)
+            // Se non avevamo candidati perfetti prima, o se questo ha una finestra migliore (più sicura)
+            if(minWait > 0) {
+                // Trovato il primo candidato perfetto! Resetto tutto e prendo questo.
                 minWait = 0;
                 best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+            } else {
+                // Avevo già un candidato perfetto? Confrontiamo.
+                // Preferisco quello che rimane aperto più a lungo (lEnd maggiore) per comodità
+                if(lEnd > best.lEnd) {
+                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs };
+                }
             }
         } else {
             // Candidato futuro (devo aspettare).
