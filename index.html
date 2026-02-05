@@ -9,14 +9,14 @@
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 
     :root {
-      --bg: #121212;
+      --bg: #000000;
+      --card: #111111;
       --text: #e0e0e0;
-      --gold: #d4a843;
-      --green: #4caf50;
-      --red: #f44336;
+      --gold: #d4af37;
+      --green: #00e676;
+      --red: #ff1744;
+      --blue: #2979ff;
       --border: #333;
-      --accent: #2196f3;
-      --card-bg: #1e1e1e;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -26,102 +26,72 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
-      padding-bottom: 30px;
+      padding-bottom: 40px;
     }
 
-    .container { max-width: 100%; margin: 0 auto; }
-
-    /* INPUT SECTION */
+    /* CONTROLLI */
     .controls {
-      padding: 10px;
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      position: relative;
-      z-index: 20;
+      background: var(--card); padding: 10px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
-
-    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .col { flex: 1; }
-
+    label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    
     input, select {
-      width: 100%; background: #000; color: #fff; border: 1px solid #444;
-      padding: 8px; border-radius: 4px; font-size: 14px; outline: none;
+      width: 100%; background: #000; color: #fff; border: 1px solid #444; 
+      border-radius: 4px; padding: 8px; font-size: 14px; outline: none; font-weight: bold;
     }
     input:focus { border-color: var(--gold); }
 
     .btn {
-      width: 100%; padding: 12px; background: var(--gold); color: #000;
-      font-weight: bold; border: none; border-radius: 4px; text-transform: uppercase;
-      font-size: 14px; letter-spacing: 1px;
-    }
-    
-    /* GRID TABLE LAYOUT */
-    .grid-table {
-      display: grid;
-      /* Combat | Check | Timer/Launch | Target/Link */
-      grid-template-columns: 50px 30px 1fr 90px; 
-      width: 100%;
+      width: 100%; padding: 10px; background: var(--gold); color: #000;
+      font-weight: bold; border: none; border-radius: 4px; text-transform: uppercase; font-size: 14px; margin-top: 5px;
     }
 
-    .grid-head {
-      font-weight: bold; color: #888; font-size: 10px; text-transform: uppercase;
-      padding: 8px 2px; border-bottom: 1px solid var(--border);
-      background: #121212; position: sticky; top: 0; z-index: 10; text-align: center;
+    /* LISTA RISULTATI */
+    .res-row {
+      display: flex; align-items: center; padding: 10px 8px; border-bottom: 1px solid #222; background: var(--bg);
     }
+    .res-row:nth-child(even) { background: #080808; }
+    .res-row.covered { opacity: 0.3; filter: grayscale(100%); }
 
-    .grid-row {
-      display: contents; 
+    /* COLONNE */
+    .col-time {
+      width: 50px; text-align: center; font-size: 11px; color: #888; line-height: 1.2;
+      border-right: 1px solid #222; margin-right: 8px; padding-right: 4px;
     }
+    .col-time span { font-size: 14px; color: #fff; font-weight: bold; display: block; }
 
-    .cell {
-      padding: 8px 2px;
-      border-bottom: 1px solid #222;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      font-size: 13px;
-      text-align: center;
-      min-height: 50px;
-    }
+    .col-info { flex: 1; min-width: 0; }
+    .info-status { font-size: 13px; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+    .info-dist { font-size: 11px; color: #666; font-family: monospace; }
 
-    /* Column Specific Styles */
-    .c-time { color: #ccc; font-size: 11px; line-height: 1.2; }
-    .c-time span { color: #fff; font-weight: bold; font-size: 13px; }
-    
-    .c-check input {
-      width: 20px; height: 20px; border-radius: 4px;
-      accent-color: var(--green); cursor: pointer;
-    }
+    .col-action { width: 90px; margin-left: 8px; display: flex; flex-direction: column; gap: 4px; }
 
-    .c-launch { align-items: flex-start; padding-left: 5px; text-align: left; }
-    
-    /* Rows Styling */
-    .grid-row:nth-child(even) .cell { background: rgba(255,255,255,0.02); }
-    .grid-row.covered .cell { color: #555; background: #0a0a0a; }
-    .grid-row.covered .c-time span { color: #555; }
-
-    /* LINK BUTTON */
+    /* BOTTONI */
     .lnk-btn {
-      display: block; width: 100%; text-decoration: none;
-      background: rgba(33, 150, 243, 0.15); border: 1px solid var(--accent); color: var(--accent);
-      font-size: 11px; padding: 6px 0; text-align: center; border-radius: 4px;
-      font-weight: bold; margin-bottom: 2px;
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 30px; background: rgba(41, 121, 255, 0.1); 
+      border: 1px solid var(--blue); color: var(--blue); text-decoration: none; 
+      font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;
     }
-    .lnk-btn:active { background: var(--accent); color: #fff; }
+    .lnk-btn:active { background: var(--blue); color: white; }
 
-    .dist-info { font-size: 10px; color: #666; }
-
-    /* BADGES */
-    .badge {
-      display: inline-block; padding: 4px 6px; border-radius: 4px;
-      font-size: 11px; font-weight: bold; line-height: 1.2;
+    .chk-cover {
+      width: 100%; height: 24px; display: flex; align-items: center; justify-content: center;
+      background: #111; border: 1px solid #333; border-radius: 4px; cursor: pointer; color: #555; font-size: 10px;
     }
-    .b-wait { color: #aaa; font-weight: normal; }
-    .b-now { background: var(--green); color: #000; animation: pulse 1.5s infinite; }
-    .b-err { color: var(--red); }
+    .chk-cover.active { background: #222; color: var(--green); border-color: var(--green); }
 
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    /* STATUS COLORS */
+    .st-wait { color: var(--gold); }
+    .st-now { color: var(--green); animation: pulse 1s infinite; }
+    .st-err { color: var(--red); font-size: 12px; }
 
-    .status-bar { text-align: center; font-size: 11px; margin-top: 4px; color: #888; height: 15px; }
+    @keyframes pulse { 50% { opacity: 0.5; } }
     .hidden { display: none !important; }
+    .status-bar { font-size: 11px; text-align: center; color: #666; margin-bottom: 5px; }
   </style>
 </head>
 
@@ -131,78 +101,51 @@
     <div class="row">
       <input type="text" id="inCoord" placeholder="Link Partenza (l+k://...)" oninput="checkDB()">
     </div>
-    <div id="dbStatus" class="status-bar"></div>
+    <div id="dbStatus" class="status-bar">In attesa link...</div>
 
-    <div class="row" style="margin-top:10px">
-      <div class="col">
-        <label style="font-size:10px; color:#888; text-transform:uppercase">Data Impatto</label>
-        <input type="date" id="inDate">
-      </div>
-      <div class="col">
-        <label style="font-size:10px; color:#888; text-transform:uppercase">Ora Impatto</label>
-        <input type="time" id="inTime" step="60">
-      </div>
+    <div class="row">
+      <div class="col"><label>Giorno Impatto</label><input type="date" id="inDate"></div>
+      <div class="col"><label>Ora Impatto</label><input type="time" id="inTime" step="60"></div>
     </div>
 
     <div class="row">
-      <div class="col" style="flex:2">
-        <label style="font-size:10px; color:#888; text-transform:uppercase">Truppa</label>
-        <select id="selTroop"></select>
-      </div>
-      <div class="col">
-        <label style="font-size:10px; color:#888; text-transform:uppercase">Plotone</label>
+      <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
+      <div class="col"><label>Plotone</label>
         <select id="selBatch">
-          <option value="51">51</option>
-          <option value="55">55</option>
-          <option value="60">60</option>
-          <option value="76">76</option>
+          <option value="51">51</option><option value="55">55</option>
+          <option value="60">60</option><option value="76">76</option>
         </select>
       </div>
     </div>
-    
-    <div class="row" style="align-items:center; justify-content:space-between; margin-top:10px">
-      <label style="color:#aaa; font-size:12px; display:flex; align-items:center; gap:5px;">
-        <input type="checkbox" id="chkMap" style="width:auto"> Bonus Mappa (+5%)
+
+    <div class="row" style="justify-content:space-between; padding:5px 0;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#fff; cursor:pointer">
+        <input type="checkbox" id="chkMap" style="width:18px; height:18px"> Bonus Mappa (+5%)
       </label>
-      <input type="number" id="inGarrison" value="1000" style="width:70px; text-align:center" placeholder="Guar.">
-    </div>
-
-    <button class="btn" onclick="startCalc()" style="margin-top:10px">CALCOLA</button>
-  </div>
-
-  <div id="resArea" class="hidden">
-    
-    <div style="padding:10px; background:#1e1e1e; border-bottom:1px solid #333; position:sticky; top:0; z-index:20; display:flex; gap:10px; align-items:center">
-      <button onclick="reset()" style="background:#333; color:#fff; border:none; padding:8px 12px; border-radius:4px; font-weight:bold">←</button>
-      <div style="flex:1">
-        <select id="selBattleTroop" onchange="changeTroopLive()" style="border-color:#444"></select>
+      <div style="display:flex; align-items:center; gap:5px">
+        <label style="margin:0">Guarnigione:</label>
+        <input type="number" id="inGarrison" value="1000" style="width:60px; text-align:center">
       </div>
     </div>
 
-    <div class="grid-table">
-      <div class="grid-head">Combat</div>
-      <div class="grid-head">Ok</div>
-      <div class="grid-head" style="text-align:left; padding-left:8px">Stato / Timer</div>
-      <div class="grid-head">Target</div>
+    <button class="btn" onclick="startCalc()">CALCOLA</button>
+  </div>
+
+  <div id="resArea" class="hidden">
+    <div style="background:#1a1a1a; padding:8px; border-bottom:1px solid #333; display:flex; gap:10px; position:sticky; top:0; z-index:100">
+      <button onclick="reset()" style="background:#333; color:#fff; border:none; padding:0 12px; font-weight:bold; border-radius:4px; font-size:16px">←</button>
+      <select id="selBattleTroop" onchange="changeTroopLive()" style="background:#000; color:#fff; border:1px solid #444"></select>
     </div>
-
-    <div id="gridBody" class="grid-table"></div>
-
+    <div id="resList" class="result-list"></div>
   </div>
 
   <script>
-    // --- COSTANTI ---
     const T_BASE = { "Lanciere":700, "Balestriere":600, "Cav. Pesante":300, "Spadaccino":800, "Arciere":500, "Cav. Leggero":400, "Carro":1000, "Torre":480, "Catapulta":420 };
     const T_BONUS = { "Lanciere":665, "Balestriere":570, "Cav. Pesante":285, "Spadaccino":760, "Arciere":475, "Cav. Leggero":380, "Carro":950, "Torre":456, "Catapulta":399 };
 
-    // --- VARIABILI GLOBALI ---
-    let DB = [];
-    let myCastle = null;
-    let worldId = null;
-    let rows = []; 
-    let ticker = null;
-    
-    // --- INIT ---
+    let DB = [], myCastle = null, worldId = null;
+    let rows = [], ticker = null;
+
     window.onload = () => {
       let d = new Date();
       document.getElementById('inDate').value = d.toISOString().split('T')[0];
@@ -214,7 +157,6 @@
       document.getElementById('selBattleTroop').innerHTML = html;
     };
 
-    // --- DOWNLOAD DB ---
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
@@ -224,34 +166,29 @@
         let w = m[3];
         if(w !== worldId) {
           worldId = w;
-          st.innerHTML = `<span style="color:var(--accent)">⌛ Scarico Mondo ${w}...</span>`;
+          st.innerHTML = `<span style="color:var(--gold)">Scarico Mondo ${w}...</span>`;
           fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`)
-            .then(r=>r.json())
+            .then(r => r.json())
             .then(d => {
-              // Pulizia e Normalizzazione Dati (FIX IMPORTANTE)
               DB = [];
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
                 else if(n && n.x) {
-                  // Normalizza il nome della proprietà Player ID
-                  // Il JSON può avere 'p' (comune), 'pid', o 'playerid'
-                  n.pid = n.p || n.pid || n.playerid || 0;
+                  n.p = n.p || n.pid || n.playerid || 0;
                   DB.push(n); 
                 }
                 else if(typeof n==='object') Object.values(n).forEach(flat); 
               };
               flat(d);
-              st.innerHTML = `<span style="color:var(--green)">✓ DB Caricato (${DB.length} castelli)</span>`;
+              st.innerHTML = `<span style="color:var(--green)">✓ DB Pronto (${DB.length} castelli)</span>`;
             })
             .catch(() => st.innerHTML = `<span style="color:var(--red)">Errore DB</span>`);
         }
       }
     }
 
-    // --- START CALCOLO ---
     function startCalc() {
-      if(!DB.length) return alert("Attendi il caricamento del DB!");
-      
+      if(!DB.length) return alert("Attendi il DB!");
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
       if(!m) return alert("Link non valido");
@@ -265,254 +202,244 @@
       let garrison = parseInt(document.getElementById('inGarrison').value) || 1000;
       let batch = parseInt(document.getElementById('selBatch').value);
       
-      let troop = document.getElementById('selTroop').value;
-      document.getElementById('selBattleTroop').value = troop;
-      
-      // Inizializza UI
+      document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
       document.getElementById('inputArea').classList.add('hidden');
       document.getElementById('resArea').classList.remove('hidden');
       
-      // Genera Righe Vuote (Skeleton)
       rows = [];
       let left = garrison - 110;
       
-      // Riga 0: Guarnigione
-      rows.push({ type: 'garrison', t: new Date(startT) });
+      rows.push({ t: new Date(startT), type: 'garrison' });
       
       let step = 1;
       while(left > 0 && step < 120) {
-        let combatT = new Date(startT.getTime() + (step * 600000)); // +10 min
-        rows.push({
-          type: 'wave',
-          t: combatT,
-          covered: false,
-          target: null // Sarà calcolato dopo
-        });
+        let combatT = new Date(startT.getTime() + (step * 600000));
+        rows.push({ t: combatT, type: 'wave', target: null, covered: false });
         left -= Math.min(batch, left);
         step++;
       }
       
-      // Primo Calcolo Totale
-      reCalcTargets();
-      
-      // Avvia Loop
+      reCalcAll();
       if(ticker) clearInterval(ticker);
       ticker = setInterval(loop, 1000);
-      renderGrid();
+      renderList();
     }
 
-    // --- LOGICA CAMBIO TRUPPA ---
-    function changeTroopLive() {
-      // Quando cambio truppa, ricalcolo SOLO le righe non coperte
-      reCalcTargets();
-      // Aggiorno la vista
-      updateDOM();
-    }
-
-    // --- CALCOLO TARGET PER TUTTE LE RIGHE ---
-    function reCalcTargets() {
+    function reCalcAll() {
       let troop = document.getElementById('selBattleTroop').value;
       let bonus = document.getElementById('chkMap').checked;
       let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
       
       rows.forEach(r => {
         if(r.type === 'wave' && !r.covered) {
-          // Cerca il miglior target ORA con la NUOVA velocità
-          r.target = findBestTarget(r.t, speed);
+          r.target = findTarget(r.t, speed);
         }
       });
     }
 
-    // --- RICERCA HABITAT (Motore) ---
-    function findBestTarget(combatTime, secPerField) {
+    function changeTroopLive() {
+      reCalcAll();
+      renderList();
+    }
+
+    // --- LOGICA DI RICERCA INTELLIGENTE ---
+    function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // Finestra Rientro: Combat +4m -> +7m
+      // Finestra di RIENTRO (Combat +4m -> +7m)
       let rStart = combatTime.getTime() + (4 * 60000);
       let rEnd = combatTime.getTime() + (7 * 60000);
       
       let best = null;
-      let minWait = Infinity;
+      let minWait = Infinity; 
       
-      // Scorro tutto il DB
+      // Cerco il target che mi permette di lanciare SUBITO o il PRIMA POSSIBILE
       for(let c of DB) {
-        // Salta me stesso e inattivi
         if(c.x === myCastle.x && c.y === myCastle.y) continue;
-        if(!c.pid) continue; // FIX APPLICATO: pid ora è popolato correttamente
+        if(!c.p) continue; // Solo attivi
         
-        // Calcolo Distanza Reale (32 unità = 1 campo)
-        let rawDist = Math.sqrt(Math.pow(c.x - myCastle.x, 2) + Math.pow(c.y - myCastle.y, 2));
-        let dist = rawDist / 32.0;
+        let dx = c.x - myCastle.x;
+        let dy = c.y - myCastle.y;
+        let dist = Math.sqrt(dx*dx + dy*dy) / 32.0;
         
         if(dist < 0.1) continue;
         
-        // Tempo Viaggio (Andata)
-        let travelMs = dist * secPerField * 1000;
+        let travelMs = dist * speed * 1000;
         
-        // Finestra Lancio (Andata) per tornare in tempo
+        // Finestra LANCIO (Parto ORA -> Arrivo -> Torno in tempo)
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
-        // Se la finestra di lancio è già finita nel passato, questo castello è bruciato
+        // Scaduto
         if(lEnd < now) continue;
         
-        // Calcolo attesa
         let wait = Math.max(0, lStart - now);
         
-        // Cerco il target con attesa minore (più vicino al lancio)
-        if(wait < minWait) {
-          minWait = wait;
-          best = {
-            c: c,
-            dist: dist,
-            lStart: lStart,
-            lEnd: lEnd
-          };
+        // STRATEGIA: Se posso lanciare ORA (wait=0), preferisco il castello più vicino (distanza minore)
+        // Se devo aspettare, preferisco quello con meno attesa.
+        
+        if(wait === 0) {
+            // Sono in finestra di lancio. È un candidato "Perfetto".
+            // Se ho già un candidato perfetto, prendo quello con distanza minore (meno errori viaggio)
+            if(best && best.wait === 0) {
+                if(dist < best.dist) {
+                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: 0, travelMs: travelMs };
+                }
+            } else {
+                // Primo candidato perfetto
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: 0, travelMs: travelMs };
+                minWait = 0;
+            }
+        } else {
+            // Candidato futuro. Lo prendo solo se non ho candidati perfetti e se è il più vicino nel tempo
+            if(minWait > 0 && wait < minWait) {
+                minWait = wait;
+                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, wait: wait, travelMs: travelMs };
+            }
         }
       }
       return best;
     }
 
-    // --- LOOP PRINCIPALE (Ogni secondo) ---
+    function renderList() {
+      let el = document.getElementById('resList');
+      el.innerHTML = "";
+      
+      rows.forEach((r, i) => {
+        let div = document.createElement('div');
+        div.className = r.covered ? "res-row covered" : "res-row";
+        
+        let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
+        let colTime = `<div class="col-time">Imp.<br><span>${tLabel}</span></div>`;
+        
+        if(r.type === 'garrison') {
+          div.innerHTML = `${colTime}<div class="col-info" style="color:#666">Guarnigione base</div>`;
+          el.appendChild(div);
+          return;
+        }
+        
+        let colInfo = `<div class="col-info" id="info_${i}"></div>`;
+        
+        let btnCov = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">
+                        ${r.covered ? '✓ OK' : 'COPRI'}
+                      </div>`;
+                      
+        let colAct = `<div class="col-action" id="act_${i}">${btnCov}</div>`;
+        
+        div.innerHTML = colTime + colInfo + colAct;
+        el.appendChild(div);
+        
+        updateRow(i);
+      });
+    }
+
     function loop() {
       let now = Date.now();
-      let needsRender = false;
       let troop = document.getElementById('selBattleTroop').value;
       let bonus = document.getElementById('chkMap').checked;
       let speed = bonus ? T_BONUS[troop] : T_BASE[troop];
 
       rows.forEach((r, i) => {
-        if(r.type === 'wave' && !r.covered) {
-          
-          // Caso 1: Non ho target
-          if(!r.target) {
-            r.target = findBestTarget(r.t, speed);
-            needsRender = true;
+        if(r.type !== 'garrison' && !r.covered) {
+          if(!r.target || now > r.target.lEnd) {
+            r.target = findTarget(r.t, speed);
+            updateRow(i); 
           }
-          // Caso 2: Ho target ma è SCADUTO (tempo passato)
-          else if(now > r.target.lEnd) {
-            // Cerco subito un altro target valido per questo slot
-            let newTgt = findBestTarget(r.t, speed);
-            // Aggiorno sempre per cercare di recuperare il turno
-            r.target = newTgt;
-            needsRender = true; 
-          }
-          
-          // Aggiorno solo il timer DOM se non serve full render
-          if(!needsRender) updateRowDOM(i, r, now);
+          updateTimer(i);
         }
       });
-
-      if(needsRender) renderGrid();
     }
 
-    // --- RENDER GRID (Struttura) ---
-    function renderGrid() {
-      let container = document.getElementById('gridBody');
-      container.innerHTML = "";
-      
-      rows.forEach((r, i) => {
-        // Colonna 1: Combat Time
-        let dStr = r.t.getDate() + "/" + (r.t.getMonth()+1);
-        let tStr = pad(r.t.getHours()) + ":" + pad(r.t.getMinutes());
-        
-        let col1 = `<div class="cell c-time">${dStr}<br><span>${tStr}</span></div>`;
-        
-        // Colonna 2: Checkbox
-        let col2 = "";
-        if(r.type === 'garrison') {
-          col2 = `<div class="cell c-check"><input type="checkbox" checked disabled></div>`;
-        } else {
-          col2 = `<div class="cell c-check"><input type="checkbox" class="cov-chk" ${r.covered?'checked':''} onchange="toggle(${i})"></div>`;
-        }
-        
-        // Colonna 3 & 4 (Placeholder, riempiti da updateRowDOM)
-        let col3 = `<div class="cell c-launch" id="dom_launch_${i}"></div>`;
-        let col4 = `<div class="cell c-link" id="dom_link_${i}"></div>`;
-        
-        let rowDiv = document.createElement('div');
-        rowDiv.className = r.covered ? "grid-row covered" : "grid-row";
-        rowDiv.innerHTML = col1 + col2 + col3 + col4;
-        container.appendChild(rowDiv);
-      });
-      
-      // Prima passata di dati
-      let now = Date.now();
-      rows.forEach((r, i) => updateRowDOM(i, r, now));
-    }
+    function updateRow(i) {
+      let r = rows[i];
+      let infoDiv = document.getElementById(`info_${i}`);
+      let actDiv = document.getElementById(`act_${i}`);
+      if(!infoDiv || !actDiv) return;
 
-    // --- AGGIORNAMENTO DOM SINGOLA RIGA (Leggero) ---
-    function updateRowDOM(i, r, now) {
-      let elL = document.getElementById(`dom_launch_${i}`);
-      let elK = document.getElementById(`dom_link_${i}`);
-      if(!elL || !elK) return;
-
-      if(r.type === 'garrison') {
-        elL.innerHTML = `<span style="color:#666">Guarnigione</span>`;
-        elK.innerHTML = `—`;
-        return;
-      }
-
-      if(r.covered) {
-        elL.innerHTML = `<span style="color:#666">Coperto</span>`;
-        elK.innerHTML = `—`;
-        return;
-      }
+      if(r.covered) return;
 
       if(!r.target) {
-        elL.innerHTML = `<span class="b-err">No Target</span>`;
-        elK.innerHTML = `—`;
+        infoDiv.innerHTML = `<div class="st-err">Nessun Target Trovato</div>`;
+        if(actDiv.children.length > 1) actDiv.lastChild.remove();
         return;
       }
 
-      // Calcolo Stati
-      let wait = r.target.lStart - now;
+      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
+      let dist = Math.round(r.target.dist); // ARROTONDAMENTO MATH.ROUND
       
-      if(wait > 0) {
-        // FASE ATTESA
-        let m = Math.floor(wait / 60000);
-        let s = Math.floor((wait % 60000) / 1000);
-        elL.innerHTML = `<span class="b-wait">Attendi: ${m}m ${s}s</span>`;
-        
-        // Link Nascosto, solo info distanza
-        let dist = Math.round(r.target.dist);
-        elK.innerHTML = `<span class="dist-info">${dist} campi</span>`;
-        
-      } else if (now <= r.target.lEnd) {
-        // FASE LANCIO (Link Visibile)
-        elL.innerHTML = `<span class="badge b-now">LANCIA ORA</span>`;
-        
-        let dist = Math.round(r.target.dist);
-        // Link Coordinate
-        let url = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-        elK.innerHTML = `<a href="${url}" class="lnk-btn">APRI LINK</a>
-                         <span class="dist-info">${dist} campi</span>`;
+      let existingLink = actDiv.querySelector('.lnk-btn');
+      if(!existingLink) {
+        let a = document.createElement('a');
+        a.className = 'lnk-btn hidden';
+        a.href = linkUrl;
+        a.innerText = "LINK";
+        actDiv.appendChild(a);
       } else {
-        // FASE SCADUTO (Momentanea, prima del ricalcolo)
-        elL.innerHTML = `<span class="b-err">...</span>`;
+        existingLink.href = linkUrl;
+      }
+      
+      updateTimer(i);
+    }
+
+    function updateTimer(i) {
+      let r = rows[i];
+      if(!r.target || r.covered) return;
+      
+      let now = Date.now();
+      let infoDiv = document.getElementById(`info_${i}`);
+      let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
+      
+      let wait = r.target.lStart - now;
+      let dist = Math.round(r.target.dist);
+      let coord = `${r.target.c.x},${r.target.c.y}`;
+      
+      // Calcolo Arrivo (Solo Andata)
+      // Arrivo = Ora Lancio (Stimata) + Tempo Viaggio
+      // Se devo aspettare, Ora Lancio = lStart. Se posso lanciare ora, Ora Lancio = Now.
+      let launchTimeMs = wait > 0 ? r.target.lStart : now;
+      let arrivalMs = launchTimeMs + r.target.travelMs;
+      let arrivalDate = new Date(arrivalMs);
+      
+      let arrStr = `${pad(arrivalDate.getDate())}/${pad(arrivalDate.getMonth()+1)} ${pad(arrivalDate.getHours())}:${pad(arrivalDate.getMinutes())}:${pad(arrivalDate.getSeconds())}`;
+
+      if(wait > 0) {
+        let h = Math.floor(wait / 3600000);
+        let m = Math.floor((wait % 3600000) / 60000);
+        let s = Math.floor((wait % 60000) / 1000);
+        
+        let waitStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+
+        infoDiv.innerHTML = `
+          <div class="info-status st-wait">⏳ Attendi: ${waitStr}</div>
+          <div class="info-dist">Arrivo: ${arrStr} (Andata)<br>Target: ${dist} campi</div>
+        `;
+        if(lnkBtn) lnkBtn.classList.add('hidden');
+        
+      } else if(now <= r.target.lEnd) {
+        infoDiv.innerHTML = `
+          <div class="info-status st-now">▶ LANCIA ORA!</div>
+          <div class="info-dist">Arrivo: ${arrStr} (Andata)<br>Target: ${dist} campi</div>
+        `;
+        if(lnkBtn) lnkBtn.classList.remove('hidden');
+        
+      } else {
+        infoDiv.innerHTML = `<div class="st-err">Tempo Scaduto...</div>`;
+        if(lnkBtn) lnkBtn.classList.add('hidden');
       }
     }
 
     function toggle(i) {
       rows[i].covered = !rows[i].covered;
-      // Ridisegna la classe della riga
-      renderGrid();
-    }
-
-    function updateDOM() {
-      // Wrapper per aggiornare tutto senza ricostruire HTML se possibile
-      // Ma con cambio truppa, meglio rifare renderGrid per sicurezza
-      renderGrid();
+      renderList();
     }
 
     function reset() {
-      document.getElementById('resArea').classList.add('hidden');
       document.getElementById('inputArea').classList.remove('hidden');
+      document.getElementById('resArea').classList.add('hidden');
       if(ticker) clearInterval(ticker);
     }
 
     function pad(n) { return n<10?'0'+n:n; }
   </script>
-
 </body>
 </html>
