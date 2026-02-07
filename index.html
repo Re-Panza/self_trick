@@ -192,11 +192,17 @@
     .res-row:last-child { border-bottom: none; }
     .res-row:nth-child(even) { background: rgba(255,255,255,0.02); }
     
-    .res-row.selected {
-      background: var(--selected-bg) !important;
-      border-left: 3px solid var(--gold);
+    /* MODIFICA COLORI RIGHE */
+    .res-row.launched { 
+        background: rgba(251, 191, 36, 0.15) !important; 
+        border-left: 3px solid var(--gold);
     }
-    .res-row.covered { opacity: 0.4; filter: grayscale(100%); }
+    .res-row.covered { 
+        background: rgba(52, 211, 153, 0.15) !important; 
+        border-left: 3px solid var(--green); 
+        opacity: 1; /* Rimosso l'effetto sbiadito */
+        filter: none; /* Rimosso il bianco e nero */
+    }
 
     .col-time { text-align: center; border-right: 1px solid var(--border); padding-right: 8px; }
     .t-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
@@ -224,7 +230,7 @@
       background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
       border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 11px; text-transform: uppercase;
     }
-    .chk-cover.active { background: rgba(52, 211, 153, 0.1); color: var(--green); border-color: var(--green); }
+    .chk-cover.active { background: var(--green); color: #000; font-weight:bold; border-color: var(--green); }
 
     .st-wait { color: var(--muted); }
     .st-now { color: var(--green); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
@@ -232,26 +238,11 @@
 
     .end-msg { padding: 20px; text-align: center; color: var(--danger); font-weight: bold; font-size: 13px; text-transform: uppercase; }
 
-    .paypal-footer {
-        margin-top: 60px;
-        padding-top: 25px;
-        border-top: 1px solid var(--border);
-        text-align: center;
-    }
-
+    .paypal-footer { text-align: center; margin-top: 40px; padding: 30px 20px; border-top: 1px solid var(--border); }
     .paypal-link {
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 14px;
-        background: #0070ba;
-        padding: 12px 28px;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: 0.3s;
-        box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
+      color: #60a5fa; text-decoration: none; font-weight: bold; font-size: 14px;
+      background: rgba(0, 112, 186, 0.15); padding: 10px 24px; border-radius: 50px;
+      border: 1px solid rgba(0, 112, 186, 0.4); display: inline-flex; align-items: center; gap: 8px; transition: 0.3s;
     }
 
     /* --- STILE ASSISTENTE COPIATO --- */
@@ -536,13 +527,24 @@
         }
     });
 
-    // --- DATI ---
-    const T_BASE_RAW = { 
-      "Lanciere": 700, "Balestriere": 600, "Cav. Pesante": 300,
-      "Spadaccino": 800, "Arciere": 500, "Cav. Leggero": 400,
-      "Carro bue": 1000, "Ashigaru": 480, "Berserker": 420,
-      "Arc. Daikyu": 451, "Arc. Norreno": 390, "Cav. Ascia": 360
-    };
+    let GAME_DATA = null;
+    let DB = [], myCastle = null, worldId = null;
+    let rows = [], ticker = null;
+    let selectedRowIndex = -1;
+
+    // CARICA DATI DAL JSON GITHUB
+    async function loadGameData() {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_truppe.json?v=' + Date.now());
+            if (!response.ok) throw new Error("Errore HTTP: " + response.status);
+            const json = await response.json();
+            GAME_DATA = json.game_config;
+            initUI(); 
+        } catch (e) {
+            console.error(e);
+            alert("Errore caricamento dati truppe (GitHub): " + e.message);
+        }
+    }
 
     const TROOPS_UI = [
       { label: "Lanciere", key: "Lanciere" },
@@ -559,27 +561,12 @@
       { label: "Cav. Ascia / Orca", key: "Cav. Ascia" }
     ];
 
-    const BATCHES = {
-      castello: [51, 55, 60, 76],
-      fortezza: [251, 376, 400],
-      citta: [1251, 1876, 6251],
-      metro: [12501, 6251, 6255]
-    };
-
-    // LIMITI TRUPPE PER HABITAT
-    const HABITAT_LIMITS = {
-      castello: { min: 101, max: 5000 },
-      fortezza: { min: 255, max: 40000 },
-      citta: { min: 1255, max: 280000 },
-      metro: { min: 12501, max: 4000000000 }
-    };
-
-    let DB = [], myCastle = null, worldId = null;
-    let rows = [], ticker = null;
-    let selectedRowIndex = -1; 
-
     // --- INIT ---
     window.onload = () => {
+      loadGameData();
+    };
+
+    function initUI() {
       let htmlT = "";
       TROOPS_UI.forEach(t => {
          htmlT += `<option value="${t.key}">${t.label}</option>`;
@@ -592,7 +579,6 @@
       document.getElementById('selCityLvl').innerHTML = htmlL;
       document.getElementById('selMetroLvl').innerHTML = htmlL;
 
-      // Popola Bounce Min/Max
       let htmlB = "";
       for(let i=1; i<=9; i++) {
           let sel = (i===4) ? "selected" : ""; 
@@ -600,14 +586,14 @@
           htmlB += `<option value="${i}">${i}</option>`;
       }
       document.getElementById('selBounceMin').innerHTML = htmlB;
-      document.getElementById('selBounceMin').value = "4"; // Default +4
+      document.getElementById('selBounceMin').value = "4"; 
       
       document.getElementById('selBounceMax').innerHTML = htmlB;
-      document.getElementById('selBounceMax').value = "7"; // Default +7
+      document.getElementById('selBounceMax').value = "7"; 
 
       resetInput();
       updateUI(); 
-    };
+    }
 
     function resetInput() {
       document.getElementById('inDate').value = "";
@@ -617,6 +603,8 @@
     }
 
     function updateUI() {
+      if(!GAME_DATA) return;
+
       let hab = document.querySelector('input[name="hab"]:checked').value;
       
       document.querySelectorAll('.bonus-area').forEach(el => el.classList.remove('active'));
@@ -627,7 +615,9 @@
 
       let batchSelect = document.getElementById('selBatch');
       batchSelect.innerHTML = "";
-      BATCHES[hab].forEach(val => {
+      
+      const batches = GAME_DATA.habitats[hab].batches;
+      batches.forEach(val => {
         let opt = document.createElement('option');
         opt.value = val;
         opt.innerText = val;
@@ -635,31 +625,34 @@
       });
     }
 
-    // --- CALCOLO VELOCITÀ ---
     function getSpeed(troopKey) {
-      let base = T_BASE_RAW[troopKey];
+      if(!GAME_DATA) return 0;
+
+      let base = GAME_DATA.troops_base_seconds[troopKey];
       let hab = document.querySelector('input[name="hab"]:checked').value;
-      let factor = 1.0;
+      let habConfig = GAME_DATA.habitats[hab];
+      
+      let factor = habConfig.base_multiplier; 
 
       if(hab === 'castello') {
-        if(document.getElementById('chkMap').checked) factor = 0.95;
+        if(document.getElementById('chkMap').checked) factor = 0.95; 
         if(document.getElementById('selEventCastello').value === "100") factor = factor * 0.5;
       } 
       else if(hab === 'fortezza') {
-        factor = 0.95; 
-        if(document.getElementById('chkBussola').checked) factor = 0.95 * 0.95;
+        if(document.getElementById('chkBussola').checked) factor = factor * 0.95;
         if(document.getElementById('selEventFortezza').value === "100") factor = factor * 0.5;
       }
       else if(hab === 'citta') {
         let lvl = parseInt(document.getElementById('selCityLvl').value);
-        let cityF = getCityFactor(lvl);
-        factor = 0.95 * 0.95 * cityF;
+        let buildFactor = habConfig.building_levels[lvl] || 1.0;
+        factor = factor * buildFactor;
         if(document.getElementById('selEventCitta').value === "100") factor = factor * 0.5;
       }
       else if(hab === 'metro') {
         let lvl = parseInt(document.getElementById('selMetroLvl').value);
-        let metroF = getMetroFactor(lvl);
-        factor = 0.95 * 0.95 * metroF;
+        let buildFactor = habConfig.building_levels[lvl] || 1.0;
+        factor = factor * buildFactor;
+        
         if(document.getElementById('chkManovra').checked) factor = factor * 0.90;
         if(document.getElementById('selEventMetro').value === "100") factor = factor * 0.5;
       }
@@ -667,46 +660,6 @@
       return base * factor;
     }
 
-    function getCityFactor(lvl) {
-      if(lvl === 1) return 0.99;
-      if(lvl === 2) return 0.98;
-      if(lvl >= 3 && lvl <= 4) return 0.97;
-      if(lvl >= 5 && lvl <= 6) return 0.96;
-      if(lvl >= 7 && lvl <= 8) return 0.95;
-      if(lvl >= 9 && lvl <= 10) return 0.94;
-      if(lvl === 11) return 0.93;
-      if(lvl >= 12 && lvl <= 13) return 0.92;
-      if(lvl === 14) return 0.91;
-      if(lvl === 15) return 0.90;
-      if(lvl >= 16 && lvl <= 17) return 0.89;
-      if(lvl === 18) return 0.88;
-      if(lvl >= 19 && lvl <= 20) return 0.87;
-      if(lvl === 21) return 0.86;
-      if(lvl >= 22 && lvl <= 23) return 0.85;
-      if(lvl === 24) return 0.84;
-      if(lvl >= 25 && lvl <= 26) return 0.83;
-      if(lvl === 27) return 0.82;
-      if(lvl >= 28 && lvl <= 29) return 0.81;
-      if(lvl === 30) return 0.80;
-      return 1.0;
-    }
-
-    function getMetroFactor(lvl) {
-      if(lvl >= 1 && lvl <= 2) return 0.80;
-      if(lvl >= 3 && lvl <= 5) return 0.79;
-      if(lvl >= 6 && lvl <= 8) return 0.78;
-      if(lvl >= 9 && lvl <= 11) return 0.77;
-      if(lvl >= 12 && lvl <= 14) return 0.76;
-      if(lvl >= 15 && lvl <= 17) return 0.75;
-      if(lvl >= 18 && lvl <= 20) return 0.74;
-      if(lvl >= 21 && lvl <= 23) return 0.73;
-      if(lvl >= 24 && lvl <= 26) return 0.72;
-      if(lvl >= 27 && lvl <= 29) return 0.71;
-      if(lvl === 30) return 0.70;
-      return 1.0;
-    }
-
-    // --- DB LOAD ---
     function checkDB() {
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
@@ -734,7 +687,6 @@
       }
     }
 
-    // --- HEX DISTANCE ---
     function getDist(x1, y1, x2, y2) {
       let cy1 = y1;
       let cz1 = x1 - Math.floor(y1 / 2);
@@ -747,10 +699,10 @@
       return Math.max(Math.abs(cx1 - cx2), Math.abs(cy1 - cy2), Math.abs(cz1 - cz2));
     }
 
-    // --- MAIN CALC ---
     function startCalc() {
-      if(!DB.length) return alert("Attendi il caricamento del DB!");
-      
+      if(!DB.length) return alert("Attendi il caricamento del DB o link non valido!");
+      if(!GAME_DATA) return alert("Attendi il caricamento dei dati truppe...");
+
       let val = document.getElementById('inCoord').value;
       let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
       if(!m) return alert("Link non valido");
@@ -767,21 +719,18 @@
       let garrison = parseInt(document.getElementById('inGarrison').value);
       if(!garrison) return alert("Inserisci Truppe Totali!");
 
-      // VALIDAZIONE LIMITI TRUPPE
       let hab = document.querySelector('input[name="hab"]:checked').value;
-      let limits = HABITAT_LIMITS[hab];
+      let limits = GAME_DATA.habitats[hab].limits;
 
       if(garrison < limits.min) return alert(`Non puoi difendere nemmeno un turno (Min: ${limits.min})`);
       if(garrison > limits.max) return alert(`Non puoi avere tutte queste truppe (Max: ${limits.max})`);
       
       let batch = parseInt(document.getElementById('selBatch').value);
       
-      // Calcolo Riserva: Castello = 110, Altri = Plotone scelto
       let reservation = (hab === 'castello') ? 110 : batch;
       let available = garrison - reservation;
       if(available < 0) available = 0;
 
-      // Sync Battle Troop
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
       
       document.getElementById('inputArea').classList.add('hidden');
@@ -798,12 +747,12 @@
       selectedRowIndex = -1; 
       
       // Riga 0: Guarnigione
-      rows.push({ t: new Date(startT), type: 'garrison' });
+      rows.push({ t: new Date(startT), type: 'garrison', covered: false, launched: false });
       
       let step = 1;
       while(available >= batch && step < 120) {
         let combatT = new Date(startT.getTime() + (step * 600000)); 
-        rows.push({ t: combatT, type: 'wave', target: null, covered: false });
+        rows.push({ t: combatT, type: 'wave', target: null, covered: false, launched: false });
         available -= batch;
         step++;
       }
@@ -831,20 +780,21 @@
       renderList();
     }
 
-    // --- ALGORITMO CECCHINO DINAMICO ---
+    // --- ALGORITMO CECCHINO INVERTITO (PRIMA DELL'IMPATTO) ---
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // LEGGO FINESTRA UTENTE (Default 4 e 7)
       let minOff = parseInt(document.getElementById('selBounceMin').value);
       let maxOff = parseInt(document.getElementById('selBounceMax').value);
       
-      // Se utente mette min > max, forzo max = min + 1
-      if(maxOff <= minOff) maxOff = minOff; // inclusivo, es 1 e 1
+      if(maxOff <= minOff) maxOff = minOff; 
 
-      // Finestra Target: da combat+min a combat+max+1 (fine minuto)
-      let rStart = combatTime.getTime() + (minOff * 60000);
-      let rEnd = combatTime.getTime() + ((maxOff + 1) * 60000); 
+      // INVERSIONE LOGICA: Vogliamo rientrare PRIMA del combatTime
+      // Esempio: combatTime 7:30. Finestra 1-4.
+      // rStart (più lontano) = 7:30 - 4 min = 7:26
+      // rEnd (più vicino) = 7:30 - 1 min = 7:29
+      let rStart = combatTime.getTime() - (maxOff * 60000);
+      let rEnd = combatTime.getTime() - (minOff * 60000); 
       
       let best = null;
       let minWait = Infinity;
@@ -883,21 +833,26 @@
       return best;
     }
 
-    // --- RENDER ---
     function renderList() {
       let el = document.getElementById('resList');
       el.innerHTML = "";
       
       rows.forEach((r, i) => {
         let div = document.createElement('div');
-        div.className = r.covered ? "res-row covered" : (i === selectedRowIndex ? "res-row selected" : "res-row");
+        // LOGICA CLASSI GIALLO/VERDE
+        let className = "res-row";
+        if (r.covered) className += " covered";
+        else if (r.launched) className += " launched";
+        else if (i === selectedRowIndex) className += " selected";
+        
+        div.className = className;
         div.id = `row_${i}`;
         
         let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
         let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
         
         if(r.type === 'garrison') {
-          div.innerHTML = `${colTime}<div class="col-info" style="color:var(--muted); font-style:italic">Coperto (Guarnigione)</div><div class="col-action"></div>`;
+          div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green); font-weight:bold; font-style:italic">Coperto (Guarnigione)</div><div class="col-action"></div>`;
           el.appendChild(div);
           return;
         }
@@ -929,9 +884,9 @@
              updateRow(i);
              return;
           }
-          let realExpire = r.target.lEnd; 
+          let expireTime = r.target.lEnd; 
           
-          if(now > realExpire) {
+          if(now > expireTime) {
             r.target = findTarget(r.t, speed);
             updateRow(i);
           } else {
@@ -950,11 +905,13 @@
       if(!actDiv) return;
 
       if(!actDiv.querySelector('.chk-cover')) {
-         actDiv.innerHTML = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggle(${i})">${r.covered?'OK':'COPRI'}</div>`;
+         // TOGGLE LOGIC: LANCIA -> GIALLO, COPRI -> VERDE
+         actDiv.innerHTML = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggleCovered(${i})">${r.covered?'OK':'COPRI'}</div>`;
       }
 
       if(r.covered) {
-        infoDiv.innerHTML = `<span style="color:var(--muted); font-style:italic">Turno Coperto</span>`;
+        infoDiv.innerHTML = `<span style="color:var(--green); font-weight:bold;">Turno Coperto</span>`;
+        if(actDiv.querySelector('.lnk-btn')) actDiv.querySelector('.lnk-btn').remove();
         return;
       }
 
@@ -971,7 +928,8 @@
         a.className = 'lnk-btn hidden';
         a.href = linkUrl;
         a.innerText = "LANCIA";
-        a.onclick = function() { selectRow(i); };
+        // CLICK SU LANCIA -> GIALLO
+        a.onclick = function() { markLaunched(i); };
         actDiv.prepend(a); 
       } else {
         existingLink.href = linkUrl;
@@ -1030,22 +988,17 @@
       }
     }
 
-    function selectRow(i) {
-        selectedRowIndex = i;
-        rows.forEach((r, idx) => {
-            let el = document.getElementById(`row_${idx}`);
-            if(el) {
-                if(idx === selectedRowIndex && !r.covered) el.classList.add('selected');
-                else el.classList.remove('selected');
-            }
-        });
+    function markLaunched(i) {
+        // Segna come lanciato (Giallo)
+        rows[i].launched = true;
+        renderList();
     }
 
-    function toggle(i) {
+    function toggleCovered(i) {
+      // Toggle Coperto (Verde) e rimuove Lanciato (Giallo)
       rows[i].covered = !rows[i].covered;
-      if(rows[i].covered && selectedRowIndex === i) {
-          selectedRowIndex = -1;
-      }
+      if(rows[i].covered) rows[i].launched = false; 
+      
       renderList();
     }
 
