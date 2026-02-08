@@ -423,7 +423,6 @@
       gap: 6px;
     }
 
-    /* BOTTONE LANCIA (GIALLO) */
     .lnk-btn-launch {
       display: flex;
       align-items: center;
@@ -447,7 +446,6 @@
       color: #000;
     }
 
-    /* BOTTONE COPRI (VERDE) */
     .btn-copri {
       display: flex;
       align-items: center;
@@ -470,55 +468,27 @@
       color: #000;
     }
 
-    .chk-cover {
-      width: 100%;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-    }
-
-    .chk-cover.active {
-      background: var(--green);
-      color: #000;
-      font-weight: bold;
-      border-color: var(--green);
-    }
-
-    /* STATI DEL TESTO */
     .st-wait {
       color: var(--danger);
       font-weight: bold;
     }
 
-    /* ROSSO */
     .st-now {
       color: var(--green);
       animation: pulse 1s infinite;
       text-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
     }
 
-    /* VERDE LAMPEGGIANTE */
     .st-launched-text {
       color: var(--gold);
       animation: pulse 1s infinite;
       text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
     }
 
-    /* GIALLO LAMPEGGIANTE */
     .st-covered-text {
       color: var(--green);
       font-weight: bold;
     }
-
-    /* VERDE FISSO */
 
     .st-err {
       color: var(--danger);
@@ -534,7 +504,6 @@
       text-transform: uppercase;
     }
 
-    /* FOOTER E PAYPAL */
     .paypal-footer {
       text-align: center;
       margin-top: 40px;
@@ -564,7 +533,6 @@
       box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5);
     }
 
-    /* AI */
     #ai-assistant-container {
       position: fixed;
       bottom: 20px;
@@ -835,7 +803,6 @@
 
     <div id="resList"></div>
   </div>
-  </div>
 
   <footer class="paypal-footer">
     <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">
@@ -899,15 +866,11 @@
       { label: "Cav. Ascia / Orca", key: "Cav. Ascia" }
     ];
 
-    window.onload = () => {
-      loadGameData();
-    };
+    window.onload = () => { loadGameData(); };
 
     function initUI() {
       let htmlT = "";
-      TROOPS_UI.forEach(t => {
-        htmlT += `<option value="${t.key}">${t.label}</option>`;
-      });
+      TROOPS_UI.forEach(t => { htmlT += `<option value="${t.key}">${t.label}</option>`; });
       document.getElementById('selTroop').innerHTML = htmlT;
       document.getElementById('selBattleTroop').innerHTML = htmlT;
 
@@ -927,14 +890,9 @@
       document.getElementById('selCountryBonus').innerHTML = htmlCB;
 
       let htmlB = "";
-      for (let i = 1; i <= 9; i++) {
-        let sel = (i === 4) ? "selected" : "";
-        let selMax = (i === 7) ? "selected" : "";
-        htmlB += `<option value="${i}">${i}</option>`;
-      }
+      for (let i = 1; i <= 9; i++) { htmlB += `<option value="${i}">${i}</option>`; }
       document.getElementById('selBounceMin').innerHTML = htmlB;
       document.getElementById('selBounceMin').value = "4";
-
       document.getElementById('selBounceMax').innerHTML = htmlB;
       document.getElementById('selBounceMax').value = "7";
 
@@ -951,9 +909,7 @@
 
     function updateUI() {
       if (!GAME_DATA) return;
-
       let hab = document.querySelector('input[name="hab"]:checked').value;
-
       document.querySelectorAll('.bonus-area').forEach(el => el.classList.remove('active'));
       if (hab === 'castello') document.getElementById('optCastello').classList.add('active');
       else if (hab === 'fortezza') document.getElementById('optFortezza').classList.add('active');
@@ -962,445 +918,203 @@
 
       let batchSelect = document.getElementById('selBatch');
       batchSelect.innerHTML = "";
-
-      const batches = GAME_DATA.habitats[hab].batches;
-      batches.forEach(val => {
-        let opt = document.createElement('option');
-        opt.value = val;
-        opt.innerText = val;
-        batchSelect.appendChild(opt);
+      GAME_DATA.habitats[hab].batches.forEach(val => {
+        let opt = document.createElement('option'); opt.value = val; opt.innerText = val; batchSelect.appendChild(opt);
       });
     }
 
     function getSpeed(troopKey) {
       if (!GAME_DATA) return 0;
-
       let base = GAME_DATA.troops_base_seconds[troopKey];
       let hab = document.querySelector('input[name="hab"]:checked').value;
       let habConfig = GAME_DATA.habitats[hab];
-
       let factor = habConfig.base_multiplier;
 
       if (hab === 'castello') {
         if (document.getElementById('chkMap').checked) factor = 0.95;
-        if (document.getElementById('selEventCastello').value === "100") factor = factor * 0.5;
+        if (document.getElementById('selEventCastello').value === "100") factor *= 0.5;
       }
       else if (hab === 'fortezza') {
-        if (document.getElementById('chkBussola').checked) factor = factor * 0.95;
-        if (document.getElementById('selEventFortezza').value === "100") factor = factor * 0.5;
+        if (document.getElementById('chkBussola').checked) factor *= 0.95;
+        if (document.getElementById('selEventFortezza').value === "100") factor *= 0.5;
       }
       else if (hab === 'citta') {
-        let lvl = parseInt(document.getElementById('selCityLvl').value);
-        let buildFactor = habConfig.building_levels[lvl] || 1.0;
-        factor = factor * buildFactor;
-        if (document.getElementById('selEventCitta').value === "100") factor = factor * 0.5;
+        factor *= habConfig.building_levels[parseInt(document.getElementById('selCityLvl').value)] || 1.0;
+        if (document.getElementById('selEventCitta').value === "100") factor *= 0.5;
       }
       else if (hab === 'metro') {
-        let lvl = parseInt(document.getElementById('selMetroLvl').value);
-        let buildFactor = habConfig.building_levels[lvl] || 1.0;
-        factor = factor * buildFactor;
-
-        if (document.getElementById('chkManovra').checked) factor = factor * 0.90;
-        if (document.getElementById('selEventMetro').value === "100") factor = factor * 0.5;
+        factor *= habConfig.building_levels[parseInt(document.getElementById('selMetroLvl').value)] || 1.0;
+        if (document.getElementById('chkManovra').checked) factor *= 0.90;
+        if (document.getElementById('selEventMetro').value === "100") factor *= 0.5;
       }
-
-      // Bonus Velocità Paese (Mondo 327)
-      const countryFactor = parseFloat(document.getElementById('selCountryBonus').value) || 1.0;
-      factor *= countryFactor;
-
+      factor *= parseFloat(document.getElementById('selCountryBonus').value) || 1.0;
       return base * factor;
     }
 
     function checkDB() {
-      let val = document.getElementById('inCoord').value;
-      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      if (m) {
-        let w = m[3];
+      let lk = parseLKLink(document.getElementById('inCoord').value);
+      if (lk) {
+        let w = lk.w;
         if (w !== worldId) {
           worldId = w;
-
-          let urlDBCastelli, urlDBNomi;
+          let urlC, urlN;
           if (w === "327") {
-            urlDBCastelli = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
-            urlDBNomi = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
+            urlC = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
+            urlN = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
             document.getElementById('areaBonusPaese').classList.add('active');
           } else {
-            urlDBCastelli = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
-            urlDBNomi = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
+            urlC = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
+            urlN = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
             document.getElementById('areaBonusPaese').classList.remove('active');
-            document.getElementById('selCountryBonus').value = "1"; // Reset if not in 327
+            document.getElementById('selCountryBonus').value = "1";
           }
-
-          // Fetch Parallelo
-          Promise.all([
-            fetch(urlDBCastelli + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(() => []),
-            fetch(urlDBNomi + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(() => [])
-          ]).then(([castlesData, namesData]) => {
-            // Parse Castelli
-            DB = [];
-            const flat = (n) => {
-              if (Array.isArray(n)) n.forEach(flat);
-              else if (n && n.x) {
-                n.p = n.p || n.pid || n.playerid || 0;
-                n.pt = n.pt || n.points || 0;
-                DB.push(n);
-              }
-              else if (typeof n === 'object') Object.values(n).forEach(flat);
-            };
-            flat(castlesData);
-
-            // Parse Nomi
-            PLAYER_NAMES = {};
-            if (Array.isArray(namesData)) {
-              namesData.forEach(p => {
-                const pid = p.id || p.p;
-                const name = p.nick || p.name || p.n;
-                if (pid && name) PLAYER_NAMES[parseInt(pid)] = name;
-              });
-            }
-          });
+          Promise.all([fetch(urlC + "?v=" + Date.now()).then(r => r.json()), fetch(urlN + "?v=" + Date.now()).then(r => r.json())])
+            .then(([cD, nD]) => {
+              DB = [];
+              const f = (n) => {
+                if (Array.isArray(n)) n.forEach(f);
+                else if (n && n.x) { n.p = n.p || n.pid || 0; DB.push(n); }
+                else if (typeof n === 'object') Object.values(n).forEach(f);
+              }; f(cD);
+              PLAYER_NAMES = {};
+              if (Array.isArray(nD)) nD.forEach(p => { PLAYER_NAMES[p.id || p.p] = p.nick || p.name || p.n; });
+            }).catch(() => { });
         }
       }
     }
 
-    function getDist(x1, y1, x2, y2) {
-      let cy1 = y1;
-      let cz1 = x1 - Math.floor(y1 / 2);
-      let cx1 = -cy1 - cz1;
-
-      let cy2 = y2;
-      let cz2 = x2 - Math.floor(y2 / 2);
-      let cx2 = -cy2 - cz2;
-
-      return Math.max(Math.abs(cx1 - cx2), Math.abs(cy1 - cy2), Math.abs(cz1 - cz2));
-    }
-
     function startCalc() {
-      if (!DB.length) return alert("Attendi il caricamento del DB o link non valido!");
-      if (!GAME_DATA) return alert("Attendi il caricamento dei dati truppe...");
-
-      let val = document.getElementById('inCoord').value;
-      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      if (!m) return alert("Link non valido");
-
-      myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
-
-      let dVal = document.getElementById('inDate').value;
-      let tVal = document.getElementById('inTime').value;
+      if (!DB.length) return alert("Attendi il caricamento del DB!");
+      let lk = parseLKLink(document.getElementById('inCoord').value);
+      if (!lk) return alert("Link non valido");
+      myCastle = { x: lk.x, y: lk.y };
+      let dVal = document.getElementById('inDate').value, tVal = document.getElementById('inTime').value;
       if (!dVal || !tVal) return alert("Inserisci Data e Ora!");
-
       let startT = new Date(dVal + "T" + tVal);
-      if (startT < new Date(Date.now() - 60000)) return alert("Non possiamo tornare nel passato!");
-
+      if (startT < new Date(Date.now() - 60000)) return alert("Data passata!");
       let garrison = parseInt(document.getElementById('inGarrison').value);
       if (!garrison) return alert("Inserisci Truppe Totali!");
 
       let hab = document.querySelector('input[name="hab"]:checked').value;
       let limits = GAME_DATA.habitats[hab].limits;
-
-      if (garrison < limits.min) return alert(`Non puoi difendere nemmeno un turno (Min: ${limits.min})`);
-      if (garrison > limits.max) return alert(`Non puoi avere tutte queste truppe (Max: ${limits.max})`);
+      if (garrison < limits.min) return alert(`Minimo ${limits.min}`);
+      if (garrison > limits.max) return alert(`Massimo ${limits.max}`);
 
       let batch = parseInt(document.getElementById('selBatch').value);
-
-      let reservation = (hab === 'castello') ? 110 : batch;
-      let available = garrison - reservation;
+      let available = garrison - (hab === 'castello' ? 110 : batch);
       if (available < 0) available = 0;
 
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
-
       document.getElementById('inputArea').classList.add('hidden');
       document.getElementById('resArea').classList.remove('hidden');
 
-      let dateStr = `${pad(startT.getDate())}/${pad(startT.getMonth() + 1)}`;
-      let timeStr = `${pad(startT.getHours())}:${pad(startT.getMinutes())}`;
-
-      // RECUPERA NOME GIOCATORE
       let castleObj = DB.find(c => c.x === myCastle.x && c.y === myCastle.y);
-      let playerName = "Sconosciuto";
+      let pName = castleObj ? (PLAYER_NAMES[castleObj.p] || castleObj.n || "ID " + castleObj.p) : "Sconosciuto";
       let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
 
-      if (castleObj && castleObj.p) {
-        playerName = PLAYER_NAMES[castleObj.p] || ("ID " + castleObj.p);
-      } else if (castleObj && castleObj.n) {
-        playerName = castleObj.n; // Fallback al nome castello
-      }
+      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Impatto: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
 
-      document.getElementById('resHeaderInfo').innerHTML = `
-        <b>👤 ${playerName}</b>
-        <a href="${linkUrl}">${linkUrl}</a>
-        <span style="font-size:12px; color:#aaa; display:block; margin-top:4px;">Impatto: ${dateStr} ${timeStr}</span>
-      `;
-
-      rows = [];
-      selectedRowIndex = -1;
-
-      // Riga 0: Guarnigione
-      rows.push({ t: new Date(startT), type: 'garrison', covered: false, launched: false });
-
+      rows = [{ t: new Date(startT), type: 'garrison', covered: false, launched: false }];
       let step = 1;
       while (available >= batch && step < 120) {
-        let combatT = new Date(startT.getTime() + (step * 600000));
-        rows.push({ t: combatT, type: 'wave', target: null, covered: false, launched: false });
-        available -= batch;
-        step++;
+        rows.push({ t: new Date(startT.getTime() + (step * 600000)), type: 'wave', target: null, covered: false, launched: false });
+        available -= batch; step++;
       }
-
       forceRecalcTargets();
-
       if (ticker) clearInterval(ticker);
       ticker = setInterval(loop, 1000);
       renderList();
     }
 
     function forceRecalcTargets() {
-      let troopKey = document.getElementById('selBattleTroop').value;
-      let speed = getSpeed(troopKey);
-
-      rows.forEach(r => {
-        // Se è una ondata (non guarnigione) e NON è coperta, resetta il lancio e ricalcola
-        if (r.type === 'wave' && !r.covered) {
-          r.launched = false; // Reset stato lanciato
-          r.target = findTarget(r.t, speed); // Ricalcola target/tempi
-        }
-        // Se è coperta (r.covered === true), non fare nulla (rimane coperta)
-      });
+      let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
+      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
     }
 
-    function changeTroopLive() {
-      forceRecalcTargets();
-      renderList();
-    }
+    function changeTroopLive() { forceRecalcTargets(); renderList(); }
 
     function findTarget(combatTime, speed) {
-      let now = Date.now();
-
-      let minOff = parseInt(document.getElementById('selBounceMin').value);
-      let maxOff = parseInt(document.getElementById('selBounceMax').value);
-      let isDelay = document.getElementById('chkDelay').checked;
-
-      if (maxOff <= minOff) maxOff = minOff;
-
-      let rStart = combatTime.getTime() - (maxOff * 60000);
-      let rEnd = combatTime.getTime() - (minOff * 60000);
-
-      let best = null;
-      let minWait = Infinity;
+      let now = Date.now(), minOff = parseInt(document.getElementById('selBounceMin').value), maxOff = parseInt(document.getElementById('selBounceMax').value);
+      let isDelay = document.getElementById('chkDelay').checked, rStart = combatTime.getTime() - (maxOff * 60000), rEnd = combatTime.getTime() - (minOff * 60000);
+      let best = null, minWait = Infinity;
 
       for (let c of DB) {
-        if (c.x === myCastle.x && c.y === myCastle.y) continue;
-        if (!c.p) continue;
-
+        if (c.x === myCastle.x && c.y === myCastle.y || !c.p) continue;
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
-
-        let travelMs = dist * speed * 1000;
-
-        // APPLICA RITARDO: Se attivo, il viaggio dura 5% in più -> parti prima
-        if (isDelay) {
-          travelMs = travelMs * 1.05;
-        }
-
-        let lStart = rStart - (travelMs * 2);
-        let lEnd = rEnd - (travelMs * 2);
-
+        let travelMs = dist * speed * 1050; // 1000ms * 1.05 if delay
+        if (!isDelay) travelMs = dist * speed * 1000;
+        let lStart = rStart - (travelMs * 2), lEnd = rEnd - (travelMs * 2);
         if (now > lEnd) continue;
-
         let wait = Math.max(0, lStart - now);
-
-        if (wait === 0) {
-          if (minWait > 0) {
-            minWait = 0;
-            best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-          } else {
-            if (lEnd > best.lEnd) {
-              best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-            }
-          }
-        } else {
-          if (minWait > 0 && wait < minWait) {
-            minWait = wait;
-            best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-          }
-        }
+        if (wait === 0 || wait < minWait) { minWait = wait; best = { c, dist, lStart, lEnd, travelMs, rStart, rEnd }; if (wait === 0 && lEnd > (best ? best.lEnd : 0)) best = { c, dist, lStart, lEnd, travelMs, rStart, rEnd }; }
       }
       return best;
     }
 
-    function syncDelay(sourceId) {
-      const val = document.getElementById(sourceId).checked;
-      document.getElementById('chkDelay').checked = val;
-      document.getElementById('chkDelayRes').checked = val;
+    function syncDelay(id) {
+      const v = document.getElementById(id).checked;
+      document.getElementById('chkDelay').checked = v; document.getElementById('chkDelayRes').checked = v;
       changeTroopLive();
     }
 
     function renderList() {
-      let el = document.getElementById('resList');
-      el.innerHTML = "";
-
+      let el = document.getElementById('resList'); el.innerHTML = "";
       rows.forEach((r, i) => {
-        let div = document.createElement('div');
-        // LOGICA CLASSI GIALLO/VERDE
-        let className = "res-row";
-        if (r.covered) className += " covered";
-        // NON AGGIUNGERE 'launched' QUI PER LO SFONDO, SOLO PER IL TESTO
-
-        div.className = className;
-        div.id = `row_${i}`;
-        div.onclick = () => resetLaunched(i);
-
-        let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
-        let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
-
-        if (r.type === 'garrison') {
-          div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green); font-weight:bold; font-style:italic">Coperto (Guarnigione)</div><div class="col-action"></div>`;
-          el.appendChild(div);
-          return;
-        }
-
-        let colInfo = `<div class="col-info" id="info_${i}"></div>`;
-        let colAct = `<div class="col-action" id="act_${i}"></div>`;
-
-        div.innerHTML = colTime + colInfo + colAct;
-        el.appendChild(div);
-
-        updateRow(i);
+        let div = document.createElement('div'); div.className = "res-row" + (r.covered ? " covered" : "");
+        div.id = `row_${i}`; div.onclick = () => resetLaunched(i);
+        let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
+        if (r.type === 'garrison') { div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`; }
+        else { div.innerHTML = `${colTime}<div class="col-info" id="info_${i}"></div><div class="col-action" id="act_${i}"></div>`; }
+        el.appendChild(div); updateRow(i);
       });
-
-      let endMsg = document.createElement('div');
-      endMsg.className = "end-msg";
-      endMsg.innerText = "Le tue truppe totali non possono coprire oltre questo turno";
-      el.appendChild(endMsg);
+      let endMsg = document.createElement('div'); endMsg.className = "end-msg"; endMsg.innerText = "Fine Copertura Truppe"; el.appendChild(endMsg);
     }
 
     function loop() {
-      let now = Date.now();
-      let troopKey = document.getElementById('selBattleTroop').value;
-      let speed = getSpeed(troopKey);
-
+      let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          if (!r.target) {
-            r.target = findTarget(r.t, speed);
-            updateRow(i);
-            return;
-          }
-          let expireTime = r.target.lEnd;
-
-          if (now > expireTime) {
-            r.target = findTarget(r.t, speed);
-            updateRow(i);
-          } else {
-            updateTimer(i);
-          }
+          if (!r.target || Date.now() > r.target.lEnd) { r.target = findTarget(r.t, speed); updateRow(i); }
+          else updateTimer(i);
         }
       });
     }
 
     function updateRow(i) {
-      let r = rows[i];
-      if (r.type === 'garrison') return;
-
-      let actDiv = document.getElementById(`act_${i}`);
-      let infoDiv = document.getElementById(`info_${i}`);
+      let r = rows[i]; if (r.type === 'garrison') return;
+      let actDiv = document.getElementById(`act_${i}`), infoDiv = document.getElementById(`info_${i}`);
       if (!actDiv) return;
-
-      if (r.covered) {
-        actDiv.innerHTML = ""; // Rimosso "OK" button
-        infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`;
-        return;
-      }
-
-      if (r.launched) {
-        actDiv.innerHTML = `<div class="btn-copri" onclick="event.stopPropagation(); toggleCovered(${i})">COPRI</div>`;
-      }
-
+      if (r.covered) { actDiv.innerHTML = ""; infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`; return; }
+      if (r.launched) actDiv.innerHTML = `<div class="btn-copri" onclick="event.stopPropagation(); toggleCovered(${i})">COPRI</div>`;
       updateTimer(i);
     }
 
     function updateTimer(i) {
-      let r = rows[i]; if (r.covered) return;
-
-      let now = Date.now();
-      let infoDiv = document.getElementById(`info_${i}`);
-      let actDiv = document.getElementById(`act_${i}`);
-
-      if (!r.target) {
-        infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
-        actDiv.innerHTML = "";
-        return;
-      }
-
-      let wait = r.target.lStart - now;
-      let dist = r.target.dist;
-      let bStartMs = r.target.rStart - r.target.travelMs;
-      let bEndMs = r.target.rEnd - r.target.travelMs;
-      let bStartD = new Date(bStartMs);
-      let bEndD = new Date(bEndMs);
-      let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
-
-      let coordStr = `${r.target.c.x},${r.target.c.y}`;
-      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-      let expireTime = r.target.lEnd;
+      let r = rows[i]; if (r.covered || !r.target) return;
+      let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
+      let bStr = `${pad(new Date(r.target.rStart - r.target.travelMs).getHours())}:${pad(new Date(r.target.rStart - r.target.travelMs).getMinutes())} - ${pad(new Date(r.target.rEnd - r.target.travelMs).getHours())}:${pad(new Date(r.target.rEnd - r.target.travelMs).getMinutes())}`;
+      let coordStr = `${r.target.c.x},${r.target.c.y}`, linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
       if (r.launched) {
-        infoDiv.innerHTML = `
-          <div class="info-status st-launched-text">⚠ LANCIO ESEGUITO</div>
-          <div class="info-sub">
-            <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi (${coordStr})
-          </div>`;
+        infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>Target: ${r.target.dist} campi</div>`;
         return;
       }
-
+      let wait = r.target.lStart - now;
       if (wait > 0) {
-        let h = Math.floor(wait / 3600000); let m = Math.floor((wait % 3600000) / 60000); let s = Math.floor((wait % 60000) / 1000);
-        let wStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-        infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi</div>`;
+        let m = Math.floor((wait % 3600000) / 60000), s = Math.floor((wait % 60000) / 1000);
+        infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span></div>`;
         actDiv.innerHTML = "";
-      } else if (now <= expireTime) {
-        infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi (${coordStr})</div>`;
-        if (!actDiv.querySelector('.lnk-btn-launch')) {
-          actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
-        }
-      } else {
-        infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
-        actDiv.innerHTML = "";
+      } else if (now <= r.target.lEnd) {
+        infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>Target: ${coordStr}</div>`;
+        if (!actDiv.querySelector('.lnk-btn-launch')) actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
       }
     }
 
-    function markLaunched(i) {
-      // Resetta lo stato 'launched' di tutte le righe
-      rows.forEach(r => r.launched = false);
-      // Imposta 'launched' solo per la riga cliccata
-      rows[i].launched = true;
-      renderList();
-    }
-
-    function resetLaunched(i) {
-      if (rows[i].launched) {
-        rows[i].launched = false;
-        renderList();
-      }
-    }
-
-    function toggleCovered(i) {
-      if (rows[i].covered) {
-        rows[i].covered = false; rows[i].launched = false;
-      } else {
-        rows[i].covered = true; rows[i].launched = false;
-      }
-      renderList();
-    }
-
-    function reset() {
-      document.getElementById('inputArea').classList.remove('hidden');
-      document.getElementById('resArea').classList.add('hidden');
-      if (ticker) clearInterval(ticker);
-      resetInput();
-    }
-
-    function pad(n) { return n < 10 ? '0' + n : n; }
+    function markLaunched(i) { rows.forEach(r => r.launched = false); rows[i].launched = true; renderList(); }
+    function resetLaunched(i) { if (rows[i].launched) { rows[i].launched = false; renderList(); } }
+    function toggleCovered(i) { rows[i].covered = !rows[i].covered; rows[i].launched = false; renderList(); }
+    function reset() { document.getElementById('inputArea').classList.remove('hidden'); document.getElementById('resArea').classList.add('hidden'); if (ticker) clearInterval(ticker); resetInput(); }
   </script>
 </body>
 
