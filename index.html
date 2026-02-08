@@ -148,31 +148,31 @@
 
   <div class="top-nav">
     <a href="https://re-panza.github.io/lk_tool/" class="home-link">
-      <span style="font-size:20px;">🏠</span> Torna alla Home
+      <span data-lang="nav_home">🏠 Torna alla Home</span>
     </a>
   </div>
 
   <div class="wrap">
     <header>
       <div class="title">
-        <h1>Self Trick</h1>
+        <h1 data-lang="st_title">Self Trick</h1>
       </div>
     </header>
 
     <div id="inputArea" class="card">
       <div class="row">
         <div class="col">
-          <label>Link castello attaccato</label>
+          <label data-lang="st_label_link">Link castello attaccato</label>
           <input type="text" id="inCoord" placeholder="l+k://coordinates?x,y&337" oninput="checkDB()">
         </div>
       </div>
 
       <div class="row">
-        <div class="col"><label>Data Impatto</label><input type="date" id="inDate"></div>
-        <div class="col"><label>Ora Impatto</label><input type="time" id="inTime" step="60"></div>
+        <div class="col"><label data-lang="st_label_date">Data Impatto</label><input type="date" id="inDate"></div>
+        <div class="col"><label data-lang="st_label_time">Ora Impatto</label><input type="time" id="inTime" step="60"></div>
       </div>
       
-      <label>Habitat Partenza</label>
+      <label data-lang="st_hab_start">Habitat Partenza</label>
       <div class="habitat-selector">
         <label class="hab-opt">
           <input type="radio" name="hab" value="castello" checked onchange="updateUI()">
@@ -263,6 +263,12 @@
                 <select id="selBounceMax" onchange="changeTroopLive()"></select>
             </div>
         </div>
+        <div style="margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);">
+            <label class="chk-label" style="font-weight:bold; color:var(--gold);">
+                <input type="checkbox" id="chkDelay" onchange="changeTroopLive()"> 
+                🐢 Ritardo Server (+5% tempo)
+            </label>
+        </div>
       </div>
 
       <div id="dbStatus" class="status-bar" style="display:none"></div>
@@ -276,12 +282,12 @@
 
       <div class="row">
         <div style="width:100%">
-          <label>Truppe Totali</label>
+          <label data-lang="st_troops">Truppe Totali</label>
           <input type="number" id="inGarrison" style="text-align:center" placeholder="Es. 1000">
         </div>
       </div>
 
-      <button class="btn" onclick="startCalc()">CALCOLA</button>
+      <button class="btn" onclick="startCalc()" data-lang="st_calc_btn">CALCOLA</button>
     </div>
 
     <div id="resArea" class="hidden">
@@ -297,13 +303,7 @@
   </div>
 
   <footer class="paypal-footer">
-    <p style="font-size:12px; color:#93a4c7; margin-bottom:8px; font-family: sans-serif;">
-        Ti piace questo strumento?
-    </p>
-    <p style="font-size:11px; color:#5c709b; margin-bottom:20px;">
-        Sviluppato da Re Panza • Imperial Wolves (Ita VI) • Jamaican Peace (Ita 15)
-    </p>
-    <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link">
+    <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">
         ☕ Offrimi un caffè su PayPal
     </a>
   </footer>
@@ -625,7 +625,8 @@
       
       let minOff = parseInt(document.getElementById('selBounceMin').value);
       let maxOff = parseInt(document.getElementById('selBounceMax').value);
-      
+      let isDelay = document.getElementById('chkDelay').checked;
+
       if(maxOff <= minOff) maxOff = minOff; 
 
       let rStart = combatTime.getTime() - (maxOff * 60000);
@@ -642,6 +643,12 @@
         if(dist < 1) continue; 
         
         let travelMs = dist * speed * 1000;
+        
+        // APPLICA RITARDO: Se attivo, il viaggio dura 5% in più -> parti prima
+        if(isDelay) {
+            travelMs = travelMs * 1.05;
+        }
+
         let lStart = rStart - (travelMs * 2);
         let lEnd = rEnd - (travelMs * 2);
         
