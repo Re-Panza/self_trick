@@ -1,331 +1,163 @@
 <!doctype html>
 <html lang="it">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <script src="https://re-panza.github.io/lk_tool/version.js"></script>
-  <script>
-    if (typeof APP_VERSION !== 'undefined') {
-      document.write(`<link rel="manifest" href="https://re-panza.github.io/lk_tool/manifest.json?v=${APP_VERSION}">`);
-    }
-  </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
-
   <title>Self Trick</title>
+  
   <style>
-    :root {
-      --bg: #0f172a; --card: rgba(17, 28, 51, .85); --card-solid: #111c33; --muted: #93a4c7; --text: #e8eefc; --accent: #60a5fa;
-      --border: rgba(255, 255, 255, .10); --danger: #ef4444; --dangerBg: rgba(239, 68, 68, .12); --gold: #fbbf24;
-      --green: #34d399; --blue: #60a5fa; --selected-bg: rgba(251, 191, 36, 0.1);
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 20% 0%, rgba(96, 165, 250, .25), transparent 60%),
-        radial-gradient(1000px 500px at 90% 10%, rgba(52, 211, 153, .18), transparent 55%), var(--bg);
-      color: var(--text); padding: env(safe-area-inset-top, 20px) 16px 80px 16px;
-      -webkit-user-select: none; user-select: none;
-    }
-    input, select, .mono, .value { -webkit-user-select: text; user-select: text; }
-    .wrap { max-width: 980px; margin: 0 auto; }
-    .top-nav { max-width: 980px; margin: 0 auto 10px auto; }
-    .home-link { text-decoration: none; color: var(--accent); font-weight: bold; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
-    header { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
-    .title h1 { font-size: 24px; margin: 0; color: #fff; font-weight: 800; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    .row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
-    .col { flex: 1; }
-    label { color: var(--muted); font-size: 12px; text-transform: uppercase; display: block; margin-bottom: 4px; letter-spacing: 0.5px; }
-    input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255, 255, 255, .04); color: var(--text); outline: none; font-size: 15px; font-weight: bold; }
-    select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background-color: rgba(255, 255, 255, .04); color: var(--text); outline: none; font-size: 15px; font-weight: bold; appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2393a4c7%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 12px auto; }
-    select option { background-color: #ffffff; color: #000000; }
-    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96, 165, 250, .20); }
-    .habitat-selector { display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
-    .hab-opt { flex: 1; text-align: center; }
-    .hab-opt input { display: none; }
-    .hab-opt span { display: block; padding: 8px 0; font-size: 12px; font-weight: bold; color: var(--muted); cursor: pointer; border-radius: 8px; transition: 0.2s; }
-    .hab-opt input:checked + span { background: rgba(96, 165, 250, .15); color: #fff; border: 1px solid var(--accent); }
-    .bonus-area { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: none; }
-    .bonus-area.active { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-    .chk-label { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); cursor: pointer; }
-    .chk-label input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
-    .section-separator { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .sec-title { color: var(--gold); font-size: 11px; text-transform: uppercase; margin-bottom: 6px; display: block; }
-    .bounce-window-config { background: rgba(96, 165, 250, 0.05); padding: 10px; border-radius: 12px; border: 1px solid rgba(96, 165, 250, 0.2); margin-bottom: 12px; }
-    .btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(251, 191, 36, .5); background: rgba(251, 191, 36, .15); color: var(--gold); font-weight: 700; text-transform: uppercase; font-size: 15px; cursor: pointer; margin-top: 8px; transition: 0.2s; }
-    .btn:active { background: rgba(251, 191, 36, .3); }
-    .hidden { display: none !important; }
+    :root { --bg:#0f172a; --card:rgba(17,28,51,.85); --muted:#93a4c7; --text:#e8eefc; --accent:#60a5fa; --border:rgba(255,255,255,.10); --danger:#ef4444; --gold:#fbbf24; --green:#34d399; }
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:radial-gradient(1200px 600px at 20% 0%,rgba(96,165,250,.25),transparent 60%), radial-gradient(1000px 500px at 90% 10%,rgba(52,211,153,.18),transparent 55%), var(--bg); color:var(--text); padding:env(safe-area-inset-top,20px) 16px 80px 16px; user-select:none; }
+    input,select,.mono,.value { user-select:text; }
+    .wrap { max-width:980px; margin:0 auto; }
+    .top-nav { max-width:980px; margin:0 auto 10px auto; }
+    .home-link { text-decoration:none; color:var(--accent); font-weight:bold; display:inline-flex; align-items:center; gap:8px; font-size:14px; }
+    header { display:flex; gap:14px; align-items:center; margin-bottom:18px; }
+    .title h1 { font-size:24px; margin:0; color:#fff; font-weight:800; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); backdrop-filter:blur(10px); }
+    .row { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+    .col { flex:1; }
+    label { color:var(--muted); font-size:12px; text-transform:uppercase; display:block; margin-bottom:4px; }
+    input, select { width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--text); outline:none; font-size:15px; font-weight:bold; }
+    input:focus, select:focus { border-color:var(--accent); }
+    .habitat-selector { display:flex; gap:8px; margin-bottom:16px; background:rgba(0,0,0,0.2); padding:4px; border-radius:12px; border:1px solid var(--border); }
+    .hab-opt { flex:1; text-align:center; }
+    .hab-opt input { display:none; }
+    .hab-opt span { display:block; padding:8px 0; font-size:12px; font-weight:bold; color:var(--muted); cursor:pointer; border-radius:8px; transition:0.2s; }
+    .hab-opt input:checked+span { background:rgba(96,165,250,.15); color:#fff; border:1px solid var(--accent); }
+    .bonus-area { background:rgba(255,255,255,0.03); padding:10px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border); display:none; }
+    .bonus-area.active { display:block; }
+    .chk-label { display:flex; align-items:center; gap:10px; font-size:14px; color:var(--text); cursor:pointer; }
+    .chk-label input { width:20px; height:20px; margin:0; accent-color:var(--accent); }
+    .section-separator { margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); }
+    .bounce-window-config { background:rgba(96,165,250,0.05); padding:10px; border-radius:12px; border:1px solid rgba(96,165,250,0.2); margin-bottom:12px; }
+    .btn { width:100%; padding:14px; border-radius:12px; border:1px solid rgba(251,191,36,.5); background:rgba(251,191,36,.15); color:var(--gold); font-weight:700; text-transform:uppercase; font-size:15px; cursor:pointer; margin-top:8px; }
+    .hidden { display:none !important; }
     
-    .res-header-info { 
-      text-align: center; font-size: 14px; color: var(--muted); padding: 12px; 
-      background: rgba(0,0,0,0.2); border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none;
-    }
-    .res-header-info a { color: var(--accent); text-decoration: none; font-weight: bold; font-family: monospace; display: block; margin: 4px 0; word-break: break-all; font-size: 12px; }
-    .res-header-info b { color: #fff; font-size: 15px; }
-
-    .quick-bar { background: var(--card-solid); padding: 10px; border: 1px solid var(--border); border-top: none; display: flex; gap: 10px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
-    .back-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border); padding: 0 16px; font-weight: bold; border-radius: 8px; font-size: 18px; cursor: pointer; }
-    #resList { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-top: none; border-radius: 0 0 16px 16px; overflow: hidden; }
+    .res-header-info { text-align:center; font-size:14px; color:var(--muted); padding:12px; background:rgba(0,0,0,0.2); border-radius:12px 12px 0 0; border:1px solid var(--border); border-bottom:none; }
+    .res-header-info a { color:var(--accent); text-decoration:none; font-weight:bold; font-family:monospace; display:block; margin:4px 0; font-size:12px; }
+    .res-header-info b { color:#fff; font-size:15px; }
+    .quick-bar { background:#111c33; padding:10px; border:1px solid var(--border); border-top:none; display:flex; gap:10px; position:sticky; top:0; z-index:100; backdrop-filter:blur(10px); }
+    .back-btn { background:rgba(255,255,255,0.1); color:#fff; border:1px solid var(--border); padding:0 16px; font-weight:bold; border-radius:8px; font-size:18px; cursor:pointer; }
+    #resList { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-top:none; border-radius:0 0 16px 16px; overflow:hidden; }
+    .res-row { display:grid; grid-template-columns:50px 1fr 90px; gap:10px; align-items:center; padding:12px; border-bottom:1px solid var(--border); }
+    .res-row:last-child { border-bottom:none; }
+    .res-row.covered { background:rgba(52,211,153,0.15) !important; border-left:3px solid var(--green); }
+    .col-time { text-align:center; border-right:1px solid var(--border); padding-right:8px; }
+    .t-label { font-size:10px; color:var(--muted); text-transform:uppercase; }
+    .t-val { font-size:16px; color:#fff; font-weight:700; }
+    .col-info { display:flex; flex-direction:column; justify-content:center; overflow:hidden; }
+    .info-status { font-size:14px; font-weight:bold; margin-bottom:3px; white-space:nowrap; }
+    .info-sub { font-size:12px; color:var(--muted); line-height:1.3; }
+    .bounce-hl { color:var(--gold); font-weight:bold; }
+    .col-action { display:flex; flex-direction:column; gap:6px; }
     
-    .res-row { display: grid; grid-template-columns: 50px 1fr 90px; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); background: transparent; transition: background 0.2s; }
-    .res-row:last-child { border-bottom: none; }
-    .res-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+    .lnk-btn-launch { display:flex; align-items:center; justify-content:center; width:100%; height:32px; background:rgba(251,191,36,0.15); border:1px solid var(--gold); color:var(--gold); text-decoration:none; font-size:12px; font-weight:bold; border-radius:8px; text-transform:uppercase; cursor:pointer; }
+    .lnk-btn-launch:active { background:var(--gold); color:#000; }
     
-    .res-row.covered { background: rgba(52, 211, 153, 0.15) !important; border-left: 3px solid var(--green); opacity: 1; filter: none; }
+    .btn-copri { display:flex; align-items:center; justify-content:center; width:100%; height:32px; background:rgba(52,211,153,0.15); border:1px solid var(--green); color:var(--green); font-size:12px; font-weight:bold; border-radius:8px; text-transform:uppercase; cursor:pointer; }
+    .btn-copri:active { background:var(--green); color:#000; }
 
-    .col-time { text-align: center; border-right: 1px solid var(--border); padding-right: 8px; }
-    .t-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-    .t-val { font-size: 16px; color: #fff; font-weight: 700; }
+    .st-wait { color:var(--danger); font-weight:bold; } 
+    .st-now { color:var(--green); animation:pulse 1s infinite; text-shadow:0 0 10px rgba(52,211,153,0.4); } 
+    .st-launched-text { color:var(--gold); animation:pulse 1s infinite; text-shadow:0 0 10px rgba(251,191,36,0.4); }
+    .st-covered-text { color:var(--green); font-weight:bold; }
+    .st-err { color:var(--danger); font-size:12px; }
+    @keyframes pulse { 50% { opacity:0.6; } }
+
+    .paypal-footer { text-align:center; margin-top:40px; padding:30px 20px; border-top:1px solid rgba(255,255,255,0.1); }
+    .paypal-link { text-decoration:none; font-weight:700; font-size:14px; display:inline-flex; align-items:center; gap:10px; transition:all 0.3s ease; color:#fff !important; background:#0070ba; padding:12px 28px; border-radius:50px; box-shadow:0 4px 15px rgba(0,112,186,0.3); border:none; }
+    .paypal-link:hover { background:#005ea6; transform:translateY(-2px); }
     
-    .col-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-    .info-status { font-size: 14px; font-weight: bold; margin-bottom: 3px; white-space: nowrap; }
-    .info-sub { font-size: 12px; color: var(--muted); line-height: 1.3; }
-    .info-sub span { color: #ccc; }
-    .bounce-hl { color: var(--gold); font-weight: bold; }
-    
-    .col-action { display: flex; flex-direction: column; gap: 6px; }
-
-    /* BOTTONE LANCIA (GIALLO) */
-    .lnk-btn-launch {
-      display: flex; align-items: center; justify-content: center; width: 100%; height: 32px; 
-      background: rgba(251, 191, 36, 0.15); border: 1px solid var(--gold); color: var(--gold); 
-      text-decoration: none; font-size: 12px; font-weight: bold; border-radius: 8px; text-transform: uppercase;
-      cursor: pointer; transition: 0.2s;
-    }
-    .lnk-btn-launch:active { background: var(--gold); color: #000; }
-
-    /* BOTTONE COPRI (VERDE) */
-    .btn-copri {
-      display: flex; align-items: center; justify-content: center; width: 100%; height: 32px;
-      background: rgba(52, 211, 153, 0.15); border: 1px solid var(--green); color: var(--green);
-      font-size: 12px; font-weight: bold; border-radius: 8px; text-transform: uppercase;
-      cursor: pointer; transition: 0.2s;
-    }
-    .btn-copri:active { background: var(--green); color: #000; }
-
-    .chk-cover { width: 100%; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 11px; text-transform: uppercase; }
-    .chk-cover.active { background: var(--green); color: #000; font-weight: bold; border-color: var(--green); }
-
-    /* STATI DEL TESTO */
-    .st-wait { color: var(--danger); font-weight: bold; } /* ROSSO */
-    .st-now { color: var(--green); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); } /* VERDE LAMPEGGIANTE */
-    .st-launched-text { color: var(--gold); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); } /* GIALLO LAMPEGGIANTE */
-    .st-covered-text { color: var(--green); font-weight: bold; } /* VERDE FISSO */
-    
-    .st-err { color: var(--danger); font-size: 12px; }
-    .end-msg { padding: 20px; text-align: center; color: var(--danger); font-weight: bold; font-size: 13px; text-transform: uppercase; }
-
-    /* FOOTER E PAYPAL */
-    .paypal-footer { text-align: center; margin-top: 40px; padding: 30px 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
-    .paypal-link {
-        text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;
-        gap: 10px; transition: all 0.3s ease; color: #fff !important; background: #0070ba;
-        padding: 12px 28px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3); border: none;
-    }
-    .paypal-link:hover { background: #005ea6; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5); }
-
-    /* AI */
-    #ai-assistant-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: sans-serif; }
-    #ai-button { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); overflow: hidden; border: 2px solid var(--accent); }
-    #ai-button img { width: 100%; height: 100%; object-fit: cover; }
-    #ai-window { display: none; position: absolute; bottom: 85px; right: 0; width: 85vw; max-width: 320px; background: var(--card); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px); }
-    .ai-header { color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-    #ai-content { max-height: 250px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: var(--text); }
-    .ai-input-area { display: flex; gap: 5px; border-top: 1px solid var(--border); padding-top: 10px; }
-    #ai-input { flex: 1; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; padding: 8px; font-size: 12px; }
-    #ai-send-btn { background: var(--accent); border: none; border-radius: 5px; padding: 5px 15px; cursor: pointer; font-weight: bold; color: #000; }
-    
-    @keyframes pulse { 50% { opacity: 0.6; } }
+    #ai-assistant-container { position:fixed; bottom:20px; right:20px; z-index:9999; }
+    #ai-button { width:70px; height:70px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.4); border:2px solid var(--accent); overflow:hidden; }
+    #ai-button img { width:100%; height:100%; object-fit:cover; }
+    #ai-window { display:none; position:absolute; bottom:85px; right:0; width:85vw; max-width:320px; background:var(--card); border:1px solid var(--accent); border-radius:20px; padding:15px; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
+    .ai-header { color:var(--accent); font-weight:bold; margin-bottom:10px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:5px; }
+    .ai-input-area { display:flex; gap:5px; border-top:1px solid var(--border); padding-top:10px; }
+    #ai-input { flex:1; background:#000; border:1px solid var(--border); color:#fff; border-radius:5px; padding:8px; font-size:12px; }
+    #ai-send-btn { background:var(--accent); border:none; border-radius:5px; padding:5px 15px; cursor:pointer; font-weight:bold; color:#000; }
   </style>
 </head>
-
 <body>
 
   <div class="top-nav">
     <a href="https://re-panza.github.io/lk_tool/" class="home-link">
-      <span data-lang="nav_home">🏠 Torna alla Home</span>
+      <span data-lang="nav_home">🏠 Home</span>
     </a>
   </div>
 
   <div class="wrap">
     <header>
-      <div class="title">
-        <h1 data-lang="st_title">Self Trick</h1>
-      </div>
+      <div class="title"><h1 data-lang="st_title">Self Trick</h1></div>
     </header>
 
     <div id="inputArea" class="card">
       <div class="row">
         <div class="col">
-          <label data-lang="st_label_link">Link castello attaccato</label>
+          <label data-lang="st_label_link">Link castello</label>
           <input type="text" id="inCoord" placeholder="l+k://coordinates?x,y&337" oninput="checkDB()">
         </div>
       </div>
-
       <div class="row">
-        <div class="col"><label data-lang="st_label_date">Data Impatto</label><input type="date" id="inDate"></div>
-        <div class="col"><label data-lang="st_label_time">Ora Impatto</label><input type="time" id="inTime" step="60"></div>
+        <div class="col"><label data-lang="st_label_date">Data</label><input type="date" id="inDate"></div>
+        <div class="col"><label data-lang="st_label_time">Ora</label><input type="time" id="inTime" step="60"></div>
       </div>
       
-      <label data-lang="st_hab_start">Habitat Partenza</label>
+      <label data-lang="st_hab_start">Habitat</label>
       <div class="habitat-selector">
-        <label class="hab-opt">
-          <input type="radio" name="hab" value="castello" checked onchange="updateUI()">
-          <span>Castello</span>
-        </label>
-        <label class="hab-opt">
-          <input type="radio" name="hab" value="fortezza" onchange="updateUI()">
-          <span>Fortezza</span>
-        </label>
-        <label class="hab-opt">
-          <input type="radio" name="hab" value="citta" onchange="updateUI()">
-          <span>Città</span>
-        </label>
-        <label class="hab-opt">
-          <input type="radio" name="hab" value="metro" onchange="updateUI()">
-          <span>Metro</span>
-        </label>
+        <label class="hab-opt"><input type="radio" name="hab" value="castello" checked onchange="updateUI()"><span>Castello</span></label>
+        <label class="hab-opt"><input type="radio" name="hab" value="fortezza" onchange="updateUI()"><span>Fortezza</span></label>
+        <label class="hab-opt"><input type="radio" name="hab" value="citta" onchange="updateUI()"><span>Città</span></label>
+        <label class="hab-opt"><input type="radio" name="hab" value="metro" onchange="updateUI()"><span>Metro</span></label>
       </div>
 
       <div id="optCastello" class="bonus-area active">
-        <label class="chk-label"><input type="checkbox" id="chkMap"> Mappa dell'Area (+5%)</label>
-        <div class="section-separator">
-            <span class="sec-title">Eventi Speciali</span>
-            <select id="selEventCastello">
-                <option value="0">Nessuno</option>
-                <option value="100">⚡ Velocità 100%</option>
-            </select>
-        </div>
+        <label class="chk-label"><input type="checkbox" id="chkMap"> Mappa Area (+5%)</label>
+        <div class="section-separator"><select id="selEventCastello"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
       </div>
-      
       <div id="optFortezza" class="bonus-area">
         <label class="chk-label"><input type="checkbox" id="chkBussola"> Bussola (+5%)</label>
-        <div class="section-separator">
-            <span class="sec-title">Eventi Speciali</span>
-            <select id="selEventFortezza">
-                <option value="0">Nessuno</option>
-                <option value="100">⚡ Velocità 100%</option>
-            </select>
-        </div>
+        <div class="section-separator"><select id="selEventFortezza"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
       </div>
-
       <div id="optCitta" class="bonus-area">
-        <div class="row" style="margin:0">
-          <div class="col">
-             <label style="color:#fff">Livello Caserma (1-30)</label>
-             <select id="selCityLvl"></select>
-          </div>
-        </div>
-        <div class="section-separator">
-            <span class="sec-title">Eventi Speciali</span>
-            <select id="selEventCitta">
-                <option value="0">Nessuno</option>
-                <option value="100">⚡ Velocità 100%</option>
-            </select>
-        </div>
+        <div class="row" style="margin:0"><div class="col"><select id="selCityLvl"></select></div></div>
+        <div class="section-separator"><select id="selEventCitta"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
       </div>
-
       <div id="optMetro" class="bonus-area">
-        <div class="row" style="margin:0">
-          <div class="col">
-             <label style="color:#fff">Livello Accademia (1-30)</label>
-             <select id="selMetroLvl"></select>
-          </div>
-        </div>
-        <div style="margin-top:8px">
-          <label class="chk-label"><input type="checkbox" id="chkManovra"> Manovra di fianco (+10%)</label>
-        </div>
-        <div class="section-separator">
-            <span class="sec-title">Eventi Speciali</span>
-            <select id="selEventMetro">
-                <option value="0">Nessuno</option>
-                <option value="100">⚡ Velocità 100%</option>
-            </select>
-        </div>
+        <div class="row" style="margin:0"><div class="col"><select id="selMetroLvl"></select></div></div>
+        <div style="margin-top:8px"><label class="chk-label"><input type="checkbox" id="chkManovra"> Manovra (+10%)</label></div>
+        <div class="section-separator"><select id="selEventMetro"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
       </div>
 
       <div class="bounce-window-config">
-        <label style="text-transform:none; line-height:1.2; margin-bottom:8px; color:var(--text)">
-          Finestra di rimbalzo (più piccola è la finestra più precisi saranno gli invii)
-        </label>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <div style="flex:1">
-                <label>Da + (minuti)</label>
-                <select id="selBounceMin" onchange="changeTroopLive()"></select>
-            </div>
-            <div style="flex:1">
-                <label>A + (minuti)</label>
-                <select id="selBounceMax" onchange="changeTroopLive()"></select>
-            </div>
-        </div>
-        <div style="margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);">
-            <label class="chk-label" style="font-weight:bold; color:var(--gold);">
-                <input type="checkbox" id="chkDelay" onchange="changeTroopLive()"> 
-                🐢 Ritardo Server (+5% tempo)
+        <div style="display:flex;gap:10px;"><div style="flex:1"><label>Min</label><select id="selBounceMin" onchange="changeTroopLive()"></select></div><div style="flex:1"><label>Max</label><select id="selBounceMax" onchange="changeTroopLive()"></select></div></div>
+        <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
+            <label class="chk-label" style="font-weight:bold;color:var(--gold);">
+                <input type="checkbox" id="chkDelay" onchange="changeTroopLive()"> <span data-lang="st_lag">Ritardo (+5%)</span>
             </label>
         </div>
       </div>
 
-      <div id="dbStatus" class="status-bar" style="display:none"></div>
-
-      <div class="row">
-        <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
-        <div class="col"><label>Plotone</label>
-          <select id="selBatch"></select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div style="width:100%">
-          <label data-lang="st_troops">Truppe Totali</label>
-          <input type="number" id="inGarrison" style="text-align:center" placeholder="Es. 1000">
-        </div>
-      </div>
-
-      <button class="btn" onclick="startCalc()" data-lang="st_calc_btn">CALCOLA</button>
+      <div class="row"><div class="col" style="flex:2"><label data-lang="lbl_troop">Truppa</label><select id="selTroop"></select></div><div class="col"><label data-lang="lbl_batch">Plotone</label><select id="selBatch"></select></div></div>
+      <div class="row"><div style="width:100%"><label data-lang="lbl_total_troops">Totale</label><input type="number" id="inGarrison" style="text-align:center" placeholder="1000"></div></div>
+      <button class="btn" onclick="startCalc()" data-lang="btn_calc">CALCOLA</button>
     </div>
 
     <div id="resArea" class="hidden">
       <div id="resHeaderInfo" class="res-header-info"></div>
-
-      <div class="quick-bar">
-        <button class="back-btn" onclick="reset()">←</button>
-        <select id="selBattleTroop" onchange="changeTroopLive()"></select>
-      </div>
-      
+      <div class="quick-bar"><button class="back-btn" onclick="reset()">←</button><select id="selBattleTroop" onchange="changeTroopLive()"></select></div>
       <div id="resList"></div>
     </div>
   </div>
 
-  <footer class="paypal-footer">
-    <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">
-        ☕ Offrimi un caffè su PayPal
-    </a>
-  </footer>
+  <footer class="paypal-footer"><a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">☕ PayPal</a></footer>
 
-  <div id="ai-assistant-container">
-    <div id="ai-window">
-        <div class="ai-header">
-            <span>👑 Assistente Re Panza</span>
-            <span onclick="toggleAI()" style="cursor:pointer">×</span>
-        </div>
-        <div id="ai-content">
-            <p>Ciao! Sono Re Panza. Chiedimi pure consiglio per la tua conquista.</p>
-        </div>
-        <div class="ai-input-area">
-            <input type="text" id="ai-input" placeholder="Scrivi al Re...">
-            <button id="ai-send-btn" onclick="chiediAlRe()">Invia</button>
-        </div>
-    </div>
-    <div id="ai-button" onclick="toggleAI()">
-        <img src="https://re-panza.github.io/lk_tool/re-panza-ai.png" alt="Re Panza AI">
-    </div>
-  </div>
+  <div id="ai-assistant-container"><div id="ai-window"><div class="ai-header"><span>👑 Re Panza</span><span onclick="toggleAI()" style="cursor:pointer">×</span></div><div id="ai-content"><p>Ciao!</p></div><div class="ai-input-area"><input type="text" id="ai-input" placeholder="..."><button id="ai-send-btn" onclick="chiediAlRe()">Invia</button></div></div><div id="ai-button" onclick="toggleAI()"><img src="https://re-panza.github.io/lk_tool/re-panza-ai.png" alt="AI"></div></div>
 
   <script src="https://re-panza.github.io/lk_tool/common.js"></script>
   <script src="https://re-panza.github.io/re-panza-core/re_panza_brain.js"></script>
@@ -333,507 +165,256 @@
   <script>
     let GAME_DATA = null;
     let DB = [], PLAYER_NAMES = {}, myCastle = null, worldId = null;
-    let rows = [], ticker = null;
-    let selectedRowIndex = -1;
+    let rows = [], ticker = null, selectedRowIndex = -1;
 
-    async function loadGameData() {
-        try {
-            const response = await fetch('https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_truppe.json?v=' + Date.now());
-            if (!response.ok) throw new Error("Errore HTTP: " + response.status);
-            const json = await response.json();
-            GAME_DATA = json.game_config;
-            initUI(); 
-        } catch (e) {
-            console.error(e);
-            alert("Errore caricamento dati truppe (GitHub): " + e.message);
-        }
-    }
-
-    const TROOPS_UI = [
-      { label: "Lanciere", key: "Lanciere" },
-      { label: "Balestriere", key: "Balestriere" },
-      { label: "Cav. Pesante / Samurai", key: "Cav. Pesante" },
-      { label: "Spadaccino / Carretto", key: "Spadaccino" },
-      { label: "Arciere / Cocca", key: "Arciere" },
-      { label: "Cav. Leggero", key: "Cav. Leggero" },
-      { label: "Carro bue", key: "Carro bue" },
-      { label: "Ashigaru / Torre", key: "Ashigaru" },
-      { label: "Berserker / Catapulta", key: "Berserker" },
-      { label: "Arc. Daikyu / Ballista", key: "Arc. Daikyu" },
-      { label: "Arc. Norreno", key: "Arc. Norreno" },
-      { label: "Cav. Ascia / Orca", key: "Cav. Ascia" }
-    ];
-
-    window.onload = () => {
-      loadGameData();
+    window.onload = async () => {
+        GAME_DATA = await LK_API.loadGameConfig();
+        if(GAME_DATA) initUI();
     };
 
     function initUI() {
-      let htmlT = "";
-      TROOPS_UI.forEach(t => {
-         htmlT += `<option value="${t.key}">${t.label}</option>`;
-      });
-      document.getElementById('selTroop').innerHTML = htmlT;
-      document.getElementById('selBattleTroop').innerHTML = htmlT;
-      
-      let htmlL = "";
-      for(let i=1; i<=30; i++) htmlL += `<option value="${i}">Lv ${i}</option>`;
-      document.getElementById('selCityLvl').innerHTML = htmlL;
-      document.getElementById('selMetroLvl').innerHTML = htmlL;
+        let htmlT = ""; for(const [k,v] of Object.entries(GAME_DATA.troops_base_seconds)) htmlT += `<option value="${k}">${k}</option>`;
+        document.getElementById('selTroop').innerHTML = htmlT;
+        document.getElementById('selBattleTroop').innerHTML = htmlT;
+        
+        let htmlL = ""; for(let i=1; i<=30; i++) htmlL += `<option value="${i}">Lv ${i}</option>`;
+        document.getElementById('selCityLvl').innerHTML = htmlL;
+        document.getElementById('selMetroLvl').innerHTML = htmlL;
 
-      let htmlB = "";
-      for(let i=1; i<=9; i++) {
-          let sel = (i===4) ? "selected" : ""; 
-          let selMax = (i===7) ? "selected" : "";
-          htmlB += `<option value="${i}">${i}</option>`;
-      }
-      document.getElementById('selBounceMin').innerHTML = htmlB;
-      document.getElementById('selBounceMin').value = "4"; 
-      
-      document.getElementById('selBounceMax').innerHTML = htmlB;
-      document.getElementById('selBounceMax').value = "7"; 
-
-      resetInput();
-      updateUI(); 
+        let htmlB = ""; for(let i=1; i<=9; i++) htmlB += `<option value="${i}" ${i===4?'selected':''}>${i}</option>`;
+        document.getElementById('selBounceMin').innerHTML = htmlB;
+        document.getElementById('selBounceMax').innerHTML = htmlB; document.getElementById('selBounceMax').value = "7";
+        updateUI();
     }
 
-    function resetInput() {
-      document.getElementById('inDate').value = "";
-      document.getElementById('inTime').value = "";
-      document.getElementById('inGarrison').value = "";
-      document.getElementById('inCoord').value = "";
-    }
+    function resetInput() { document.getElementById('inDate').value=""; document.getElementById('inTime').value=""; document.getElementById('inGarrison').value=""; document.getElementById('inCoord').value=""; }
 
     function updateUI() {
-      if(!GAME_DATA) return;
+        if(!GAME_DATA) return;
+        let hab = document.querySelector('input[name="hab"]:checked').value;
+        document.querySelectorAll('.bonus-area').forEach(el => el.classList.remove('active'));
+        if(hab==='castello') document.getElementById('optCastello').classList.add('active');
+        else if(hab==='fortezza') document.getElementById('optFortezza').classList.add('active');
+        else if(hab==='citta') document.getElementById('optCitta').classList.add('active');
+        else if(hab==='metro') document.getElementById('optMetro').classList.add('active');
 
-      let hab = document.querySelector('input[name="hab"]:checked').value;
-      
-      document.querySelectorAll('.bonus-area').forEach(el => el.classList.remove('active'));
-      if(hab === 'castello') document.getElementById('optCastello').classList.add('active');
-      else if(hab === 'fortezza') document.getElementById('optFortezza').classList.add('active');
-      else if(hab === 'citta') document.getElementById('optCitta').classList.add('active');
-      else if(hab === 'metro') document.getElementById('optMetro').classList.add('active');
+        let batchSelect = document.getElementById('selBatch');
+        batchSelect.innerHTML = "";
+        GAME_DATA.habitats[hab].batches.forEach(val => { let opt=document.createElement('option'); opt.value=val; opt.innerText=val; batchSelect.appendChild(opt); });
+    }
 
-      let batchSelect = document.getElementById('selBatch');
-      batchSelect.innerHTML = "";
-      
-      const batches = GAME_DATA.habitats[hab].batches;
-      batches.forEach(val => {
-        let opt = document.createElement('option');
-        opt.value = val;
-        opt.innerText = val;
-        batchSelect.appendChild(opt);
-      });
+    async function checkDB() {
+        let val = document.getElementById('inCoord').value;
+        let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+        if(m && m[3] !== worldId) {
+            worldId = m[3];
+            const data = await LK_API.fetchWorldData(worldId);
+            if(data) { DB = data.db; PLAYER_NAMES = data.names; }
+        }
     }
 
     function getSpeed(troopKey) {
-      if(!GAME_DATA) return 0;
+        if(!GAME_DATA) return 0;
+        let base = GAME_DATA.troops_base_seconds[troopKey];
+        let hab = document.querySelector('input[name="hab"]:checked').value;
+        let config = GAME_DATA.habitats[hab];
+        let factor = config.base_multiplier;
 
-      let base = GAME_DATA.troops_base_seconds[troopKey];
-      let hab = document.querySelector('input[name="hab"]:checked').value;
-      let habConfig = GAME_DATA.habitats[hab];
-      
-      let factor = habConfig.base_multiplier; 
-
-      if(hab === 'castello') {
-        if(document.getElementById('chkMap').checked) factor = 0.95; 
-        if(document.getElementById('selEventCastello').value === "100") factor = factor * 0.5;
-      } 
-      else if(hab === 'fortezza') {
-        if(document.getElementById('chkBussola').checked) factor = factor * 0.95;
-        if(document.getElementById('selEventFortezza').value === "100") factor = factor * 0.5;
-      }
-      else if(hab === 'citta') {
-        let lvl = parseInt(document.getElementById('selCityLvl').value);
-        let buildFactor = habConfig.building_levels[lvl] || 1.0;
-        factor = factor * buildFactor;
-        if(document.getElementById('selEventCitta').value === "100") factor = factor * 0.5;
-      }
-      else if(hab === 'metro') {
-        let lvl = parseInt(document.getElementById('selMetroLvl').value);
-        let buildFactor = habConfig.building_levels[lvl] || 1.0;
-        factor = factor * buildFactor;
-        
-        if(document.getElementById('chkManovra').checked) factor = factor * 0.90;
-        if(document.getElementById('selEventMetro').value === "100") factor = factor * 0.5;
-      }
-
-      return base * factor;
-    }
-
-    function checkDB() {
-      let val = document.getElementById('inCoord').value;
-      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      if(m) {
-        let w = m[3];
-        if(w !== worldId) {
-          worldId = w;
-          
-          let urlDBCastelli, urlDBNomi;
-          if(w === "327") {
-              urlDBCastelli = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
-              urlDBNomi = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
-          } else {
-              urlDBCastelli = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
-              urlDBNomi = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
-          }
-
-          // Fetch Parallelo
-          Promise.all([
-              fetch(urlDBCastelli + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(()=>[]),
-              fetch(urlDBNomi + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(()=>[])
-          ]).then(([castlesData, namesData]) => {
-              // Parse Castelli
-              DB = [];
-              const flat = (n) => { 
-                if(Array.isArray(n)) n.forEach(flat); 
-                else if(n && n.x) {
-                  n.p = n.p || n.pid || n.playerid || 0; 
-                  n.pt = n.pt || n.points || 0;
-                  DB.push(n); 
-                }
-                else if(typeof n==='object') Object.values(n).forEach(flat); 
-              };
-              flat(castlesData);
-
-              // Parse Nomi
-              PLAYER_NAMES = {};
-              if(Array.isArray(namesData)) {
-                  namesData.forEach(p => {
-                      const pid = p.id || p.p;
-                      const name = p.nick || p.name || p.n;
-                      if(pid && name) PLAYER_NAMES[parseInt(pid)] = name;
-                  });
-              }
-          });
+        if(hab==='castello') { if(document.getElementById('chkMap').checked) factor=0.95; if(document.getElementById('selEventCastello').value==="100") factor*=0.5; }
+        else if(hab==='fortezza') { if(document.getElementById('chkBussola').checked) factor*=0.95; if(document.getElementById('selEventFortezza').value==="100") factor*=0.5; }
+        else if(hab==='citta') { 
+            let lvl = document.getElementById('selCityLvl').value; 
+            if(config.building_levels && config.building_levels[lvl]) factor *= config.building_levels[lvl];
+            if(document.getElementById('selEventCitta').value==="100") factor*=0.5; 
         }
-      }
-    }
-
-    function getDist(x1, y1, x2, y2) {
-      let cy1 = y1;
-      let cz1 = x1 - Math.floor(y1 / 2);
-      let cx1 = -cy1 - cz1;
-
-      let cy2 = y2;
-      let cz2 = x2 - Math.floor(y2 / 2);
-      let cx2 = -cy2 - cz2;
-
-      return Math.max(Math.abs(cx1 - cx2), Math.abs(cy1 - cy2), Math.abs(cz1 - cz2));
+        else if(hab==='metro') {
+            let lvl = document.getElementById('selMetroLvl').value;
+            if(config.building_levels && config.building_levels[lvl]) factor *= config.building_levels[lvl];
+            if(document.getElementById('chkManovra').checked) factor*=0.90;
+            if(document.getElementById('selEventMetro').value==="100") factor*=0.5;
+        }
+        return base * factor;
     }
 
     function startCalc() {
-      if(!DB.length) return alert("Attendi il caricamento del DB o link non valido!");
-      if(!GAME_DATA) return alert("Attendi il caricamento dei dati truppe...");
-
-      let val = document.getElementById('inCoord').value;
-      let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
-      if(!m) return alert("Link non valido");
-      
-      myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
-      
-      let dVal = document.getElementById('inDate').value;
-      let tVal = document.getElementById('inTime').value;
-      if(!dVal || !tVal) return alert("Inserisci Data e Ora!");
-      
-      let startT = new Date(dVal + "T" + tVal);
-      if(startT < new Date(Date.now() - 60000)) return alert("Non possiamo tornare nel passato!");
-      
-      let garrison = parseInt(document.getElementById('inGarrison').value);
-      if(!garrison) return alert("Inserisci Truppe Totali!");
-
-      let hab = document.querySelector('input[name="hab"]:checked').value;
-      let limits = GAME_DATA.habitats[hab].limits;
-
-      if(garrison < limits.min) return alert(`Non puoi difendere nemmeno un turno (Min: ${limits.min})`);
-      if(garrison > limits.max) return alert(`Non puoi avere tutte queste truppe (Max: ${limits.max})`);
-      
-      let batch = parseInt(document.getElementById('selBatch').value);
-      
-      let reservation = (hab === 'castello') ? 110 : batch;
-      let available = garrison - reservation;
-      if(available < 0) available = 0;
-
-      document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
-      
-      document.getElementById('inputArea').classList.add('hidden');
-      document.getElementById('resArea').classList.remove('hidden');
-      
-      let dateStr = `${pad(startT.getDate())}/${pad(startT.getMonth()+1)}`;
-      let timeStr = `${pad(startT.getHours())}:${pad(startT.getMinutes())}`;
-      
-      // RECUPERA NOME GIOCATORE
-      let castleObj = DB.find(c => c.x === myCastle.x && c.y === myCastle.y);
-      let playerName = "Sconosciuto";
-      let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
-      
-      if(castleObj && castleObj.p) {
-          playerName = PLAYER_NAMES[castleObj.p] || ("ID " + castleObj.p);
-      } else if (castleObj && castleObj.n) {
-          playerName = castleObj.n; // Fallback al nome castello
-      }
-
-      document.getElementById('resHeaderInfo').innerHTML = `
-        <b>👤 ${playerName}</b>
-        <a href="${linkUrl}">${linkUrl}</a>
-        <span style="font-size:12px; color:#aaa; display:block; margin-top:4px;">Impatto: ${dateStr} ${timeStr}</span>
-      `;
-      
-      rows = [];
-      selectedRowIndex = -1; 
-      
-      // Riga 0: Guarnigione
-      rows.push({ t: new Date(startT), type: 'garrison', covered: false, launched: false });
-      
-      let step = 1;
-      while(available >= batch && step < 120) {
-        let combatT = new Date(startT.getTime() + (step * 600000)); 
-        rows.push({ t: combatT, type: 'wave', target: null, covered: false, launched: false });
-        available -= batch;
-        step++;
-      }
-      
-      forceRecalcTargets();
-      
-      if(ticker) clearInterval(ticker);
-      ticker = setInterval(loop, 1000);
-      renderList();
-    }
-
-    function forceRecalcTargets() {
-      let troopKey = document.getElementById('selBattleTroop').value;
-      let speed = getSpeed(troopKey);
-      
-      rows.forEach(r => {
-        // Se è una ondata (non guarnigione) e NON è coperta, resetta il lancio e ricalcola
-        if(r.type === 'wave' && !r.covered) {
-          r.launched = false; // Reset stato lanciato
-          r.target = findTarget(r.t, speed); // Ricalcola target/tempi
-        }
-        // Se è coperta (r.covered === true), non fare nulla (rimane coperta)
-      });
-    }
-
-    function changeTroopLive() {
-      forceRecalcTargets();
-      renderList();
-    }
-
-    function findTarget(combatTime, speed) {
-      let now = Date.now();
-      
-      let minOff = parseInt(document.getElementById('selBounceMin').value);
-      let maxOff = parseInt(document.getElementById('selBounceMax').value);
-      let isDelay = document.getElementById('chkDelay').checked;
-
-      if(maxOff <= minOff) maxOff = minOff; 
-
-      let rStart = combatTime.getTime() - (maxOff * 60000);
-      let rEnd = combatTime.getTime() - (minOff * 60000); 
-      
-      let best = null;
-      let minWait = Infinity;
-      
-      for(let c of DB) {
-        if(c.x === myCastle.x && c.y === myCastle.y) continue;
-        if(!c.p) continue; 
+        if(!DB.length || !GAME_DATA) return alert("Attendi caricamento dati...");
+        let val = document.getElementById('inCoord').value;
+        let m = val.match(/coordinates\?(\d+),(\d+)&(\d+)/);
+        if(!m) return alert("Link non valido");
+        myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
+        let dVal = document.getElementById('inDate').value, tVal = document.getElementById('inTime').value;
+        if(!dVal || !tVal) return alert("Inserisci Data e Ora!");
+        let startT = new Date(dVal + "T" + tVal);
+        let garrison = parseInt(document.getElementById('inGarrison').value);
+        if(!garrison) return alert("Inserisci Truppe Totali!");
         
-        let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
-        if(dist < 1) continue; 
+        let batch = parseInt(document.getElementById('selBatch').value);
+        let hab = document.querySelector('input[name="hab"]:checked').value;
+        let reservation = (hab==='castello') ? 110 : batch;
+        let available = garrison - reservation;
+        if(available < 0) available = 0;
+
+        document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
+        document.getElementById('inputArea').classList.add('hidden');
+        document.getElementById('resArea').classList.remove('hidden');
+
+        // Header Dinamico
+        let castleObj = DB.find(c => c.x === myCastle.x && c.y === myCastle.y);
+        let playerName = castleObj ? (PLAYER_NAMES[castleObj.p] || "Sconosciuto") : "Sconosciuto";
+        let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
+        let dateStr = `${pad(startT.getDate())}/${pad(startT.getMonth()+1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}`;
         
-        let travelMs = dist * speed * 1000;
-        
-        // APPLICA RITARDO: Se attivo, il viaggio dura 5% in più -> parti prima
-        if(isDelay) {
-            travelMs = travelMs * 1.05;
+        document.getElementById('resHeaderInfo').innerHTML = `
+            <b style="font-size:16px">👤 ${playerName}</b>
+            <a href="${linkUrl}">${linkUrl}</a>
+            <span style="font-size:12px; color:#aaa; display:block; margin-top:4px;">Impatto: ${dateStr}</span>
+        `;
+
+        rows = [];
+        rows.push({ t: new Date(startT), type: 'garrison', covered: false, launched: false });
+        let step = 1;
+        while(available >= batch && step < 120) {
+            rows.push({ t: new Date(startT.getTime() + (step * 600000)), type: 'wave', target: null, covered: false, launched: false });
+            available -= batch; step++;
         }
 
-        let lStart = rStart - (travelMs * 2);
-        let lEnd = rEnd - (travelMs * 2);
-        
-        if(now > lEnd) continue;
-        
-        let wait = Math.max(0, lStart - now);
-        
-        if(wait === 0) {
-            if(minWait > 0) {
-                minWait = 0;
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-            } else {
-                if(lEnd > best.lEnd) {
-                    best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-                }
-            }
-        } else {
-            if(minWait > 0 && wait < minWait) {
-                minWait = wait;
-                best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
-            }
-        }
-      }
-      return best;
-    }
-
-    function renderList() {
-      let el = document.getElementById('resList');
-      el.innerHTML = "";
-      
-      rows.forEach((r, i) => {
-        let div = document.createElement('div');
-        // LOGICA CLASSI GIALLO/VERDE
-        let className = "res-row";
-        if (r.covered) className += " covered";
-        // NON AGGIUNGERE 'launched' QUI PER LO SFONDO, SOLO PER IL TESTO
-        
-        div.className = className;
-        div.id = `row_${i}`;
-        
-        let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
-        let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
-        
-        if(r.type === 'garrison') {
-          div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green); font-weight:bold; font-style:italic">Coperto (Guarnigione)</div><div class="col-action"></div>`;
-          el.appendChild(div);
-          return;
-        }
-        
-        let colInfo = `<div class="col-info" id="info_${i}"></div>`;
-        let colAct = `<div class="col-action" id="act_${i}"></div>`;
-        
-        div.innerHTML = colTime + colInfo + colAct;
-        el.appendChild(div);
-        
-        updateRow(i);
-      });
-
-      let endMsg = document.createElement('div');
-      endMsg.className = "end-msg";
-      endMsg.innerText = "Le tue truppe totali non possono coprire oltre questo turno";
-      el.appendChild(endMsg);
-    }
-
-    function loop() {
-      let now = Date.now();
-      let troopKey = document.getElementById('selBattleTroop').value;
-      let speed = getSpeed(troopKey);
-
-      rows.forEach((r, i) => {
-        if(r.type !== 'garrison' && !r.covered) {
-          if(!r.target) {
-             r.target = findTarget(r.t, speed);
-             updateRow(i);
-             return;
-          }
-          let expireTime = r.target.lEnd; 
-          
-          if(now > expireTime) {
-            r.target = findTarget(r.t, speed);
-            updateRow(i);
-          } else {
-            updateTimer(i);
-          }
-        }
-      });
-    }
-
-    function updateRow(i) {
-      let r = rows[i];
-      if(r.type === 'garrison') return;
-
-      let actDiv = document.getElementById(`act_${i}`);
-      let infoDiv = document.getElementById(`info_${i}`);
-      if(!actDiv) return;
-
-      if(r.covered) {
-        actDiv.innerHTML = ""; // Rimosso "OK" button
-        infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`;
-        return;
-      }
-
-      if(r.launched) {
-        actDiv.innerHTML = `<div class="btn-copri" onclick="toggleCovered(${i})">COPRI</div>`;
-      } 
-
-      updateTimer(i);
-    }
-
-    function updateTimer(i) {
-      let r = rows[i]; if(r.covered) return;
-      
-      let now = Date.now();
-      let infoDiv = document.getElementById(`info_${i}`);
-      let actDiv = document.getElementById(`act_${i}`);
-      
-      if(!r.target) {
-         infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
-         actDiv.innerHTML = "";
-         return;
-      }
-
-      let wait = r.target.lStart - now;
-      let dist = r.target.dist; 
-      let bStartMs = r.target.rStart - r.target.travelMs;
-      let bEndMs = r.target.rEnd - r.target.travelMs;
-      let bStartD = new Date(bStartMs);
-      let bEndD = new Date(bEndMs);
-      let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
-      
-      let coordStr = `${r.target.c.x},${r.target.c.y}`;
-      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-      let expireTime = r.target.lEnd; 
-
-      if(r.launched) {
-         infoDiv.innerHTML = `
-          <div class="info-status st-launched-text">⚠ LANCIO ESEGUITO</div>
-          <div class="info-sub">
-            <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi (${coordStr})
-          </div>`;
-         return;
-      }
-
-      if(wait > 0) {
-        let h = Math.floor(wait / 3600000); let m = Math.floor((wait % 3600000) / 60000); let s = Math.floor((wait % 60000) / 1000);
-        let wStr = h>0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-        infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi</div>`;
-        actDiv.innerHTML = "";
-      } else if(now <= expireTime) {
-        infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi (${coordStr})</div>`;
-        if(!actDiv.querySelector('.lnk-btn-launch')) {
-             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="markLaunched(${i})">LANCIA</a>`;
-        }
-      } else {
-        infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
-        actDiv.innerHTML = "";
-      }
-    }
-
-    function markLaunched(i) {
-        // Resetta lo stato 'launched' di tutte le righe
-        rows.forEach(r => r.launched = false);
-        // Imposta 'launched' solo per la riga cliccata
-        rows[i].launched = true;
+        forceRecalcTargets();
+        if(ticker) clearInterval(ticker);
+        ticker = setInterval(loop, 1000);
         renderList();
     }
 
-    function toggleCovered(i) {
-      if(rows[i].covered) {
-          rows[i].covered = false; rows[i].launched = false; 
-      } else {
-          rows[i].covered = true; rows[i].launched = false; 
-      }
-      renderList();
+    function forceRecalcTargets() {
+        let troopKey = document.getElementById('selBattleTroop').value;
+        let speed = getSpeed(troopKey);
+        rows.forEach(r => {
+            if(r.type === 'wave' && !r.covered) {
+                r.launched = false; 
+                r.target = findTarget(r.t, speed);
+            }
+        });
     }
 
-    function reset() {
-      document.getElementById('inputArea').classList.remove('hidden');
-      document.getElementById('resArea').classList.add('hidden');
-      if(ticker) clearInterval(ticker);
-      resetInput(); 
+    function changeTroopLive() { forceRecalcTargets(); renderList(); }
+
+    function findTarget(combatTime, speed) {
+        let now = Date.now();
+        let minOff = parseInt(document.getElementById('selBounceMin').value);
+        let maxOff = parseInt(document.getElementById('selBounceMax').value);
+        let isDelay = document.getElementById('chkDelay').checked;
+        if(maxOff <= minOff) maxOff = minOff; 
+
+        let rStart = combatTime.getTime() - (maxOff * 60000);
+        let rEnd = combatTime.getTime() - (minOff * 60000); 
+        let best = null, minWait = Infinity;
+
+        for(let c of DB) {
+            if(c.x === myCastle.x && c.y === myCastle.y) continue;
+            if(!c.p) continue;
+            let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
+            if(dist < 1) continue;
+            
+            let travelMs = dist * speed * 1000;
+            if(isDelay) travelMs = travelMs * 1.05; // 5% Delay logic
+
+            let lStart = rStart - (travelMs * 2);
+            let lEnd = rEnd - (travelMs * 2);
+            if(now > lEnd) continue;
+
+            let wait = Math.max(0, lStart - now);
+            if(wait === 0) {
+                if(minWait > 0) { minWait = 0; best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd }; }
+                else if(lEnd > best.lEnd) { best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd }; }
+            } else if(minWait > 0 && wait < minWait) {
+                minWait = wait; best = { c: c, dist: dist, lStart: lStart, lEnd: lEnd, travelMs: travelMs, rStart: rStart, rEnd: rEnd };
+            }
+        }
+        return best;
     }
 
-    function pad(n) { return n<10?'0'+n:n; }
+    function renderList() {
+        let el = document.getElementById('resList'); el.innerHTML = "";
+        rows.forEach((r, i) => {
+            let div = document.createElement('div');
+            let cls = "res-row"; if(r.covered) cls += " covered";
+            div.className = cls; div.id = `row_${i}`;
+            
+            let tLabel = `${pad(r.t.getHours())}:${pad(r.t.getMinutes())}`;
+            let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${tLabel}</div></div>`;
+            
+            if(r.type === 'garrison') {
+                div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`;
+            } else {
+                div.innerHTML = `${colTime}<div class="col-info" id="info_${i}"></div><div class="col-action" id="act_${i}"></div>`;
+            }
+            el.appendChild(div);
+            if(r.type !== 'garrison') updateRow(i);
+        });
+        el.innerHTML += `<div style="padding:20px;text-align:center;color:var(--danger);font-weight:bold;font-size:13px;">FINE COPERTURA</div>`;
+    }
+
+    function loop() {
+        let now = Date.now();
+        let troopKey = document.getElementById('selBattleTroop').value;
+        let speed = getSpeed(troopKey);
+        rows.forEach((r, i) => {
+            if(r.type !== 'garrison' && !r.covered) {
+                if(!r.target || now > r.target.lEnd) {
+                    r.target = findTarget(r.t, speed); updateRow(i);
+                } else updateTimer(i);
+            }
+        });
+    }
+
+    function updateRow(i) {
+        let r = rows[i], actDiv = document.getElementById(`act_${i}`), infoDiv = document.getElementById(`info_${i}`);
+        if(!actDiv) return;
+
+        if(r.covered) {
+            actDiv.innerHTML = "";
+            infoDiv.innerHTML = `<span class="st-covered-text" data-lang="st_covered">${TRANSLATIONS[currentLang].st_covered}</span>`;
+            return;
+        }
+        if(r.launched) {
+            actDiv.innerHTML = `<div class="btn-copri" onclick="toggleCovered(${i})">COPRI</div>`;
+        }
+        updateTimer(i);
+    }
+
+    function updateTimer(i) {
+        let r = rows[i]; if(r.covered) return;
+        let now = Date.now(), infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`);
+        
+        if(!r.target) { infoDiv.innerHTML = `<span class="st-err">Nessun Target</span>`; actDiv.innerHTML=""; return; }
+
+        let wait = r.target.lStart - now;
+        let bStr = `${pad(new Date(r.target.rStart-r.target.travelMs).getHours())}:${pad(new Date(r.target.rStart-r.target.travelMs).getMinutes())}`;
+        let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
+
+        if(r.launched) {
+            infoDiv.innerHTML = `<div class="info-status st-launched-text" data-lang="st_launched">${TRANSLATIONS[currentLang].st_launched}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            return;
+        }
+
+        if(wait > 0) {
+            let h=Math.floor(wait/3600000), m=Math.floor((wait%3600000)/60000), s=Math.floor((wait%60000)/1000);
+            let wStr = h>0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+            infoDiv.innerHTML = `<div class="info-status st-wait"><span data-lang="st_wait">${TRANSLATIONS[currentLang].st_wait}</span>: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            actDiv.innerHTML = "";
+        } else if(now <= r.target.lEnd) {
+            infoDiv.innerHTML = `<div class="info-status st-now" data-lang="st_launch">${TRANSLATIONS[currentLang].st_launch}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            if(!actDiv.querySelector('.lnk-btn-launch')) {
+                actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="markLaunched(${i})">LANCIA</a>`;
+            }
+        } else {
+            infoDiv.innerHTML = `<span class="st-err" data-lang="st_expired">${TRANSLATIONS[currentLang].st_expired}</span>`;
+            actDiv.innerHTML = "";
+        }
+    }
+
+    function markLaunched(i) { rows.forEach(r => r.launched=false); rows[i].launched=true; renderList(); }
+    function toggleCovered(i) { rows[i].covered = !rows[i].covered; rows[i].launched = false; renderList(); }
+    function reset() { document.getElementById('inputArea').classList.remove('hidden'); document.getElementById('resArea').classList.add('hidden'); if(ticker) clearInterval(ticker); resetInput(); }
   </script>
 </body>
 </html>
