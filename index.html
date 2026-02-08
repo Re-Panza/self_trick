@@ -789,43 +789,52 @@
             <select id="selBounceMax" onchange="changeTroopLive()"></select>
           </div>
         </div>
-        <div style="margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);">
-          <label class="chk-label" style="font-weight:bold; color:var(--gold);">
-            <input type="checkbox" id="chkDelay" onchange="changeTroopLive()">
-            🐢 Ritardo Server (+5% tempo)
+      </div>
+    </div>
+
+    <div id="dbStatus" class="status-bar" style="display:none"></div>
+
+    <div class="row">
+      <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
+      <div class="col"><label>Plotone</label>
+        <select id="selBatch"></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="width:100%">
+        <div style="margin-bottom:8px;">
+          <label class="chk-label"
+            style="font-weight:bold; color:var(--gold); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="chkDelay" onchange="syncDelay('chkDelay')">
+            🐢 Ritardo(+5% tempo)
           </label>
         </div>
+        <label data-lang="st_troops">Truppe Totali</label>
+        <input type="number" id="inGarrison" style="text-align:center" placeholder="Es. 1000">
       </div>
-
-      <div id="dbStatus" class="status-bar" style="display:none"></div>
-
-      <div class="row">
-        <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
-        <div class="col"><label>Plotone</label>
-          <select id="selBatch"></select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div style="width:100%">
-          <label data-lang="st_troops">Truppe Totali</label>
-          <input type="number" id="inGarrison" style="text-align:center" placeholder="Es. 1000">
-        </div>
-      </div>
-
-      <button class="btn" onclick="startCalc()" data-lang="st_calc_btn">CALCOLA</button>
     </div>
 
-    <div id="resArea" class="hidden">
-      <div id="resHeaderInfo" class="res-header-info"></div>
+    <button class="btn" onclick="startCalc()" data-lang="st_calc_btn">CALCOLA</button>
+  </div>
 
-      <div class="quick-bar">
-        <button class="back-btn" onclick="reset()">←</button>
-        <select id="selBattleTroop" onchange="changeTroopLive()"></select>
+  <div id="resArea" class="hidden">
+    <div id="resHeaderInfo" class="res-header-info"></div>
+
+    <div class="quick-bar">
+      <button class="back-btn" onclick="reset()">←</button>
+      <select id="selBattleTroop" onchange="changeTroopLive()"></select>
+      <div style="display:flex; align-items:center; margin-left:auto;">
+        <label class="chk-label"
+          style="font-weight:bold; color:var(--gold); display: inline-flex; align-items:center; gap: 5px; cursor: pointer; font-size: 11px; padding: 4px 8px; background: rgba(251, 191, 36, 0.1); border: 1px solid var(--gold); border-radius: 6px;">
+          <input type="checkbox" id="chkDelayRes" onchange="syncDelay('chkDelayRes')">
+          🐢 Ritardo
+        </label>
       </div>
-
-      <div id="resList"></div>
     </div>
+
+    <div id="resList"></div>
+  </div>
   </div>
 
   <footer class="paypal-footer">
@@ -1216,6 +1225,13 @@
         }
       }
       return best;
+    }
+
+    function syncDelay(sourceId) {
+      const val = document.getElementById(sourceId).checked;
+      document.getElementById('chkDelay').checked = val;
+      document.getElementById('chkDelayRes').checked = val;
+      changeTroopLive();
     }
 
     function renderList() {
