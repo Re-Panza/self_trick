@@ -1001,7 +1001,7 @@
       if (garrison > limits.max) return alert(`Massimo ${limits.max}`);
 
       let batch = parseInt(document.getElementById('selBatch').value);
-      let available = garrison - (hab === 'castello' ? 110 : batch);
+      let available = garrison - (batch * 2);
       if (available < 0) available = 0;
 
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
