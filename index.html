@@ -690,6 +690,14 @@
         </div>
       </div>
 
+      <div id="areaBonusPaese" class="bonus-area"
+        style="background: rgba(96, 165, 250, 0.1); border-color: var(--accent);">
+        <label style="color:var(--accent); font-weight:bold;">Bonus Velocità Paese (Sentieri di Ghiaia)</label>
+        <select id="selCountryBonus" onchange="changeTroopLive()">
+          <option value="1">Nessuno (100%)</option>
+        </select>
+      </div>
+
       <label data-lang="st_hab_start">Habitat Partenza</label>
       <div class="habitat-selector">
         <label class="hab-opt">
@@ -899,6 +907,16 @@
       document.getElementById('selCityLvl').innerHTML = htmlL;
       document.getElementById('selMetroLvl').innerHTML = htmlL;
 
+      const countryMultipliers = [
+        0.90, 0.89, 0.88, 0.87, 0.86, 0.85, 0.84, 0.83, 0.82, 0.81,
+        0.80, 0.79, 0.78, 0.77, 0.76, 0.74, 0.72, 0.69, 0.65, 0.60
+      ];
+      let htmlCB = '<option value="1">Nessuno (100%)</option>';
+      countryMultipliers.forEach((val, i) => {
+        htmlCB += `<option value="${val}">Livello ${i + 1} (${Math.round(val * 100)}%)</option>`;
+      });
+      document.getElementById('selCountryBonus').innerHTML = htmlCB;
+
       let htmlB = "";
       for (let i = 1; i <= 9; i++) {
         let sel = (i === 4) ? "selected" : "";
@@ -977,6 +995,10 @@
         if (document.getElementById('selEventMetro').value === "100") factor = factor * 0.5;
       }
 
+      // Bonus Velocità Paese (Mondo 327)
+      const countryFactor = parseFloat(document.getElementById('selCountryBonus').value) || 1.0;
+      factor *= countryFactor;
+
       return base * factor;
     }
 
@@ -992,9 +1014,12 @@
           if (w === "327") {
             urlDBCastelli = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
             urlDBNomi = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
+            document.getElementById('areaBonusPaese').classList.add('active');
           } else {
             urlDBCastelli = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
             urlDBNomi = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
+            document.getElementById('areaBonusPaese').classList.remove('active');
+            document.getElementById('selCountryBonus').value = "1"; // Reset if not in 327
           }
 
           // Fetch Parallelo
