@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://re-panza.github.io/lk_tool/version.js"></script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
   <title>Self Trick</title>
-  
   <style>
-    :root { --bg:#0f172a; --card:rgba(17,28,51,.85); --muted:#93a4c7; --text:#e8eefc; --accent:#60a5fa; --border:rgba(255,255,255,.10); --danger:#ef4444; --gold:#fbbf24; --green:#34d399; }
+    :root { --bg:#0f172a; --card:rgba(17,28,51,.85); --card-solid:#111c33; --muted:#93a4c7; --text:#e8eefc; --accent:#60a5fa; --border:rgba(255,255,255,.10); --danger:#ef4444; --gold:#fbbf24; --green:#34d399; }
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:radial-gradient(1200px 600px at 20% 0%,rgba(96,165,250,.25),transparent 60%), radial-gradient(1000px 500px at 90% 10%,rgba(52,211,153,.18),transparent 55%), var(--bg); color:var(--text); padding:env(safe-area-inset-top,20px) 16px 80px 16px; user-select:none; }
-    input,select,.mono,.value { user-select:text; }
+    input,select { user-select:text; }
     .wrap { max-width:980px; margin:0 auto; }
     .top-nav { max-width:980px; margin:0 auto 10px auto; }
     .home-link { text-decoration:none; color:var(--accent); font-weight:bold; display:inline-flex; align-items:center; gap:8px; font-size:14px; }
     header { display:flex; gap:14px; align-items:center; margin-bottom:18px; }
-    .title h1 { font-size:24px; margin:0; color:#fff; font-weight:800; }
+    h1 { font-size:24px; margin:0; color:#fff; font-weight:800; }
     .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); backdrop-filter:blur(10px); }
     .row { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
     .col { flex:1; }
@@ -30,7 +30,8 @@
     .hab-opt span { display:block; padding:8px 0; font-size:12px; font-weight:bold; color:var(--muted); cursor:pointer; border-radius:8px; transition:0.2s; }
     .hab-opt input:checked+span { background:rgba(96,165,250,.15); color:#fff; border:1px solid var(--accent); }
     .bonus-area { background:rgba(255,255,255,0.03); padding:10px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border); display:none; }
-    .bonus-area.active { display:block; }
+    .bonus-area.active { display:block; animation:fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
     .chk-label { display:flex; align-items:center; gap:10px; font-size:14px; color:var(--text); cursor:pointer; }
     .chk-label input { width:20px; height:20px; margin:0; accent-color:var(--accent); }
     .section-separator { margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); }
@@ -39,12 +40,12 @@
     .hidden { display:none !important; }
     
     .res-header-info { text-align:center; font-size:14px; color:var(--muted); padding:12px; background:rgba(0,0,0,0.2); border-radius:12px 12px 0 0; border:1px solid var(--border); border-bottom:none; }
-    .res-header-info a { color:var(--accent); text-decoration:none; font-weight:bold; font-family:monospace; display:block; margin:4px 0; font-size:12px; }
+    .res-header-info a { color:var(--accent); text-decoration:none; font-weight:bold; font-family:monospace; display:block; margin:4px 0; word-break:break-all; font-size:12px; }
     .res-header-info b { color:#fff; font-size:15px; }
-    .quick-bar { background:#111c33; padding:10px; border:1px solid var(--border); border-top:none; display:flex; gap:10px; position:sticky; top:0; z-index:100; backdrop-filter:blur(10px); }
+    .quick-bar { background:var(--card-solid); padding:10px; border:1px solid var(--border); border-top:none; display:flex; gap:10px; position:sticky; top:0; z-index:100; backdrop-filter:blur(10px); }
     .back-btn { background:rgba(255,255,255,0.1); color:#fff; border:1px solid var(--border); padding:0 16px; font-weight:bold; border-radius:8px; font-size:18px; cursor:pointer; }
     #resList { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-top:none; border-radius:0 0 16px 16px; overflow:hidden; }
-    .res-row { display:grid; grid-template-columns:50px 1fr 90px; gap:10px; align-items:center; padding:12px; border-bottom:1px solid var(--border); }
+    .res-row { display:grid; grid-template-columns:50px 1fr 90px; gap:10px; align-items:center; padding:12px; border-bottom:1px solid var(--border); transition:background 0.2s; }
     .res-row:last-child { border-bottom:none; }
     .res-row.covered { background:rgba(52,211,153,0.15) !important; border-left:3px solid var(--green); }
     .col-time { text-align:center; border-right:1px solid var(--border); padding-right:8px; }
@@ -58,12 +59,11 @@
     
     .lnk-btn-launch { display:flex; align-items:center; justify-content:center; width:100%; height:32px; background:rgba(251,191,36,0.15); border:1px solid var(--gold); color:var(--gold); text-decoration:none; font-size:12px; font-weight:bold; border-radius:8px; text-transform:uppercase; cursor:pointer; }
     .lnk-btn-launch:active { background:var(--gold); color:#000; }
-    
     .btn-copri { display:flex; align-items:center; justify-content:center; width:100%; height:32px; background:rgba(52,211,153,0.15); border:1px solid var(--green); color:var(--green); font-size:12px; font-weight:bold; border-radius:8px; text-transform:uppercase; cursor:pointer; }
     .btn-copri:active { background:var(--green); color:#000; }
 
     .st-wait { color:var(--danger); font-weight:bold; } 
-    .st-now { color:var(--green); animation:pulse 1s infinite; text-shadow:0 0 10px rgba(52,211,153,0.4); } 
+    .st-now { color:var(--green); animation:pulse 1s infinite; text-shadow:0 0 10px rgba(52,211,153,0.4); }
     .st-launched-text { color:var(--gold); animation:pulse 1s infinite; text-shadow:0 0 10px rgba(251,191,36,0.4); }
     .st-covered-text { color:var(--green); font-weight:bold; }
     .st-err { color:var(--danger); font-size:12px; }
@@ -85,30 +85,16 @@
 </head>
 <body>
 
-  <div class="top-nav">
-    <a href="https://re-panza.github.io/lk_tool/" class="home-link">
-      <span data-lang="nav_home">🏠 Home</span>
-    </a>
-  </div>
+  <div class="top-nav"><a href="https://re-panza.github.io/lk_tool/" class="home-link">🏠 Torna alla Home</a></div>
 
   <div class="wrap">
-    <header>
-      <div class="title"><h1 data-lang="st_title">Self Trick</h1></div>
-    </header>
+    <header><div class="title"><h1>Self Trick</h1></div></header>
 
     <div id="inputArea" class="card">
-      <div class="row">
-        <div class="col">
-          <label data-lang="st_label_link">Link castello</label>
-          <input type="text" id="inCoord" placeholder="l+k://coordinates?x,y&337" oninput="checkDB()">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col"><label data-lang="st_label_date">Data</label><input type="date" id="inDate"></div>
-        <div class="col"><label data-lang="st_label_time">Ora</label><input type="time" id="inTime" step="60"></div>
-      </div>
+      <div class="row"><div class="col"><label>Link castello attaccato</label><input type="text" id="inCoord" placeholder="l+k://coordinates?x,y&337" oninput="checkDB()"></div></div>
+      <div class="row"><div class="col"><label>Data Impatto</label><input type="date" id="inDate"></div><div class="col"><label>Ora Impatto</label><input type="time" id="inTime" step="60"></div></div>
       
-      <label data-lang="st_hab_start">Habitat</label>
+      <label>Habitat Partenza</label>
       <div class="habitat-selector">
         <label class="hab-opt"><input type="radio" name="hab" value="castello" checked onchange="updateUI()"><span>Castello</span></label>
         <label class="hab-opt"><input type="radio" name="hab" value="fortezza" onchange="updateUI()"><span>Fortezza</span></label>
@@ -116,36 +102,25 @@
         <label class="hab-opt"><input type="radio" name="hab" value="metro" onchange="updateUI()"><span>Metro</span></label>
       </div>
 
-      <div id="optCastello" class="bonus-area active">
-        <label class="chk-label"><input type="checkbox" id="chkMap"> Mappa Area (+5%)</label>
-        <div class="section-separator"><select id="selEventCastello"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
-      </div>
-      <div id="optFortezza" class="bonus-area">
-        <label class="chk-label"><input type="checkbox" id="chkBussola"> Bussola (+5%)</label>
-        <div class="section-separator"><select id="selEventFortezza"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
-      </div>
-      <div id="optCitta" class="bonus-area">
-        <div class="row" style="margin:0"><div class="col"><select id="selCityLvl"></select></div></div>
-        <div class="section-separator"><select id="selEventCitta"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
-      </div>
-      <div id="optMetro" class="bonus-area">
-        <div class="row" style="margin:0"><div class="col"><select id="selMetroLvl"></select></div></div>
-        <div style="margin-top:8px"><label class="chk-label"><input type="checkbox" id="chkManovra"> Manovra (+10%)</label></div>
-        <div class="section-separator"><select id="selEventMetro"><option value="0">Nessuno</option><option value="100">⚡ 100%</option></select></div>
-      </div>
+      <div id="optCastello" class="bonus-area active"><label class="chk-label"><input type="checkbox" id="chkMap"> Mappa Area (+5%)</label><div class="section-separator"><select id="selEventCastello"><option value="0">Nessuno</option><option value="100">⚡ Velocità 100%</option></select></div></div>
+      <div id="optFortezza" class="bonus-area"><label class="chk-label"><input type="checkbox" id="chkBussola"> Bussola (+5%)</label><div class="section-separator"><select id="selEventFortezza"><option value="0">Nessuno</option><option value="100">⚡ Velocità 100%</option></select></div></div>
+      <div id="optCitta" class="bonus-area"><div class="row" style="margin:0"><div class="col"><label>Livello Caserma</label><select id="selCityLvl"></select></div></div><div class="section-separator"><select id="selEventCitta"><option value="0">Nessuno</option><option value="100">⚡ Velocità 100%</option></select></div></div>
+      <div id="optMetro" class="bonus-area"><div class="row" style="margin:0"><div class="col"><label>Livello Accademia</label><select id="selMetroLvl"></select></div></div><div style="margin-top:8px"><label class="chk-label"><input type="checkbox" id="chkManovra"> Manovra di fianco (+10%)</label></div><div class="section-separator"><select id="selEventMetro"><option value="0">Nessuno</option><option value="100">⚡ Velocità 100%</option></select></div></div>
 
       <div class="bounce-window-config">
-        <div style="display:flex;gap:10px;"><div style="flex:1"><label>Min</label><select id="selBounceMin" onchange="changeTroopLive()"></select></div><div style="flex:1"><label>Max</label><select id="selBounceMax" onchange="changeTroopLive()"></select></div></div>
-        <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
-            <label class="chk-label" style="font-weight:bold;color:var(--gold);">
-                <input type="checkbox" id="chkDelay" onchange="changeTroopLive()"> <span data-lang="st_lag">Ritardo (+5%)</span>
+        <label>Finestra di rimbalzo</label>
+        <div style="display:flex;gap:10px;"><div style="flex:1"><label>Da + (minuti)</label><select id="selBounceMin" onchange="changeTroopLive()"></select></div><div style="flex:1"><label>A + (minuti)</label><select id="selBounceMax" onchange="changeTroopLive()"></select></div></div>
+        <div style="margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1);">
+            <label class="chk-label" style="font-weight:bold; color:var(--gold);">
+                <input type="checkbox" id="chkDelay" onchange="changeTroopLive()"> 🐢 Ritardo Server (+5% tempo)
             </label>
         </div>
       </div>
 
-      <div class="row"><div class="col" style="flex:2"><label data-lang="lbl_troop">Truppa</label><select id="selTroop"></select></div><div class="col"><label data-lang="lbl_batch">Plotone</label><select id="selBatch"></select></div></div>
-      <div class="row"><div style="width:100%"><label data-lang="lbl_total_troops">Totale</label><input type="number" id="inGarrison" style="text-align:center" placeholder="1000"></div></div>
-      <button class="btn" onclick="startCalc()" data-lang="btn_calc">CALCOLA</button>
+      <div id="dbStatus" class="status-bar" style="display:none"></div>
+      <div class="row"><div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div><div class="col"><label>Plotone</label><select id="selBatch"></select></div></div>
+      <div class="row"><div style="width:100%"><label>Truppe Totali</label><input type="number" id="inGarrison" style="text-align:center" placeholder="Es. 1000"></div></div>
+      <button class="btn" onclick="startCalc()">CALCOLA</button>
     </div>
 
     <div id="resArea" class="hidden">
@@ -155,17 +130,16 @@
     </div>
   </div>
 
-  <footer class="paypal-footer"><a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">☕ PayPal</a></footer>
+  <footer class="paypal-footer"><a href="https://paypal.me/Longo11" target="_blank" class="paypal-link">☕ Offrimi un caffè su PayPal</a></footer>
 
-  <div id="ai-assistant-container"><div id="ai-window"><div class="ai-header"><span>👑 Re Panza</span><span onclick="toggleAI()" style="cursor:pointer">×</span></div><div id="ai-content"><p>Ciao!</p></div><div class="ai-input-area"><input type="text" id="ai-input" placeholder="..."><button id="ai-send-btn" onclick="chiediAlRe()">Invia</button></div></div><div id="ai-button" onclick="toggleAI()"><img src="https://re-panza.github.io/lk_tool/re-panza-ai.png" alt="AI"></div></div>
+  <div id="ai-assistant-container"><div id="ai-window"><div class="ai-header"><span>👑 Assistente Re Panza</span><span onclick="toggleAI()" style="cursor:pointer">×</span></div><div id="ai-content"><p>Ciao! Sono Re Panza.</p></div><div class="ai-input-area"><input type="text" id="ai-input" placeholder="..."><button id="ai-send-btn" onclick="chiediAlRe()">Invia</button></div></div><div id="ai-button" onclick="toggleAI()"><img src="https://re-panza.github.io/lk_tool/re-panza-ai.png" alt="AI"></div></div>
 
   <script src="https://re-panza.github.io/lk_tool/common.js"></script>
   <script src="https://re-panza.github.io/re-panza-core/re_panza_brain.js"></script>
 
   <script>
-    let GAME_DATA = null;
-    let DB = [], PLAYER_NAMES = {}, myCastle = null, worldId = null;
-    let rows = [], ticker = null, selectedRowIndex = -1;
+    let GAME_DATA = null, DB = [], PLAYER_NAMES = {}, myCastle = null, worldId = null;
+    let rows = [], ticker = null;
 
     window.onload = async () => {
         GAME_DATA = await LK_API.loadGameConfig();
@@ -173,14 +147,11 @@
     };
 
     function initUI() {
-        let htmlT = ""; for(const [k,v] of Object.entries(GAME_DATA.troops_base_seconds)) htmlT += `<option value="${k}">${k}</option>`;
-        document.getElementById('selTroop').innerHTML = htmlT;
-        document.getElementById('selBattleTroop').innerHTML = htmlT;
-        
+        let htmlT = "";
+        for(const [k,v] of Object.entries(GAME_DATA.troops_base_seconds)) htmlT += `<option value="${k}">${k}</option>`;
+        document.getElementById('selTroop').innerHTML = htmlT; document.getElementById('selBattleTroop').innerHTML = htmlT;
         let htmlL = ""; for(let i=1; i<=30; i++) htmlL += `<option value="${i}">Lv ${i}</option>`;
-        document.getElementById('selCityLvl').innerHTML = htmlL;
-        document.getElementById('selMetroLvl').innerHTML = htmlL;
-
+        document.getElementById('selCityLvl').innerHTML = htmlL; document.getElementById('selMetroLvl').innerHTML = htmlL;
         let htmlB = ""; for(let i=1; i<=9; i++) htmlB += `<option value="${i}" ${i===4?'selected':''}>${i}</option>`;
         document.getElementById('selBounceMin').innerHTML = htmlB;
         document.getElementById('selBounceMax').innerHTML = htmlB; document.getElementById('selBounceMax').value = "7";
@@ -197,9 +168,8 @@
         else if(hab==='fortezza') document.getElementById('optFortezza').classList.add('active');
         else if(hab==='citta') document.getElementById('optCitta').classList.add('active');
         else if(hab==='metro') document.getElementById('optMetro').classList.add('active');
-
-        let batchSelect = document.getElementById('selBatch');
-        batchSelect.innerHTML = "";
+        
+        let batchSelect = document.getElementById('selBatch'); batchSelect.innerHTML = "";
         GAME_DATA.habitats[hab].batches.forEach(val => { let opt=document.createElement('option'); opt.value=val; opt.innerText=val; batchSelect.appendChild(opt); });
     }
 
@@ -224,12 +194,12 @@
         else if(hab==='fortezza') { if(document.getElementById('chkBussola').checked) factor*=0.95; if(document.getElementById('selEventFortezza').value==="100") factor*=0.5; }
         else if(hab==='citta') { 
             let lvl = document.getElementById('selCityLvl').value; 
-            if(config.building_levels && config.building_levels[lvl]) factor *= config.building_levels[lvl];
-            if(document.getElementById('selEventCitta').value==="100") factor*=0.5; 
+            if(config.building_levels && config.building_levels[lvl]) factor*=config.building_levels[lvl];
+            if(document.getElementById('selEventCitta').value==="100") factor*=0.5;
         }
         else if(hab==='metro') {
             let lvl = document.getElementById('selMetroLvl').value;
-            if(config.building_levels && config.building_levels[lvl]) factor *= config.building_levels[lvl];
+            if(config.building_levels && config.building_levels[lvl]) factor*=config.building_levels[lvl];
             if(document.getElementById('chkManovra').checked) factor*=0.90;
             if(document.getElementById('selEventMetro').value==="100") factor*=0.5;
         }
@@ -244,6 +214,7 @@
         myCastle = { x: parseInt(m[1]), y: parseInt(m[2]) };
         let dVal = document.getElementById('inDate').value, tVal = document.getElementById('inTime').value;
         if(!dVal || !tVal) return alert("Inserisci Data e Ora!");
+        
         let startT = new Date(dVal + "T" + tVal);
         let garrison = parseInt(document.getElementById('inGarrison').value);
         if(!garrison) return alert("Inserisci Truppe Totali!");
@@ -315,7 +286,7 @@
             if(dist < 1) continue;
             
             let travelMs = dist * speed * 1000;
-            if(isDelay) travelMs = travelMs * 1.05; // 5% Delay logic
+            if(isDelay) travelMs = travelMs * 1.05;
 
             let lStart = rStart - (travelMs * 2);
             let lEnd = rEnd - (travelMs * 2);
@@ -372,7 +343,7 @@
 
         if(r.covered) {
             actDiv.innerHTML = "";
-            infoDiv.innerHTML = `<span class="st-covered-text" data-lang="st_covered">${TRANSLATIONS[currentLang].st_covered}</span>`;
+            infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`;
             return;
         }
         if(r.launched) {
@@ -392,22 +363,22 @@
         let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
 
         if(r.launched) {
-            infoDiv.innerHTML = `<div class="info-status st-launched-text" data-lang="st_launched">${TRANSLATIONS[currentLang].st_launched}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIO ESEGUITO</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
             return;
         }
 
         if(wait > 0) {
             let h=Math.floor(wait/3600000), m=Math.floor((wait%3600000)/60000), s=Math.floor((wait%60000)/1000);
             let wStr = h>0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-            infoDiv.innerHTML = `<div class="info-status st-wait"><span data-lang="st_wait">${TRANSLATIONS[currentLang].st_wait}</span>: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
             actDiv.innerHTML = "";
         } else if(now <= r.target.lEnd) {
-            infoDiv.innerHTML = `<div class="info-status st-now" data-lang="st_launch">${TRANSLATIONS[currentLang].st_launch}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
+            infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>${r.target.dist} campi</div>`;
             if(!actDiv.querySelector('.lnk-btn-launch')) {
                 actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="markLaunched(${i})">LANCIA</a>`;
             }
         } else {
-            infoDiv.innerHTML = `<span class="st-err" data-lang="st_expired">${TRANSLATIONS[currentLang].st_expired}</span>`;
+            infoDiv.innerHTML = `<span class="st-err">Scaduto</span>`;
             actDiv.innerHTML = "";
         }
     }
