@@ -60,62 +60,76 @@
     .btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(251, 191, 36, .5); background: rgba(251, 191, 36, .15); color: var(--gold); font-weight: 700; text-transform: uppercase; font-size: 15px; cursor: pointer; margin-top: 8px; transition: 0.2s; }
     .btn:active { background: rgba(251, 191, 36, .3); }
     .hidden { display: none !important; }
-    .res-header-info { text-align: center; font-size: 13px; color: var(--muted); padding: 10px; background: rgba(0,0,0,0.2); border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none; }
-    .res-header-info b { color: #fff; }
+    
+    .res-header-info { 
+      text-align: center; font-size: 14px; color: var(--muted); padding: 12px; 
+      background: rgba(0,0,0,0.2); border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none;
+    }
+    .res-header-info a { color: var(--accent); text-decoration: none; font-weight: bold; font-family: monospace; display: block; margin: 4px 0; word-break: break-all; font-size: 12px; }
+    .res-header-info b { color: #fff; font-size: 15px; }
+
     .quick-bar { background: var(--card-solid); padding: 10px; border: 1px solid var(--border); border-top: none; display: flex; gap: 10px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
     .back-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border); padding: 0 16px; font-weight: bold; border-radius: 8px; font-size: 18px; cursor: pointer; }
     #resList { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-top: none; border-radius: 0 0 16px 16px; overflow: hidden; }
+    
     .res-row { display: grid; grid-template-columns: 50px 1fr 90px; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); background: transparent; transition: background 0.2s; }
     .res-row:last-child { border-bottom: none; }
     .res-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-    .res-row.launched { background: rgba(251, 191, 36, 0.15) !important; border-left: 3px solid var(--gold); }
+    
     .res-row.covered { background: rgba(52, 211, 153, 0.15) !important; border-left: 3px solid var(--green); opacity: 1; filter: none; }
+
     .col-time { text-align: center; border-right: 1px solid var(--border); padding-right: 8px; }
     .t-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
     .t-val { font-size: 16px; color: #fff; font-weight: 700; }
+    
     .col-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
     .info-status { font-size: 14px; font-weight: bold; margin-bottom: 3px; white-space: nowrap; }
     .info-sub { font-size: 12px; color: var(--muted); line-height: 1.3; }
     .info-sub span { color: #ccc; }
     .bounce-hl { color: var(--gold); font-weight: bold; }
+    
     .col-action { display: flex; flex-direction: column; gap: 6px; }
-    .lnk-btn { display: flex; align-items: center; justify-content: center; width: 100%; height: 32px; background: rgba(96, 165, 250, 0.15); border: 1px solid var(--blue); color: var(--blue); text-decoration: none; font-size: 12px; font-weight: bold; border-radius: 8px; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
-    .lnk-btn:active { background: var(--blue); color: white; }
+
+    /* BOTTONE LANCIA (GIALLO) */
+    .lnk-btn-launch {
+      display: flex; align-items: center; justify-content: center; width: 100%; height: 32px; 
+      background: rgba(251, 191, 36, 0.15); border: 1px solid var(--gold); color: var(--gold); 
+      text-decoration: none; font-size: 12px; font-weight: bold; border-radius: 8px; text-transform: uppercase;
+      cursor: pointer; transition: 0.2s;
+    }
+    .lnk-btn-launch:active { background: var(--gold); color: #000; }
+
+    /* BOTTONE COPRI (VERDE) */
+    .btn-copri {
+      display: flex; align-items: center; justify-content: center; width: 100%; height: 32px;
+      background: rgba(52, 211, 153, 0.15); border: 1px solid var(--green); color: var(--green);
+      font-size: 12px; font-weight: bold; border-radius: 8px; text-transform: uppercase;
+      cursor: pointer; transition: 0.2s;
+    }
+    .btn-copri:active { background: var(--green); color: #000; }
+
     .chk-cover { width: 100%; height: 26px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 11px; text-transform: uppercase; }
     .chk-cover.active { background: var(--green); color: #000; font-weight: bold; border-color: var(--green); }
-    .st-wait { color: var(--muted); }
-    .st-now { color: var(--green); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); }
+
+    /* STATI DEL TESTO */
+    .st-wait { color: var(--danger); font-weight: bold; } /* ROSSO */
+    .st-now { color: var(--green); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); } /* VERDE LAMPEGGIANTE */
+    .st-launched-text { color: var(--gold); animation: pulse 1s infinite; text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); } /* GIALLO LAMPEGGIANTE */
+    .st-covered-text { color: var(--green); font-weight: bold; } /* VERDE FISSO */
+    
     .st-err { color: var(--danger); font-size: 12px; }
     .end-msg { padding: 20px; text-align: center; color: var(--danger); font-weight: bold; font-size: 13px; text-transform: uppercase; }
 
-    /* --- STILE FOOTER & PAYPAL UNIFORMATO --- */
-    .paypal-footer {
-        text-align: center;
-        margin-top: 60px;
-        padding: 30px 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
+    /* FOOTER E PAYPAL */
+    .paypal-footer { text-align: center; margin-top: 40px; padding: 30px 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
     .paypal-link {
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        color: #fff !important;
-        background: #0070ba;
-        padding: 12px 28px;
-        border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
-        border: none;
+        text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;
+        gap: 10px; transition: all 0.3s ease; color: #fff !important; background: #0070ba;
+        padding: 12px 28px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3); border: none;
     }
-    .paypal-link:hover {
-        background: #005ea6;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5);
-    }
+    .paypal-link:hover { background: #005ea6; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5); }
 
+    /* AI */
     #ai-assistant-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: sans-serif; }
     #ai-button { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); overflow: hidden; border: 2px solid var(--accent); }
     #ai-button img { width: 100%; height: 100%; object-fit: cover; }
@@ -125,6 +139,7 @@
     .ai-input-area { display: flex; gap: 5px; border-top: 1px solid var(--border); padding-top: 10px; }
     #ai-input { flex: 1; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; padding: 8px; font-size: 12px; }
     #ai-send-btn { background: var(--accent); border: none; border-radius: 5px; padding: 5px 15px; cursor: pointer; font-weight: bold; color: #000; }
+    
     @keyframes pulse { 50% { opacity: 0.6; } }
   </style>
 </head>
@@ -285,6 +300,9 @@
     <p style="font-size:12px; color:#93a4c7; margin-bottom:8px; font-family: sans-serif;">
         Ti piace questo strumento?
     </p>
+    <p style="font-size:11px; color:#5c709b; margin-bottom:20px;">
+        Sviluppato da Re Panza • Imperial Wolves (Ita VI) • Jamaican Peace (Ita 15)
+    </p>
     <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link">
         ☕ Offrimi un caffè su PayPal
     </a>
@@ -314,7 +332,7 @@
 
   <script>
     let GAME_DATA = null;
-    let DB = [], myCastle = null, worldId = null;
+    let DB = [], PLAYER_NAMES = {}, myCastle = null, worldId = null;
     let rows = [], ticker = null;
     let selectedRowIndex = -1;
 
@@ -451,9 +469,22 @@
         let w = m[3];
         if(w !== worldId) {
           worldId = w;
-          fetch(`https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`)
-            .then(r => r.json())
-            .then(d => {
+          
+          let urlDBCastelli, urlDBNomi;
+          if(w === "327") {
+              urlDBCastelli = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
+              urlDBNomi = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
+          } else {
+              urlDBCastelli = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
+              urlDBNomi = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
+          }
+
+          // Fetch Parallelo
+          Promise.all([
+              fetch(urlDBCastelli + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(()=>[]),
+              fetch(urlDBNomi + "?v=" + Date.now()).then(r => r.ok ? r.json() : []).catch(()=>[])
+          ]).then(([castlesData, namesData]) => {
+              // Parse Castelli
               DB = [];
               const flat = (n) => { 
                 if(Array.isArray(n)) n.forEach(flat); 
@@ -464,9 +495,18 @@
                 }
                 else if(typeof n==='object') Object.values(n).forEach(flat); 
               };
-              flat(d);
-            })
-            .catch(() => {});
+              flat(castlesData);
+
+              // Parse Nomi
+              PLAYER_NAMES = {};
+              if(Array.isArray(namesData)) {
+                  namesData.forEach(p => {
+                      const pid = p.id || p.p;
+                      const name = p.nick || p.name || p.n;
+                      if(pid && name) PLAYER_NAMES[parseInt(pid)] = name;
+                  });
+              }
+          });
         }
       }
     }
@@ -522,14 +562,28 @@
       
       let dateStr = `${pad(startT.getDate())}/${pad(startT.getMonth()+1)}`;
       let timeStr = `${pad(startT.getHours())}:${pad(startT.getMinutes())}`;
+      
+      // RECUPERA NOME GIOCATORE
+      let castleObj = DB.find(c => c.x === myCastle.x && c.y === myCastle.y);
+      let playerName = "Sconosciuto";
+      let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
+      
+      if(castleObj && castleObj.p) {
+          playerName = PLAYER_NAMES[castleObj.p] || ("ID " + castleObj.p);
+      } else if (castleObj && castleObj.n) {
+          playerName = castleObj.n; // Fallback al nome castello
+      }
+
       document.getElementById('resHeaderInfo').innerHTML = `
-        Castello: <b>(${myCastle.x},${myCastle.y})</b> &nbsp;•&nbsp; 
-        Impatto: <b>${dateStr} ${timeStr}</b>
+        <b>👤 ${playerName}</b>
+        <a href="${linkUrl}">${linkUrl}</a>
+        <span style="font-size:12px; color:#aaa; display:block; margin-top:4px;">Impatto: ${dateStr} ${timeStr}</span>
       `;
       
       rows = [];
       selectedRowIndex = -1; 
       
+      // Riga 0: Guarnigione
       rows.push({ t: new Date(startT), type: 'garrison', covered: false, launched: false });
       
       let step = 1;
@@ -552,9 +606,12 @@
       let speed = getSpeed(troopKey);
       
       rows.forEach(r => {
+        // Se è una ondata (non guarnigione) e NON è coperta, resetta il lancio e ricalcola
         if(r.type === 'wave' && !r.covered) {
-          r.target = findTarget(r.t, speed);
+          r.launched = false; // Reset stato lanciato
+          r.target = findTarget(r.t, speed); // Ricalcola target/tempi
         }
+        // Se è coperta (r.covered === true), non fare nulla (rimane coperta)
       });
     }
 
@@ -617,10 +674,10 @@
       
       rows.forEach((r, i) => {
         let div = document.createElement('div');
+        // LOGICA CLASSI GIALLO/VERDE
         let className = "res-row";
         if (r.covered) className += " covered";
-        else if (r.launched) className += " launched";
-        else if (i === selectedRowIndex) className += " selected";
+        // NON AGGIUNGERE 'launched' QUI PER LO SFONDO, SOLO PER IL TESTO
         
         div.className = className;
         div.id = `row_${i}`;
@@ -681,101 +738,84 @@
       let infoDiv = document.getElementById(`info_${i}`);
       if(!actDiv) return;
 
-      if(!actDiv.querySelector('.chk-cover')) {
-         actDiv.innerHTML = `<div class="chk-cover ${r.covered?'active':''}" onclick="toggleCovered(${i})">${r.covered?'OK':'COPRI'}</div>`;
-      }
-
       if(r.covered) {
-        infoDiv.innerHTML = `<span style="color:var(--green); font-weight:bold;">Turno Coperto</span>`;
-        if(actDiv.querySelector('.lnk-btn')) actDiv.querySelector('.lnk-btn').remove();
+        actDiv.innerHTML = ""; // Rimosso "OK" button
+        infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`;
         return;
       }
 
-      if(!r.target) {
-        infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
-        if(actDiv.querySelector('.lnk-btn')) actDiv.querySelector('.lnk-btn').remove();
-        return;
-      }
+      if(r.launched) {
+        actDiv.innerHTML = `<div class="btn-copri" onclick="toggleCovered(${i})">COPRI</div>`;
+      } 
 
-      let coordStr = `${r.target.c.x},${r.target.c.y}`;
-      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
-      let existingLink = actDiv.querySelector('.lnk-btn');
-      
-      if(!existingLink) {
-        let a = document.createElement('a');
-        a.className = 'lnk-btn hidden';
-        a.href = linkUrl;
-        a.innerText = "LANCIA";
-        a.onclick = function(e) { 
-            markLaunched(i); 
-            copyToClipboard(coordStr);
-        };
-        actDiv.prepend(a); 
-      } else {
-        existingLink.href = linkUrl;
-      }
       updateTimer(i);
     }
 
     function updateTimer(i) {
-      let r = rows[i];
-      if(!r.target || r.covered) return;
+      let r = rows[i]; if(r.covered) return;
       
       let now = Date.now();
       let infoDiv = document.getElementById(`info_${i}`);
-      let lnkBtn = document.querySelector(`#act_${i} .lnk-btn`);
+      let actDiv = document.getElementById(`act_${i}`);
       
+      if(!r.target) {
+         infoDiv.innerHTML = `<span class="st-err">Nessun Target Trovato</span>`;
+         actDiv.innerHTML = "";
+         return;
+      }
+
       let wait = r.target.lStart - now;
       let dist = r.target.dist; 
-      
       let bStartMs = r.target.rStart - r.target.travelMs;
       let bEndMs = r.target.rEnd - r.target.travelMs;
       let bStartD = new Date(bStartMs);
       let bEndD = new Date(bEndMs);
       let bStr = `${pad(bStartD.getHours())}:${pad(bStartD.getMinutes())} - ${pad(bEndD.getHours())}:${pad(bEndD.getMinutes())}`;
-
+      
+      let coordStr = `${r.target.c.x},${r.target.c.y}`;
+      let linkUrl = `l+k://coordinates?${r.target.c.x},${r.target.c.y}&${worldId}`;
       let expireTime = r.target.lEnd; 
 
+      if(r.launched) {
+         infoDiv.innerHTML = `
+          <div class="info-status st-launched-text">⚠ LANCIO ESEGUITO</div>
+          <div class="info-sub">
+            <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+            <span>Target:</span> ${dist} campi (${coordStr})
+          </div>`;
+         return;
+      }
+
       if(wait > 0) {
-        let h = Math.floor(wait / 3600000);
-        let m = Math.floor((wait % 3600000) / 60000);
-        let s = Math.floor((wait % 60000) / 1000);
+        let h = Math.floor(wait / 3600000); let m = Math.floor((wait % 3600000) / 60000); let s = Math.floor((wait % 60000) / 1000);
         let wStr = h>0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-
-        infoDiv.innerHTML = `
-          <div class="info-status st-wait">⏳ Attendi: ${wStr}</div>
-          <div class="info-sub">
-            <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi
-          </div>
-        `;
-        if(lnkBtn) lnkBtn.classList.add('hidden');
-
+        infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${wStr}</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi</div>`;
+        actDiv.innerHTML = "";
       } else if(now <= expireTime) {
-        let coord = `${r.target.c.x},${r.target.c.y}`;
-        infoDiv.innerHTML = `
-          <div class="info-status st-now">▶ LANCIA ORA!</div>
-          <div class="info-sub">
-            <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-            <span>Target:</span> ${dist} campi (${coord})
-          </div>
-        `;
-        if(lnkBtn) lnkBtn.classList.remove('hidden');
-
+        infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br><span>Target:</span> ${dist} campi (${coordStr})</div>`;
+        if(!actDiv.querySelector('.lnk-btn-launch')) {
+             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="markLaunched(${i})">LANCIA</a>`;
+        }
       } else {
         infoDiv.innerHTML = `<span class="st-err">Scaduto (Cerco...)</span>`;
-        if(lnkBtn) lnkBtn.classList.add('hidden');
+        actDiv.innerHTML = "";
       }
     }
 
     function markLaunched(i) {
+        // Resetta lo stato 'launched' di tutte le righe
+        rows.forEach(r => r.launched = false);
+        // Imposta 'launched' solo per la riga cliccata
         rows[i].launched = true;
         renderList();
     }
 
     function toggleCovered(i) {
-      rows[i].covered = !rows[i].covered;
-      if(rows[i].covered) rows[i].launched = false; 
+      if(rows[i].covered) {
+          rows[i].covered = false; rows[i].launched = false; 
+      } else {
+          rows[i].covered = true; rows[i].launched = false; 
+      }
       renderList();
     }
 
