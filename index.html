@@ -992,9 +992,6 @@
       if (available < 0) available = 0;
 
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
-      // Sync checkbox state BEFORE switching view
-      document.getElementById('chkDelayRes').checked = document.getElementById('chkDelay').checked;
-
       document.getElementById('inputArea').classList.add('hidden');
       document.getElementById('resArea').classList.remove('hidden');
 
@@ -1018,7 +1015,7 @@
 
     function forceRecalcTargets() {
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
-      rows.forEach((r, i) => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
+      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
     }
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
@@ -1029,56 +1026,57 @@
       let minOff = parseInt(document.getElementById('selBounceMin').value); // Es. 4 min
       let maxOff = parseInt(document.getElementById('selBounceMax').value); // Es. 7 min
       
-      // Finestra di rientro desiderata
+      // Finestra di rientro desiderata (quando le truppe devono tornare)
+      // Più presto possibile: Impatto - 7 min
+      // Più tardi possibile: Impatto - 4 min
       let rStart = combatTime.getTime() - (maxOff * 60000);
       let rEnd = combatTime.getTime() - (minOff * 60000);
 
+      // Se il momento per rientrare è già passato, target scaduto
       if (now > rEnd) return null;
 
-      // Leggiamo lo stato del checkbox (da input o resArea, sono sincronizzati visivamente, usiamo input come source of truth se siamo in input mode, o res se siamo in res mode. 
-      // Dato che `syncDelay` li tiene allineati, possiamo leggerne uno qualsiasi.
-      let isDelay = document.getElementById('chkDelay').checked; 
+      let isDelay = document.getElementById('chkDelay').checked;
       let best = null, minWait = Infinity;
 
       for (let c of DB) {
+        // Salta il mio castello o castelli senza proprietario (barbari?)
         if (c.x === myCastle.x && c.y === myCastle.y || !c.p) continue;
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        // Calcolo Viaggio Base (0% ritardo)
+        // Calcolo Viaggio (sola andata in ms)
         let travelMsBase = dist * speed * 1000;
         
-        let lStart, lEnd;
+        // Calcolo Round Trip (Andata + Ritorno)
+        // Se isDelay è FALSE: RoundTrip è fisso (2 * Base)
+        // Se isDelay è TRUE:  RoundTrip è un RANGE [2 * Base, 2 * Base * 1.05]
+        
+        let roundTripMin = travelMsBase * 2;
+        let roundTripMax = isDelay ? (travelMsBase * 1.05 * 2) : roundTripMin;
 
-        if (isDelay) {
-            // RITARDO DINAMICO (0-5%)
-            // Finestra di lancio elastica:
-            // Parto PRESTO (lStart) se uso MAX ritardo (5%) per arrivare all'inizio finestra rientro.
-            // Parto TARDI (lEnd) se uso MIN ritardo (0%) per arrivare alla fine finestra rientro.
-            
-            // Viaggio Massimo (5% delay) -> serve per calcolare lStart
-            let travelMsMax = travelMsBase * 1.05;
-            
-            lStart = rStart - (travelMsMax * 2);
-            lEnd = rEnd - (travelMsBase * 2);
-        } else {
-            // RITARDO FISSO (0%) - Come era prima
-            lStart = rStart - (travelMsBase * 2);
-            lEnd = rEnd - (travelMsBase * 2);
-        }
+        // Finestra di LANCIO (Quando devo partire?)
+        // Devo partire in un momento L tale che (L + RT) cada dentro [rStart, rEnd].
+        // Quindi L deve essere in [rStart - RT_max, rEnd - RT_min].
+        
+        let lStart = rStart - roundTripMax; // Lancio più presto (usando viaggio più lento/lungo)
+        let lEnd = rEnd - roundTripMin;     // Lancio più tardi (usando viaggio più veloce/corto)
 
+        // Se l'ultimo momento utile per lanciare è già passato, ignora
         if (now > lEnd) continue;
 
+        // Calcola attesa
         let wait = Math.max(0, lStart - now);
 
+        // Cerchiamo il target che ci fa aspettare meno
         if (wait === 0 || wait < minWait) {
             minWait = wait;
             best = { 
                 c, dist, 
-                lStart, lEnd, 
-                rStart, rEnd, 
-                travelMs: travelMsBase 
+                lStart, lEnd, // Finestra di lancio valida per questo target
+                rStart, rEnd, // Finestra di rientro desiderata
+                travelMs: travelMsBase // Solo per info
             };
+            // Se troviamo un target "pronto" (wait 0) che ha anche una finestra lunga, è perfetto
             if (wait === 0 && lEnd > (best ? best.lEnd : 0)) {
                  best = { c, dist, lStart, lEnd, rStart, rEnd, travelMs: travelMsBase };
             }
@@ -1129,7 +1127,7 @@
       let r = rows[i]; if (r.covered || !r.target) return;
       let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
       
-      // Calcolo visuale del rimbalzo (solo stima, basata su 0 delay)
+      // Calcolo visivo del rimbalzo (stimato su 0 ritardo per riferimento)
       let bStartStr = `${pad(new Date(r.target.rStart).getHours())}:${pad(new Date(r.target.rStart).getMinutes())}`;
       let bEndStr = `${pad(new Date(r.target.rEnd).getHours())}:${pad(new Date(r.target.rEnd).getMinutes())}`;
       let bStr = `${bStartStr} - ${bEndStr}`;
@@ -1155,15 +1153,7 @@
     function markLaunched(i) { rows.forEach(r => r.launched = false); rows[i].launched = true; renderList(); }
     function resetLaunched(i) { if (rows[i].launched) { rows[i].launched = false; renderList(); } }
     function toggleCovered(i) { rows[i].covered = !rows[i].covered; rows[i].launched = false; renderList(); }
-    
-    function reset() { 
-        document.getElementById('inputArea').classList.remove('hidden'); 
-        document.getElementById('resArea').classList.add('hidden'); 
-        if (ticker) clearInterval(ticker);
-        // NON chiamiamo più resetInput() così i dati rimangono!
-        // resetInput(); 
-    }
-    
+    function reset() { document.getElementById('inputArea').classList.remove('hidden'); document.getElementById('resArea').classList.add('hidden'); if (ticker) clearInterval(ticker); resetInput(); }
     function pad(n) { return n < 10 ? '0' + n : n; }
   </script>
 </body>
