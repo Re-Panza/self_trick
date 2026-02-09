@@ -511,6 +511,14 @@
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    .paypal-text {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
     .paypal-link {
       text-decoration: none;
       font-weight: 700;
@@ -805,6 +813,7 @@
   </div>
 
   <footer class="paypal-footer">
+    <div class="paypal-text">Ti piace questo strumento?</div>
     <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">
       ☕ Offrimi un caffè su PayPal
     </a>
@@ -1040,13 +1049,14 @@
       changeTroopLive();
     }
 
-    // ALGORITMO INTELLIGENTE PER TROVARE IL TARGET MIGLIORE
+    // ALGORITMO INTELLIGENTE CON CORREZIONE DECIMAL
     function findTarget(combatTime, speed) {
       let now = Date.now();
       let minOff = parseInt(document.getElementById('selBounceMin').value);
       let maxOff = parseInt(document.getElementById('selBounceMax').value);
       let allowDelay = document.getElementById('chkDelay').checked; 
 
+      // FINESTRA DI RIENTRO OBBLIGATORIA (basata sull'impatto)
       let rStart = combatTime.getTime() - (maxOff * 60000);
       let rEnd = combatTime.getTime() - (minOff * 60000);
 
@@ -1059,32 +1069,36 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        // Opzione 1: Velocità NORMALE
-        let travelNormal = dist * speed * 1000;
-        let optNormal = evaluateOption(c, dist, travelNormal, rStart, rEnd, now, false);
+        // CALCOLO BASATO SUI SECONDI (come il gioco)
+        let baseSeconds = Math.round(dist * speed); 
 
-        // Opzione 2: Velocità RITARDATA (solo se flag attivo)
+        // 1. Velocità NORMALE
+        let travelNormalMs = baseSeconds * 1000;
+        let optNormal = evaluateOption(c, dist, travelNormalMs, rStart, rEnd, now, false);
+
+        // 2. Velocità RITARDATA (+5% sui secondi)
         let optDelay = null;
         if (allowDelay) {
-          let travelDelay = dist * speed * 1050; // +5%
-          optDelay = evaluateOption(c, dist, travelDelay, rStart, rEnd, now, true);
+          let delaySeconds = Math.round(baseSeconds * 1.05); // Arrotondo dopo aver aggiunto la %
+          let travelDelayMs = delaySeconds * 1000;
+          optDelay = evaluateOption(c, dist, travelDelayMs, rStart, rEnd, now, true);
         }
 
+        // Confronto e Scelta
         let candidate = null;
 
-        // Logica di confronto
         if (optNormal && optDelay) {
-            // Se uno è pronto ORA (wait 0) e l'altro no, vince quello pronto
+            // Se uno è pronto ORA e l'altro no, vince quello pronto
             if (optNormal.wait === 0 && optDelay.wait > 0) candidate = optNormal;
             else if (optDelay.wait === 0 && optNormal.wait > 0) candidate = optDelay;
-            // Se entrambi pronti o in attesa, prendi quello con la finestra rimanente più ampia
+            // Se entrambi pronti, vince chi ha più margine
             else if (optNormal.remainingWindow > optDelay.remainingWindow) candidate = optNormal;
             else candidate = optDelay;
         } 
         else if (optNormal) candidate = optNormal;
         else if (optDelay) candidate = optDelay;
 
-        // Se abbiamo trovato un candidato valido per questo castello, confrontiamolo col BEST globale
+        // Aggiornamento Best Globale
         if (candidate) {
           if (candidate.wait === 0) {
             if (minWait > 0) {
@@ -1103,14 +1117,22 @@
     }
 
     function evaluateOption(c, dist, travelMs, rStart, rEnd, now, isDelay) {
-      let lStart = rStart - (travelMs * 2);
-      let lEnd = rEnd - (travelMs * 2);
-      if (now > lEnd) return null; // Troppo tardi
+      // Per tornare a rStart, devo partire a: rStart - (viaggio * 2)
+      // Usiamo travelMs precisi calcolati dai secondi
+      let totalTripTime = travelMs * 2;
+      
+      let lStart = rStart - totalTripTime;
+      let lEnd = rEnd - totalTripTime;
+      
+      if (now > lEnd) return null; // Finestra persa
 
       let wait = Math.max(0, lStart - now);
       let remainingWindow = lEnd - Math.max(now, lStart);
 
-      return { c, dist, lStart, lEnd, travelMs, rStart, rEnd, wait, remainingWindow, useDelay: isDelay };
+      return { 
+        c, dist, lStart, lEnd, travelMs, rStart, rEnd, 
+        wait, remainingWindow, useDelay: isDelay 
+      };
     }
 
     function renderList() {
@@ -1156,7 +1178,6 @@
 
       let speedIcon = r.target.useDelay ? "🐢" : "⚡";
       let speedLabel = r.target.useDelay ? "CON RITARDO" : "NORMALE";
-      // Colora l'etichetta: Verde se normale, Gold se ritardo
       let modeColor = r.target.useDelay ? "var(--gold)" : "var(--green)";
 
       if (r.launched) {
