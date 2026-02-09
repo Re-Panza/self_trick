@@ -413,15 +413,19 @@
     }
 
     .bounce-hl {
-      color: var(--text);
-      font-weight: normal;
+      color: var(--gold);
+      font-weight: bold;
+      font-size: 13px;
+      background: rgba(251, 191, 36, 0.1);
+      padding: 1px 4px;
+      border-radius: 4px;
     }
 
     .return-hl {
-      color: var(--accent);
+      color: var(--green);
       font-weight: bold;
       font-size: 13px;
-      background: rgba(96, 165, 250, 0.1);
+      background: rgba(52, 211, 153, 0.1);
       padding: 1px 4px;
       border-radius: 4px;
     }
@@ -1136,7 +1140,7 @@
       // Se tornando ORA arrivo TROPPO PRESTO (prima di rMin), devo aspettare a lanciare.
       let wait = 0;
       let launchTime = now;
-      let returnTime = earliestReturn;
+      let returnTime = earliestReturn; // Default se parto ORA
 
       if (earliestReturn < rMin) {
         // Devo aspettare affinché il rientro coincida con l'inizio della finestra (rMin)
@@ -1145,10 +1149,14 @@
         returnTime = rMin; 
       }
       
+      // Calcolo l'ora di RIMBALZO (Impatto sul target)
+      let impactTime = launchTime + travelMs;
+
       return { 
         c, dist, travelMs, 
-        lTime: launchTime, // Ora Lancio Calcolata
-        rTime: returnTime, // Ora Rientro Calcolata
+        lTime: launchTime, // Ora Lancio
+        iTime: impactTime, // Ora IMPATTO/RIMBALZO (Nuovo)
+        rTime: returnTime, // Ora Rientro
         wait, 
         useDelay: isDelay 
       };
@@ -1193,10 +1201,10 @@
       let r = rows[i]; if (r.covered || !r.target) return;
       let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
       
-      let lDate = new Date(r.target.lTime);
-      let rDate = new Date(r.target.rTime);
+      let iDate = new Date(r.target.iTime); // Impact Time
+      let rDate = new Date(r.target.rTime); // Return Time
 
-      let lStr = `${pad(lDate.getHours())}:${pad(lDate.getMinutes())}:${pad(lDate.getSeconds())}`;
+      let iStr = `${pad(iDate.getHours())}:${pad(iDate.getMinutes())}:${pad(iDate.getSeconds())}`;
       let rStr = `${pad(rDate.getHours())}:${pad(rDate.getMinutes())}:${pad(rDate.getSeconds())}`;
       
       let coordStr = `${r.target.c.x},${r.target.c.y}`, linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
@@ -1205,9 +1213,9 @@
       let speedLabel = r.target.useDelay ? "CON RITARDO" : "NORMALE";
       let modeColor = r.target.useDelay ? "var(--gold)" : "var(--green)";
 
-      // HTML visualizzazione orari
+      // HTML visualizzazione orari (RIMBALZO e RIENTRO)
       let timeInfo = `<div class="info-sub">
-                        <span class="bounce-hl">🚀 Lancio: ${lStr}</span><br>
+                        <span class="bounce-hl">💥 Rimbalzo: ${iStr}</span><br>
                         <span class="return-hl">🏠 Rientro: ${rStr}</span>
                       </div>`;
 
@@ -1228,7 +1236,7 @@
                              <div class="info-sub">Modo: <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
         actDiv.innerHTML = "";
       } else {
-        // Se wait <= 0 significa che siamo nel momento di lancio (o leggermente dopo, ma entro il margine)
+        // Se wait <= 0 lancia ORA
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              ${timeInfo}
                              <div class="info-sub">Target: <b>${coordStr}</b> <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
