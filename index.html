@@ -1062,17 +1062,16 @@
       changeTroopLive();
     }
 
-    // NUOVO ALGORITMO: CALCOLO FINESTRA DA INIZIO TURNO
+    // NUOVO ALGORITMO: CALCOLO FINESTRA SENZA SOTTRAZIONE 10 MIN
     function findTarget(combatTime, speed) {
       let now = Date.now();
       
-      // Valori dai dropdown (minuti da aggiungere all'inizio del turno)
       let minAdd = parseInt(document.getElementById('selBounceMin').value);
       let maxAdd = parseInt(document.getElementById('selBounceMax').value);
       let allowDelay = document.getElementById('chkDelay').checked; 
 
-      // Calcolo Inizio Turno: 10 minuti prima dell'impatto/scadenza
-      let turnStart = combatTime.getTime() - (10 * 60000); 
+      // CORREZIONE: Turn Start = CombatTime (Orario riga)
+      let turnStart = combatTime.getTime(); 
 
       // Finestra di rientro = Inizio Turno + Minuti Selezionati
       let rMin = turnStart + (minAdd * 60000);
@@ -1087,7 +1086,6 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        // CALCOLO VIAGGI (Andata e Ritorno)
         let baseSeconds = Math.round(dist * speed); 
 
         // OPZIONE 1: NORMALE
@@ -1102,12 +1100,10 @@
           optDelay = evaluateOptionReverse(c, dist, travelDelayMs, rMin, rMax, now, true);
         }
 
-        // Confronto
         let candidate = null;
         if (optNormal && optDelay) {
             if (optNormal.wait === 0 && optDelay.wait > 0) candidate = optNormal;
             else if (optDelay.wait === 0 && optNormal.wait > 0) candidate = optDelay;
-            // A parità di condizione, preferisco chi mi fa rientrare più vicino al centro della finestra
             else candidate = optNormal; 
         } 
         else if (optNormal) candidate = optNormal;
@@ -1117,8 +1113,7 @@
           if (candidate.wait === 0) {
              if (minWait > 0) { minWait = 0; best = candidate; }
              // Se ho già un candidato pronto, prendo quello che rientra prima (più sicuro, lontano dalla battaglia)
-             // oppure quello che mi fa aspettare meno se entrambi hanno wait > 0
-             else if (candidate.rTime < (best ? best.rTime : Infinity)) { best = candidate; }
+             else if (candidate.rMin < (best ? best.rMin : Infinity)) { best = candidate; }
           } else if (minWait > 0 && candidate.wait < minWait) {
              minWait = candidate.wait;
              best = candidate;
@@ -1131,32 +1126,29 @@
     function evaluateOptionReverse(c, dist, travelMs, rMin, rMax, now, isDelay) {
       let totalTrip = travelMs * 2;
       
-      // Se partissi ORA, quando tornerei?
       let earliestReturn = now + totalTrip;
-
-      // Se tornando ORA arrivo TROPPO TARDI (dopo rMax), questo target è bruciato.
       if (earliestReturn > rMax) return null;
 
-      // Se tornando ORA arrivo TROPPO PRESTO (prima di rMin), devo aspettare a lanciare.
       let wait = 0;
       let launchTime = now;
-      let returnTime = earliestReturn; // Default se parto ORA
-
+      
       if (earliestReturn < rMin) {
-        // Devo aspettare affinché il rientro coincida con l'inizio della finestra (rMin)
         wait = rMin - earliestReturn;
         launchTime = now + wait;
-        returnTime = rMin; 
       }
       
-      // Calcolo l'ora di RIMBALZO (Impatto sul target)
-      let impactTime = launchTime + travelMs;
+      // Calcolo Finestra Rimbalzo (Target Window)
+      // La finestra di rimbalzo è: [RientroMin - Viaggio, RientroMax - Viaggio]
+      let bounceMin = rMin - travelMs;
+      let bounceMax = rMax - travelMs;
 
       return { 
         c, dist, travelMs, 
-        lTime: launchTime, // Ora Lancio
-        iTime: impactTime, // Ora IMPATTO/RIMBALZO (Nuovo)
-        rTime: returnTime, // Ora Rientro
+        lTime: launchTime, 
+        bMin: bounceMin, // Inizio Finestra Rimbalzo
+        bMax: bounceMax, // Fine Finestra Rimbalzo
+        rMin: rMin, // Inizio Finestra Rientro
+        rMax: rMax, // Fine Finestra Rientro
         wait, 
         useDelay: isDelay 
       };
@@ -1179,7 +1171,6 @@
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          // Ricalcola sempre se non lanciato, per aggiustare il countdown "wait"
           if (!r.launched) { 
              r.target = findTarget(r.t, speed); 
              updateRow(i); 
@@ -1201,11 +1192,15 @@
       let r = rows[i]; if (r.covered || !r.target) return;
       let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
       
-      let iDate = new Date(r.target.iTime); // Impact Time
-      let rDate = new Date(r.target.rTime); // Return Time
+      // Formattazione Finestra Rimbalzo
+      let bMinD = new Date(r.target.bMin);
+      let bMaxD = new Date(r.target.bMax);
+      let bStr = `${pad(bMinD.getHours())}:${pad(bMinD.getMinutes())}:${pad(bMinD.getSeconds())} - ${pad(bMaxD.getHours())}:${pad(bMaxD.getMinutes())}:${pad(bMaxD.getSeconds())}`;
 
-      let iStr = `${pad(iDate.getHours())}:${pad(iDate.getMinutes())}:${pad(iDate.getSeconds())}`;
-      let rStr = `${pad(rDate.getHours())}:${pad(rDate.getMinutes())}:${pad(rDate.getSeconds())}`;
+      // Formattazione Finestra Rientro
+      let rMinD = new Date(r.target.rMin);
+      let rMaxD = new Date(r.target.rMax);
+      let rStr = `${pad(rMinD.getHours())}:${pad(rMinD.getMinutes())}:${pad(rMinD.getSeconds())} - ${pad(rMaxD.getHours())}:${pad(rMaxD.getMinutes())}:${pad(rMaxD.getSeconds())}`;
       
       let coordStr = `${r.target.c.x},${r.target.c.y}`, linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
@@ -1213,9 +1208,9 @@
       let speedLabel = r.target.useDelay ? "CON RITARDO" : "NORMALE";
       let modeColor = r.target.useDelay ? "var(--gold)" : "var(--green)";
 
-      // HTML visualizzazione orari (RIMBALZO e RIENTRO)
+      // HTML visualizzazione finestre
       let timeInfo = `<div class="info-sub">
-                        <span class="bounce-hl">💥 Rimbalzo: ${iStr}</span><br>
+                        <span class="bounce-hl">💥 Rimbalzo: ${bStr}</span><br>
                         <span class="return-hl">🏠 Rientro: ${rStr}</span>
                       </div>`;
 
@@ -1226,7 +1221,6 @@
         return;
       }
 
-      // Calcolo attesa reale
       let wait = r.target.lTime - now;
 
       if (wait > 0) {
@@ -1236,7 +1230,6 @@
                              <div class="info-sub">Modo: <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
         actDiv.innerHTML = "";
       } else {
-        // Se wait <= 0 lancia ORA
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              ${timeInfo}
                              <div class="info-sub">Target: <b>${coordStr}</b> <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
