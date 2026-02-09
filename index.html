@@ -122,7 +122,8 @@
       letter-spacing: 0.5px;
     }
 
-    input {
+    /* STILE UNIFICATO INPUT/SELECT (Dark) */
+    input, select {
       width: 100%;
       padding: 12px;
       border-radius: 12px;
@@ -134,26 +135,19 @@
       font-weight: bold;
     }
 
+    /* Opzioni del select (solitamente visibili solo aperta tendina) */
+    select option {
+      background-color: #1e293b; /* Colore scuro */
+      color: #fff;
+    }
+
+    /* Icona custom per select */
     select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background-color: rgba(255, 255, 255, .04);
-      color: var(--text);
-      outline: none;
-      font-size: 15px;
-      font-weight: bold;
       appearance: none;
       background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2393a4c7%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
       background-repeat: no-repeat;
       background-position: right 12px top 50%;
       background-size: 12px auto;
-    }
-
-    select option {
-      background-color: #ffffff;
-      color: #000000;
     }
 
     input:focus,
@@ -213,15 +207,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-5px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .chk-label {
@@ -774,8 +761,8 @@
         <div style="margin-bottom:8px;">
           <label class="chk-label"
             style="font-weight:bold; color:var(--gold); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="chkDelay" onchange="syncDelay('chkDelay')">
-            🐢 Ritardo(+5% tempo)
+            <input type="checkbox" id="chkDelay" onchange="changeTroopLive()">
+            🐢 Ritardo (0-5%)
           </label>
         </div>
         <label data-lang="st_troops">Truppe Totali</label>
@@ -796,7 +783,7 @@
         <label class="chk-label"
           style="font-weight:bold; color:var(--gold); display: inline-flex; align-items:center; gap: 5px; cursor: pointer; font-size: 11px; padding: 4px 8px; background: rgba(251, 191, 36, 0.1); border: 1px solid var(--gold); border-radius: 6px;">
           <input type="checkbox" id="chkDelayRes" onchange="syncDelay('chkDelayRes')">
-          🐢 Ritardo
+          🐢 Ritardo (0-5%)
         </label>
       </div>
     </div>
@@ -1033,21 +1020,64 @@
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
 
+    // --- ALGORITMO RITARDO DINAMICO (0-5%) ---
     function findTarget(combatTime, speed) {
-      let now = Date.now(), minOff = parseInt(document.getElementById('selBounceMin').value), maxOff = parseInt(document.getElementById('selBounceMax').value);
-      let isDelay = document.getElementById('chkDelay').checked, rStart = combatTime.getTime() - (maxOff * 60000), rEnd = combatTime.getTime() - (minOff * 60000);
+      let now = Date.now();
+      let minOff = parseInt(document.getElementById('selBounceMin').value); // Es. 4 min
+      let maxOff = parseInt(document.getElementById('selBounceMax').value); // Es. 7 min
+      
+      // Finestra di rientro desiderata
+      let rStart = combatTime.getTime() - (maxOff * 60000);
+      let rEnd = combatTime.getTime() - (minOff * 60000);
+
+      if (now > rEnd) return null;
+
+      let isDelay = document.getElementById('chkDelay').checked;
       let best = null, minWait = Infinity;
 
       for (let c of DB) {
         if (c.x === myCastle.x && c.y === myCastle.y || !c.p) continue;
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
-        let travelMs = dist * speed * 1050; // 1000ms * 1.05 if delay
-        if (!isDelay) travelMs = dist * speed * 1000;
-        let lStart = rStart - (travelMs * 2), lEnd = rEnd - (travelMs * 2);
+
+        // Calcolo Viaggio Base (0% ritardo)
+        let travelMsBase = dist * speed * 1000;
+        
+        let lStart, lEnd;
+
+        if (isDelay) {
+            // RITARDO DINAMICO (0-5%)
+            // Finestra di lancio elastica:
+            // Parto PRESTO (lStart) se uso MAX ritardo (5%) per arrivare all'inizio finestra rientro.
+            // Parto TARDI (lEnd) se uso MIN ritardo (0%) per arrivare alla fine finestra rientro.
+            
+            // Viaggio Massimo (5% delay) -> serve per calcolare lStart
+            let travelMsMax = travelMsBase * 1.05;
+            
+            lStart = rStart - (travelMsMax * 2);
+            lEnd = rEnd - (travelMsBase * 2);
+        } else {
+            // RITARDO FISSO (0%) - Come era prima
+            lStart = rStart - (travelMsBase * 2);
+            lEnd = rEnd - (travelMsBase * 2);
+        }
+
         if (now > lEnd) continue;
+
         let wait = Math.max(0, lStart - now);
-        if (wait === 0 || wait < minWait) { minWait = wait; best = { c, dist, lStart, lEnd, travelMs, rStart, rEnd }; if (wait === 0 && lEnd > (best ? best.lEnd : 0)) best = { c, dist, lStart, lEnd, travelMs, rStart, rEnd }; }
+
+        if (wait === 0 || wait < minWait) {
+            minWait = wait;
+            best = { 
+                c, dist, 
+                lStart, lEnd, 
+                rStart, rEnd, 
+                travelMs: travelMsBase 
+            };
+            if (wait === 0 && lEnd > (best ? best.lEnd : 0)) {
+                 best = { c, dist, lStart, lEnd, rStart, rEnd, travelMs: travelMsBase };
+            }
+        }
       }
       return best;
     }
@@ -1093,13 +1123,19 @@
     function updateTimer(i) {
       let r = rows[i]; if (r.covered || !r.target) return;
       let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
-      let bStr = `${pad(new Date(r.target.rStart - r.target.travelMs).getHours())}:${pad(new Date(r.target.rStart - r.target.travelMs).getMinutes())} - ${pad(new Date(r.target.rEnd - r.target.travelMs).getHours())}:${pad(new Date(r.target.rEnd - r.target.travelMs).getMinutes())}`;
+      
+      // Calcolo visuale del rimbalzo (solo stima, basata su 0 delay)
+      let bStartStr = `${pad(new Date(r.target.rStart).getHours())}:${pad(new Date(r.target.rStart).getMinutes())}`;
+      let bEndStr = `${pad(new Date(r.target.rEnd).getHours())}:${pad(new Date(r.target.rEnd).getMinutes())}`;
+      let bStr = `${bStartStr} - ${bEndStr}`;
+      
       let coordStr = `${r.target.c.x},${r.target.c.y}`, linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div><div class="info-sub"><span class="bounce-hl">Rimbalzo: ${bStr}</span><br>Target: ${r.target.dist} campi</div>`;
         return;
       }
+      
       let wait = r.target.lStart - now;
       if (wait > 0) {
         let m = Math.floor((wait % 3600000) / 60000), s = Math.floor((wait % 60000) / 1000);
