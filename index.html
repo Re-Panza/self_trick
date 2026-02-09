@@ -992,6 +992,9 @@
       if (available < 0) available = 0;
 
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
+      // Sync checkbox state BEFORE switching view
+      document.getElementById('chkDelayRes').checked = document.getElementById('chkDelay').checked;
+
       document.getElementById('inputArea').classList.add('hidden');
       document.getElementById('resArea').classList.remove('hidden');
 
@@ -1015,7 +1018,7 @@
 
     function forceRecalcTargets() {
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
-      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
+      rows.forEach((r, i) => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
     }
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
@@ -1032,7 +1035,9 @@
 
       if (now > rEnd) return null;
 
-      let isDelay = document.getElementById('chkDelay').checked;
+      // Leggiamo lo stato del checkbox (da input o resArea, sono sincronizzati visivamente, usiamo input come source of truth se siamo in input mode, o res se siamo in res mode. 
+      // Dato che `syncDelay` li tiene allineati, possiamo leggerne uno qualsiasi.
+      let isDelay = document.getElementById('chkDelay').checked; 
       let best = null, minWait = Infinity;
 
       for (let c of DB) {
@@ -1150,7 +1155,15 @@
     function markLaunched(i) { rows.forEach(r => r.launched = false); rows[i].launched = true; renderList(); }
     function resetLaunched(i) { if (rows[i].launched) { rows[i].launched = false; renderList(); } }
     function toggleCovered(i) { rows[i].covered = !rows[i].covered; rows[i].launched = false; renderList(); }
-    function reset() { document.getElementById('inputArea').classList.remove('hidden'); document.getElementById('resArea').classList.add('hidden'); if (ticker) clearInterval(ticker); resetInput(); }
+    
+    function reset() { 
+        document.getElementById('inputArea').classList.remove('hidden'); 
+        document.getElementById('resArea').classList.add('hidden'); 
+        if (ticker) clearInterval(ticker);
+        // NON chiamiamo più resetInput() così i dati rimangono!
+        // resetInput(); 
+    }
+    
     function pad(n) { return n < 10 ? '0' + n : n; }
   </script>
 </body>
