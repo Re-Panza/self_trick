@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick</title>
+  <title>Self Trick - Dynamic</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -413,21 +413,8 @@
     }
 
     .bounce-hl {
-      color: var(--gold);
+      color: var(--gold) !important;
       font-weight: bold;
-      font-size: 13px;
-      background: rgba(251, 191, 36, 0.1);
-      padding: 1px 4px;
-      border-radius: 4px;
-    }
-
-    .return-hl {
-      color: var(--green);
-      font-weight: bold;
-      font-size: 13px;
-      background: rgba(52, 211, 153, 0.1);
-      padding: 1px 4px;
-      border-radius: 4px;
     }
 
     .col-action {
@@ -465,9 +452,9 @@
       justify-content: center;
       width: 100%;
       height: 32px;
-      background: rgba(52, 211, 153, 0.15);
-      border: 1px solid var(--green);
-      color: var(--green);
+      background: rgba(52, 120, 211, 0.15); /* Modificato per differenziare */
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-size: 12px;
       font-weight: bold;
       border-radius: 8px;
@@ -477,9 +464,20 @@
     }
 
     .btn-copri:active {
-      background: var(--green);
+      background: var(--accent);
       color: #000;
     }
+    
+    .btn-copri.active-cover {
+         background: rgba(52, 211, 153, 0.15);
+         border-color: var(--green);
+         color: var(--green);
+    }
+    .btn-copri.active-cover:active {
+        background: var(--green);
+        color:#000;
+    }
+
 
     .st-wait {
       color: var(--danger);
@@ -524,14 +522,6 @@
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .paypal-text {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
     .paypal-link {
       text-decoration: none;
       font-weight: 700;
@@ -552,6 +542,12 @@
       background: #005ea6;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5);
+    }
+    
+    .dynamic-delay-tag {
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 2px;
     }
 
     #ai-assistant-container {
@@ -770,11 +766,11 @@
         </label>
         <div style="display:flex; gap:10px; align-items:center;">
           <div style="flex:1">
-            <label>Da + (minuti inizio turno)</label>
+            <label>Da + (minuti)</label>
             <select id="selBounceMin" onchange="changeTroopLive()"></select>
           </div>
           <div style="flex:1">
-            <label>A + (minuti inizio turno)</label>
+            <label>A + (minuti)</label>
             <select id="selBounceMax" onchange="changeTroopLive()"></select>
           </div>
         </div>
@@ -795,8 +791,8 @@
         <div style="margin-bottom:8px;">
           <label class="chk-label"
             style="font-weight:bold; color:var(--gold); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="chkDelay" onchange="syncDelayAndRecalc(this)">
-            🐢 Abilita calcolo con Ritardo (+5%)
+            <input type="checkbox" id="chkDelay" onchange="syncDelay('chkDelay')" checked>
+            🐢 Ritardo Dinamico (0% - 5%)
           </label>
         </div>
         <label data-lang="st_troops">Truppe Totali</label>
@@ -816,8 +812,8 @@
       <div style="display:flex; align-items:center; margin-left:auto;">
         <label class="chk-label"
           style="font-weight:bold; color:var(--gold); display: inline-flex; align-items:center; gap: 5px; cursor: pointer; font-size: 11px; padding: 4px 8px; background: rgba(251, 191, 36, 0.1); border: 1px solid var(--gold); border-radius: 6px;">
-          <input type="checkbox" id="chkDelayRes" onchange="syncDelayAndRecalc(this)">
-          🐢 Usa anche Ritardo
+          <input type="checkbox" id="chkDelayRes" onchange="syncDelay('chkDelayRes')" checked>
+          🐢 Ritardo
         </label>
       </div>
     </div>
@@ -826,7 +822,6 @@
   </div>
 
   <footer class="paypal-footer">
-    <div class="paypal-text">Ti piace questo strumento?</div>
     <a href="https://paypal.me/Longo11" target="_blank" class="paypal-link" data-lang="footer_coffee">
       ☕ Offrimi un caffè su PayPal
     </a>
@@ -1055,103 +1050,61 @@
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
 
-    function syncDelayAndRecalc(el) {
-      const val = el.checked;
-      document.getElementById('chkDelay').checked = val;
-      document.getElementById('chkDelayRes').checked = val;
-      changeTroopLive();
-    }
-
-    // NUOVO ALGORITMO: CALCOLO FINESTRA SENZA SOTTRAZIONE 10 MIN
     function findTarget(combatTime, speed) {
       let now = Date.now();
+      let minOff = parseInt(document.getElementById('selBounceMin').value);
+      let maxOff = parseInt(document.getElementById('selBounceMax').value);
+      // Finestra di rimbalzo desiderata (Ritorno truppe)
+      let rStart = combatTime.getTime() - (maxOff * 60000);
+      let rEnd = combatTime.getTime() - (minOff * 60000);
+
+      let isDelayEnabled = document.getElementById('chkDelay').checked;
       
-      let minAdd = parseInt(document.getElementById('selBounceMin').value);
-      let maxAdd = parseInt(document.getElementById('selBounceMax').value);
-      let allowDelay = document.getElementById('chkDelay').checked; 
-
-      // CORREZIONE: Turn Start = CombatTime (Orario riga)
-      let turnStart = combatTime.getTime(); 
-
-      // Finestra di rientro = Inizio Turno + Minuti Selezionati
-      let rMin = turnStart + (minAdd * 60000);
-      let rMax = turnStart + (maxAdd * 60000);
-
       let best = null;
       let minWait = Infinity;
 
       for (let c of DB) {
         if ((c.x === myCastle.x && c.y === myCastle.y) || !c.p) continue;
-
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        let baseSeconds = Math.round(dist * speed); 
+        // Base Travel = velocità normale (0% ritardo) in ms
+        let baseMs = dist * speed * 1000;
+        
+        // Max Travel = velocità minima (5% ritardo) in ms
+        let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs;
 
-        // OPZIONE 1: NORMALE
-        let travelNormalMs = baseSeconds * 1000;
-        let optNormal = evaluateOptionReverse(c, dist, travelNormalMs, rMin, rMax, now, false);
+        // Finestra di lancio:
+        // Se parto prestissimo (lStart_Ext) con truppe lente, arrivo al tempo rStart.
+        let lStart_Ext = rStart - (2 * maxMs);
+        // Se parto tardissimo (lEnd_Ext) con truppe veloci, arrivo al tempo rEnd.
+        let lEnd_Ext = rEnd - (2 * baseMs);
 
-        // OPZIONE 2: RITARDO
-        let optDelay = null;
-        if (allowDelay) {
-          let delaySeconds = Math.round(baseSeconds * 1.05); 
-          let travelDelayMs = delaySeconds * 1000;
-          optDelay = evaluateOptionReverse(c, dist, travelDelayMs, rMin, rMax, now, true);
-        }
+        // Se è troppo tardi per lanciare anche al massimo della velocità per rientrare nella finestra
+        if (now > lEnd_Ext) continue;
 
-        let candidate = null;
-        if (optNormal && optDelay) {
-            if (optNormal.wait === 0 && optDelay.wait > 0) candidate = optNormal;
-            else if (optDelay.wait === 0 && optNormal.wait > 0) candidate = optDelay;
-            else candidate = optNormal; 
-        } 
-        else if (optNormal) candidate = optNormal;
-        else if (optDelay) candidate = optDelay;
+        let wait = Math.max(0, lStart_Ext - now);
 
-        if (candidate) {
-          if (candidate.wait === 0) {
-             if (minWait > 0) { minWait = 0; best = candidate; }
-             // Se ho già un candidato pronto, prendo quello che rientra prima (più sicuro, lontano dalla battaglia)
-             else if (candidate.rMin < (best ? best.rMin : Infinity)) { best = candidate; }
-          } else if (minWait > 0 && candidate.wait < minWait) {
-             minWait = candidate.wait;
-             best = candidate;
+        if (wait < minWait) {
+          minWait = wait;
+          // Salviamo i dati per calcolare il ritardo in tempo reale
+          best = { 
+              c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext 
+          };
+          
+          // Se siamo dentro la finestra (wait 0), preferiamo quello che ha la finestra di fine più lontana
+          if (wait === 0 && lEnd_Ext > (best ? best.lEnd_Ext : 0)) {
+               best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext };
           }
         }
       }
       return best;
     }
 
-    function evaluateOptionReverse(c, dist, travelMs, rMin, rMax, now, isDelay) {
-      let totalTrip = travelMs * 2;
-      
-      let earliestReturn = now + totalTrip;
-      if (earliestReturn > rMax) return null;
-
-      let wait = 0;
-      let launchTime = now;
-      
-      if (earliestReturn < rMin) {
-        wait = rMin - earliestReturn;
-        launchTime = now + wait;
-      }
-      
-      // Calcolo Finestra Rimbalzo (Target Window)
-      // La finestra di rimbalzo è: [RientroMin - Viaggio, RientroMax - Viaggio]
-      let bounceMin = rMin - travelMs;
-      let bounceMax = rMax - travelMs;
-
-      return { 
-        c, dist, travelMs, 
-        lTime: launchTime, 
-        bMin: bounceMin, // Inizio Finestra Rimbalzo
-        bMax: bounceMax, // Fine Finestra Rimbalzo
-        rMin: rMin, // Inizio Finestra Rientro
-        rMax: rMax, // Fine Finestra Rientro
-        wait, 
-        useDelay: isDelay 
-      };
+    function syncDelay(id) {
+      const v = document.getElementById(id).checked;
+      document.getElementById('chkDelay').checked = v; document.getElementById('chkDelayRes').checked = v;
+      changeTroopLive();
     }
 
     function renderList() {
@@ -1171,10 +1124,12 @@
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          if (!r.launched) { 
-             r.target = findTarget(r.t, speed); 
-             updateRow(i); 
+          // Se il target precedente è scaduto, cerchiamone un altro
+          if (!r.target || Date.now() > r.target.lEnd_Ext) { 
+              r.target = findTarget(r.t, speed); 
+              updateRow(i); 
           }
+          else updateTimer(i);
         }
       });
     }
@@ -1184,56 +1139,75 @@
       let actDiv = document.getElementById(`act_${i}`), infoDiv = document.getElementById(`info_${i}`);
       if (!actDiv) return;
       if (r.covered) { actDiv.innerHTML = ""; infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`; return; }
-      if (r.launched) actDiv.innerHTML = `<div class="btn-copri" onclick="event.stopPropagation(); toggleCovered(${i})">COPRI</div>`;
+      if (r.launched) actDiv.innerHTML = `<div class="btn-copri active-cover" onclick="event.stopPropagation(); toggleCovered(${i})">COPRI</div>`;
       updateTimer(i);
     }
 
     function updateTimer(i) {
-      let r = rows[i]; if (r.covered || !r.target) return;
-      let infoDiv = document.getElementById(`info_${i}`), actDiv = document.getElementById(`act_${i}`), now = Date.now();
+      let r = rows[i]; 
+      if (r.covered || !r.target) return;
+
+      let infoDiv = document.getElementById(`info_${i}`);
+      let actDiv = document.getElementById(`act_${i}`);
+      let now = Date.now();
       
-      // Formattazione Finestra Rimbalzo
-      let bMinD = new Date(r.target.bMin);
-      let bMaxD = new Date(r.target.bMax);
-      let bStr = `${pad(bMinD.getHours())}:${pad(bMinD.getMinutes())}:${pad(bMinD.getSeconds())} - ${pad(bMaxD.getHours())}:${pad(bMaxD.getMinutes())}:${pad(bMaxD.getSeconds())}`;
+      let { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext } = r.target;
+      let coordStr = `${c.x},${c.y}`;
+      let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
-      // Formattazione Finestra Rientro
-      let rMinD = new Date(r.target.rMin);
-      let rMaxD = new Date(r.target.rMax);
-      let rStr = `${pad(rMinD.getHours())}:${pad(rMinD.getMinutes())}:${pad(rMinD.getSeconds())} - ${pad(rMaxD.getHours())}:${pad(rMaxD.getMinutes())}:${pad(rMaxD.getSeconds())}`;
+      // Calcolo dinamico percentuale ritardo
+      // Cerchiamo di centrare la finestra di rimbalzo
+      let targetReturnTime = (rStart + rEnd) / 2;
+      let neededOneWay = (targetReturnTime - now) / 2;
       
-      let coordStr = `${r.target.c.x},${r.target.c.y}`, linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
+      // Clamp values
+      if (neededOneWay < baseMs) neededOneWay = baseMs;
+      if (neededOneWay > maxMs) neededOneWay = maxMs;
 
-      let speedIcon = r.target.useDelay ? "🐢" : "⚡";
-      let speedLabel = r.target.useDelay ? "CON RITARDO" : "NORMALE";
-      let modeColor = r.target.useDelay ? "var(--gold)" : "var(--green)";
+      let delayRatio = (neededOneWay / baseMs);
+      let delayPerc = (delayRatio - 1) * 100;
+      if (delayPerc < 0) delayPerc = 0;
+      if (delayPerc > 5) delayPerc = 5;
 
-      // HTML visualizzazione finestre
-      let timeInfo = `<div class="info-sub">
-                        <span class="bounce-hl">💥 Rimbalzo: ${bStr}</span><br>
-                        <span class="return-hl">🏠 Rientro: ${rStr}</span>
-                      </div>`;
+      // HTML del ritardo dinamico
+      let delayColor = delayPerc > 0 ? 'var(--gold)' : 'var(--muted)';
+      if (delayPerc > 4.8) delayColor = 'var(--danger)'; // Avviso se siamo al limite
+      
+      let delayHtml = `<span class="dynamic-delay-tag" style="color:${delayColor}">🐢 Ritardo: ${delayPerc.toFixed(1)}%</span>`;
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
-                             ${timeInfo}
-                             <div class="info-sub">Target: ${r.target.dist} campi <span style="color:${modeColor}; font-weight:bold">[${speedIcon} ${speedLabel}]</span></div>`;
+                             <div class="info-sub">
+                               Target: ${coordStr} (${dist})<br>
+                               ${delayHtml} usato
+                             </div>`;
         return;
       }
 
-      let wait = r.target.lTime - now;
+      let wait = lStart_Ext - now;
 
       if (wait > 0) {
-        let m = Math.floor((wait % 3600000) / 60000), s = Math.floor((wait % 60000) / 1000);
+        let m = Math.floor((wait % 3600000) / 60000);
+        let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
-                             ${timeInfo}
-                             <div class="info-sub">Modo: <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
+                             <div class="info-sub">
+                               <span class="bounce-hl">Target: ${coordStr} (${dist})</span><br>
+                               ${delayHtml} (Previsto)
+                             </div>`;
         actDiv.innerHTML = "";
-      } else {
+      } else if (now <= lEnd_Ext) {
+        // Finestra attiva
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
-                             ${timeInfo}
-                             <div class="info-sub">Target: <b>${coordStr}</b> <b style="color:${modeColor}">${speedIcon} ${speedLabel}</b></div>`;
-        if (!actDiv.querySelector('.lnk-btn-launch')) actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
+                             <div class="info-sub">
+                               <span class="bounce-hl">Target: ${coordStr} (${dist})</span><br>
+                               ${delayHtml}
+                             </div>`;
+        if (!actDiv.querySelector('.lnk-btn-launch')) {
+            actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
+        }
+      } else {
+        // Caso limite, scaduto
+        r.target = null;
       }
     }
 
