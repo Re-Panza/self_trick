@@ -691,8 +691,8 @@
           <span>Città</span>
         </label>
         <label class="hab-opt">
-          <input type="radio" name="hab" value="metro" onchange="updateUI()">
-          <span>Metro</span>
+          <input type="radio" name="hab" value="metropoli" onchange="updateUI()">
+          <span>Metropoli</span>
         </label>
       </div>
 
@@ -734,11 +734,11 @@
         </div>
       </div>
 
-      <div id="optMetro" class="bonus-area">
+      <div id="optMetropoli" class="bonus-area">
         <div class="row" style="margin:0">
           <div class="col">
             <label style="color:#fff">Livello Accademia (1-30)</label>
-            <select id="selMetroLvl"></select>
+            <select id="selMetropoliLvl"></select>
           </div>
         </div>
         <div style="margin-top:8px">
@@ -746,7 +746,7 @@
         </div>
         <div class="section-separator">
           <span class="sec-title">Eventi Speciali</span>
-          <select id="selEventMetro">
+          <select id="selEventMetropoli">
             <option value="0">Nessuno</option>
             <option value="100">⚡ Velocità 100%</option>
           </select>
@@ -890,7 +890,7 @@
       let htmlL = "";
       for (let i = 1; i <= 30; i++) htmlL += `<option value="${i}">Lv ${i}</option>`;
       document.getElementById('selCityLvl').innerHTML = htmlL;
-      document.getElementById('selMetroLvl').innerHTML = htmlL;
+      document.getElementById('selMetropoliLvl').innerHTML = htmlL;
 
       const countryMultipliers = [
         0.90, 0.89, 0.88, 0.87, 0.86, 0.85, 0.84, 0.83, 0.82, 0.81,
@@ -928,7 +928,7 @@
       if (hab === 'castello') document.getElementById('optCastello').classList.add('active');
       else if (hab === 'fortezza') document.getElementById('optFortezza').classList.add('active');
       else if (hab === 'citta') document.getElementById('optCitta').classList.add('active');
-      else if (hab === 'metro') document.getElementById('optMetro').classList.add('active');
+      else if (hab === 'metropoli') document.getElementById('optMetropoli').classList.add('active');
 
       let batchSelect = document.getElementById('selBatch');
       batchSelect.innerHTML = "";
@@ -956,10 +956,10 @@
         factor *= habConfig.building_levels[parseInt(document.getElementById('selCityLvl').value)] || 1.0;
         if (document.getElementById('selEventCitta').value === "100") factor *= 0.5;
       }
-      else if (hab === 'metro') {
-        factor *= habConfig.building_levels[parseInt(document.getElementById('selMetroLvl').value)] || 1.0;
+      else if (hab === 'metropoli') {
+        factor *= habConfig.building_levels[parseInt(document.getElementById('selMetropoliLvl').value)] || 1.0;
         if (document.getElementById('chkManovra').checked) factor *= 0.90;
-        if (document.getElementById('selEventMetro').value === "100") factor *= 0.5;
+        if (document.getElementById('selEventMetropoli').value === "100") factor *= 0.5;
       }
       factor *= parseFloat(document.getElementById('selCountryBonus').value) || 1.0;
       return base * factor;
