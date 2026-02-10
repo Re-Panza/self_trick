@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Locked Target</title>
+  <title>Self Trick - Delay Info</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -1218,11 +1218,20 @@
           bStr = `${pad(dReq1.getHours())}:${pad(dReq1.getMinutes())}:${pad(dReq1.getSeconds())} - ...`;
       }
 
+      // Check se serve ritardo
+      // Se l'impatto "più veloce possibile" (baseOneWay) è PRIMA dell'inizio della finestra richiesta,
+      // allora stiamo rallentando (ritardo > 0%) per entrarci.
+      let isDelayNeeded = (now + baseOneWay) < reqMinImpact;
+      let delayHtml = isDelayNeeded 
+          ? `<br><span style="color:var(--gold); font-weight:bold">🐢 Con Ritardo</span>` 
+          : `<br><span style="color:var(--accent); font-weight:bold">⚡ Senza Ritardo</span>`;
+
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
                                Target: ${distStr}
+                               ${delayHtml}
                              </div>`;
         return;
       }
@@ -1236,6 +1245,7 @@
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
                                Target: ${distStr}
+                               ${delayHtml}
                              </div>`;
         actDiv.innerHTML = "";
       } else if (isValidNow) {
@@ -1243,6 +1253,7 @@
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
                                Target: ${distStr}
+                               ${delayHtml}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
