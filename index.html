@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Delay Info</title>
+  <title>Self Trick - Clean</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -691,8 +691,8 @@
           <span>Città</span>
         </label>
         <label class="hab-opt">
-          <input type="radio" name="hab" value="metropoli" onchange="updateUI()">
-          <span>Metropoli</span>
+          <input type="radio" name="hab" value="metro" onchange="updateUI()">
+          <span>Metro</span>
         </label>
       </div>
 
@@ -1015,7 +1015,13 @@
       if (garrison > limits.max) return alert(`Massimo ${limits.max}`);
 
       let batch = parseInt(document.getElementById('selBatch').value);
-      let available = garrison - (batch * 2);
+      
+      // LOGICA RICHIESTA: 
+      // Turno 1 usa il DOPPIO del plotone (2 * batch).
+      let turn1_troops = batch * 2;
+      
+      // Le truppe rimanenti per i turni successivi vengono calcolate togliendo il fabbisogno del Turno 1
+      let available = garrison - turn1_troops;
       if (available < 0) available = 0;
 
       document.getElementById('selBattleTroop').value = document.getElementById('selTroop').value;
@@ -1031,16 +1037,35 @@
       // Turno 1 (0-10 min): Coperto dalla Guarnigione
       // Questo turno finisce a StartT + 10 min
       let turn1End = new Date(startT.getTime() + 600000);
-      rows = [{ t: turn1End, type: 'garrison', turnNum: 1, covered: true, launched: false }];
+      
+      // Salviamo l'informazione delle truppe usate per visualizzarla
+      rows = [{ 
+          t: turn1End, 
+          type: 'garrison', 
+          turnNum: 1, 
+          covered: true, 
+          launched: false, 
+          troops: turn1_troops // 2x Batch
+      }];
 
       // Turno 2 inizia da StartT + 10min, finisce a StartT + 20min
+      // ... e così via per i turni successivi, usando 1 batch alla volta
       let step = 2; // Partiamo dal Turno 2 da coprire
       while (available >= batch && step < 50) {
         // Fine del turno corrente (es. Turno 2 finisce a T0 + 20 min)
         let turnEndTime = new Date(startT.getTime() + (step * 600000));
         
-        rows.push({ t: turnEndTime, type: 'wave', turnNum: step, target: null, covered: false, launched: false });
-        available -= batch; step++;
+        rows.push({ 
+            t: turnEndTime, 
+            type: 'wave', 
+            turnNum: step, 
+            target: null, 
+            covered: false, 
+            launched: false,
+            troops: batch // 1x Batch
+        });
+        available -= batch; 
+        step++;
       }
       
       forceRecalcTargets();
@@ -1137,6 +1162,8 @@
         let colTime = `<div class="col-time"><div class="t-label">${label}</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
         
         if (r.type === 'garrison') { 
+             // MOSTRA LE TRUPPE USATE NEL TURNO 1
+             // let troopsInfo = r.troops ? ` (${r.troops})` : ""; // OLD LOGIC
              div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`; 
         }
         else { 
