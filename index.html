@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Strict</title>
+  <title>Self Trick - Battle Turns</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -663,8 +663,8 @@
       </div>
 
       <div class="row">
-        <div class="col"><label data-lang="st_label_date">Data Impatto</label><input type="date" id="inDate"></div>
-        <div class="col"><label data-lang="st_label_time">Ora Impatto</label><input type="time" id="inTime" step="60">
+        <div class="col"><label data-lang="st_label_date">Inizio Battaglia</label><input type="date" id="inDate"></div>
+        <div class="col"><label data-lang="st_label_time">Ora Inizio</label><input type="time" id="inTime" step="60">
         </div>
       </div>
 
@@ -755,15 +755,15 @@
 
       <div class="bounce-window-config">
         <label style="text-transform:none; line-height:1.2; margin-bottom:8px; color:var(--text)">
-          Finestra di rimbalzo (più piccola è la finestra più precisi saranno gli invii)
+          Finestra di Rientro (Minuti prima della fine del turno)
         </label>
         <div style="display:flex; gap:10px; align-items:center;">
           <div style="flex:1">
-            <label>Da - (minuti)</label>
+            <label>Da (Min prima)</label>
             <select id="selBounceMax" onchange="changeTroopLive()"></select>
           </div>
           <div style="flex:1">
-            <label>A - (minuti)</label>
+            <label>A (Min prima)</label>
             <select id="selBounceMin" onchange="changeTroopLive()"></select>
           </div>
         </div>
@@ -899,12 +899,13 @@
       });
       document.getElementById('selCountryBonus').innerHTML = htmlCB;
 
+      // Popola i minuti di rientro (es. da 1 min prima a 9 min prima della fine)
       let htmlB = "";
-      for (let i = 1; i <= 9; i++) { htmlB += `<option value="${i}">${i}</option>`; }
+      for (let i = 1; i <= 9; i++) { htmlB += `<option value="${i}">${i} min</option>`; }
       document.getElementById('selBounceMin').innerHTML = htmlB;
-      document.getElementById('selBounceMin').value = "4";
+      document.getElementById('selBounceMin').value = "3"; // Default 3 min prima della fine
       document.getElementById('selBounceMax').innerHTML = htmlB;
-      document.getElementById('selBounceMax').value = "7";
+      document.getElementById('selBounceMax').value = "6"; // Default 6 min prima della fine
 
       resetInput();
       updateUI();
@@ -999,7 +1000,7 @@
       if (!lk) return alert("Link non valido");
       myCastle = { x: lk.x, y: lk.y };
       let dVal = document.getElementById('inDate').value, tVal = document.getElementById('inTime').value;
-      if (!dVal || !tVal) return alert("Inserisci Data e Ora!");
+      if (!dVal || !tVal) return alert("Inserisci Data e Ora Inizio Battaglia!");
       let startT = new Date(dVal + "T" + tVal);
       if (startT < new Date(Date.now() - 60000)) return alert("Data passata!");
       let garrison = parseInt(document.getElementById('inGarrison').value);
@@ -1022,14 +1023,24 @@
       let pName = castleObj ? (PLAYER_NAMES[castleObj.p] || castleObj.n || "ID " + castleObj.p) : "Sconosciuto";
       let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
 
-      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Impatto: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
+      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
 
-      rows = [{ t: new Date(startT), type: 'garrison', covered: false, launched: false }];
-      let step = 1;
-      while (available >= batch && step < 120) {
-        rows.push({ t: new Date(startT.getTime() + (step * 600000)), type: 'wave', target: null, covered: false, launched: false });
+      // Turno 1 (0-10 min): Coperto dalla Guarnigione
+      // Questo turno finisce a StartT + 10 min
+      let turn1End = new Date(startT.getTime() + 600000);
+      rows = [{ t: turn1End, type: 'garrison', turnNum: 1, covered: true, launched: false }];
+
+      // Turno 2 inizia da StartT + 10min, finisce a StartT + 20min
+      // ... e così via per i turni successivi di 10 minuti
+      let step = 2; // Partiamo dal Turno 2 da coprire
+      while (available >= batch && step < 50) {
+        // Fine del turno corrente (es. Turno 2 finisce a T0 + 20 min)
+        let turnEndTime = new Date(startT.getTime() + (step * 600000));
+        
+        rows.push({ t: turnEndTime, type: 'wave', turnNum: step, target: null, covered: false, launched: false });
         available -= batch; step++;
       }
+      
       forceRecalcTargets();
       if (ticker) clearInterval(ticker);
       ticker = setInterval(loop, 1000);
@@ -1038,20 +1049,27 @@
 
     function forceRecalcTargets() {
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
-      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed); } });
+      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed, r.turnNum); } });
     }
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
 
-    function findTarget(combatTime, speed) {
+    function findTarget(turnEndTime, speed, turnNum) {
       let now = Date.now();
-      let minOff = parseInt(document.getElementById('selBounceMin').value);
-      let maxOff = parseInt(document.getElementById('selBounceMax').value);
+      let minOff = parseInt(document.getElementById('selBounceMin').value); // es. 3 min dalla fine
+      let maxOff = parseInt(document.getElementById('selBounceMax').value); // es. 6 min dalla fine
       
-      // Finestra di Rientro RIGIDA (Es. Impact 21:00 - 7m = 20:53)
-      let rStart = combatTime.getTime() - (maxOff * 60000); 
-      let rEnd = combatTime.getTime() - (minOff * 60000);   
+      // Calcolo finestra di rientro basata sulla FINE DEL TURNO
+      // Es. Turno 2 finisce alle 21:20. Offset 6-3 min.
+      // Rientro 21:14 - 21:17.
+      let rStart = turnEndTime.getTime() - (maxOff * 60000); 
+      let rEnd = turnEndTime.getTime() - (minOff * 60000);   
 
+      // VINCOLO: Il rientro deve avvenire DOPO l'inizio del turno specifico
+      // Turno N inizia 10 minuti prima della sua fine
+      let turnStartTime = turnEndTime.getTime() - 600000;
+      if (rStart < turnStartTime) rStart = turnStartTime; // Clampiamo l'inizio finestra
+      
       let isDelayEnabled = document.getElementById('chkDelay').checked;
       
       let best = null;
@@ -1065,11 +1083,8 @@
         let baseMs = dist * speed * 1000;              // Viaggio veloce (0% delay)
         let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs; // Viaggio lento (5% delay)
 
-        // Calcoliamo la Finestra di Lancio a RITROSO
-        // Per rientrare PRESTO (rStart) viaggiando LENTI (maxMs), devo partire PRESTO
+        // Finestra di Lancio (A RITROSO DAL RIENTRO)
         let lStart_Strict = rStart - (2 * maxMs);
-        
-        // Per rientrare TARDI (rEnd) viaggiando VELOCI (baseMs), devo partire TARDI
         let lEnd_Strict = rEnd - (2 * baseMs);
 
         // Se ormai è troppo tardi per lanciare (anche correndo al massimo arrivo DOPO rEnd)
@@ -1102,9 +1117,17 @@
       rows.forEach((r, i) => {
         let div = document.createElement('div'); div.className = "res-row" + (r.covered ? " covered" : "");
         div.id = `row_${i}`; div.onclick = () => resetLaunched(i);
-        let colTime = `<div class="col-time"><div class="t-label">IMP.</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
-        if (r.type === 'garrison') { div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`; }
-        else { div.innerHTML = `${colTime}<div class="col-info" id="info_${i}"></div><div class="col-action" id="act_${i}"></div>`; }
+        
+        // Etichetta Turno
+        let label = (r.turnNum === 1) ? "TURNO 1" : `TURNO ${r.turnNum}`;
+        let colTime = `<div class="col-time"><div class="t-label">${label}</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
+        
+        if (r.type === 'garrison') { 
+             div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`; 
+        }
+        else { 
+             div.innerHTML = `${colTime}<div class="col-info" id="info_${i}"></div><div class="col-action" id="act_${i}"></div>`; 
+        }
         el.appendChild(div); updateRow(i);
       });
       let endMsg = document.createElement('div'); endMsg.className = "end-msg"; endMsg.innerText = "Fine Copertura Truppe"; el.appendChild(endMsg);
@@ -1115,7 +1138,7 @@
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
           if (!r.target || Date.now() > r.target.lEnd_Strict) { 
-              r.target = findTarget(r.t, speed); 
+              r.target = findTarget(r.t, speed, r.turnNum); 
               updateRow(i); 
           }
           else updateTimer(i);
@@ -1144,17 +1167,14 @@
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
-      // Calcolo validità e visualizzazione
       let returnIfFast = now + (2 * baseMs);
       let returnIfSlow = now + (2 * maxMs);
 
-      // Verifichiamo se l'intervallo di ritorno possibile ora si sovrappone alla finestra richiesta
       let overlapStart = Math.max(returnIfFast, rStart);
       let overlapEnd = Math.min(returnIfSlow, rEnd);
       
       let isValidNow = (overlapStart <= overlapEnd);
       
-      // Calcolo OneWay ideale per visualizzazione (miriamo al centro della sovrapposizione)
       let targetReturn = (overlapStart + overlapEnd) / 2;
       let neededOneWay = (targetReturn - now) / 2;
       
@@ -1163,11 +1183,15 @@
       let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())}`;
       let distStr = `${dist.toFixed(1)} campi`;
 
+      let dR1 = new Date(rStart);
+      let dR2 = new Date(rEnd);
+      let rStr = `${pad(dR1.getHours())}:${pad(dR1.getMinutes())}-${pad(dR2.getHours())}:${pad(dR2.getMinutes())}`;
+
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
-                               Distanza: ${distStr}
+                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
+                               Rientro: ${rStr}
                              </div>`;
         return;
       }
@@ -1179,15 +1203,15 @@
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto Previsto: ${bStr}</span><br>
-                               Distanza: ${distStr}
+                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
+                               Rientro: ${rStr}
                              </div>`;
         actDiv.innerHTML = "";
       } else if (isValidNow) {
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
-                               Distanza: ${distStr}
+                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
+                               Rientro: ${rStr}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
