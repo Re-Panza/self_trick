@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Clean</title>
+  <title>Self Trick - Impact</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -784,7 +784,7 @@
         <div style="margin-bottom:8px;">
           <label class="chk-label"
             style="font-weight:bold; color:var(--gold); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="chkDelay" onchange="syncDelay('chkDelay')" checked>
+            <input type="checkbox" id="chkDelay" onchange="syncDelay('chkDelay')">
             🐢 Ritardo Dinamico (0% - 5%)
           </label>
         </div>
@@ -805,7 +805,7 @@
       <div style="display:flex; align-items:center; margin-left:auto;">
         <label class="chk-label"
           style="font-weight:bold; color:var(--gold); display: inline-flex; align-items:center; gap: 5px; cursor: pointer; font-size: 11px; padding: 4px 8px; background: rgba(251, 191, 36, 0.1); border: 1px solid var(--gold); border-radius: 6px;">
-          <input type="checkbox" id="chkDelayRes" onchange="syncDelay('chkDelayRes')" checked>
+          <input type="checkbox" id="chkDelayRes" onchange="syncDelay('chkDelayRes')">
           🐢 Ritardo
         </label>
       </div>
@@ -1136,18 +1136,28 @@
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
-      // Formattazione Finestra di Rimbalzo
-      let d1 = new Date(rStart);
-      let d2 = new Date(rEnd);
+      // Calcoliamo i tempi per centrare la finestra
+      let targetReturnTime = (rStart + rEnd) / 2;
+      let neededOneWay = (targetReturnTime - now) / 2;
+      
+      if (neededOneWay < baseMs) neededOneWay = baseMs;
+      if (neededOneWay > maxMs) neededOneWay = maxMs;
+
+      // CALCOLO FINESTRA IMPATTO (SOLA ANDATA)
+      // La finestra di impatto corrispondente alla finestra di ritorno
+      let impactStart = rStart - neededOneWay;
+      let impactEnd = rEnd - neededOneWay;
+
+      let d1 = new Date(impactStart);
+      let d2 = new Date(impactEnd);
       let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
       
-      // Formattazione Distanza
       let distStr = `${dist.toFixed(1)} campi`;
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
                                Distanza: ${distStr}
                              </div>`;
         return;
@@ -1160,22 +1170,20 @@
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
                                Distanza: ${distStr}
                              </div>`;
         actDiv.innerHTML = "";
       } else if (now <= lEnd_Ext) {
-        // Finestra attiva - LANCIA ORA
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
                                Distanza: ${distStr}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
         }
       } else {
-        // Scaduto
         r.target = null;
       }
     }
