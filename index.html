@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Impact</title>
+  <title>Self Trick - Strict</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -759,12 +759,12 @@
         </label>
         <div style="display:flex; gap:10px; align-items:center;">
           <div style="flex:1">
-            <label>Da + (minuti)</label>
-            <select id="selBounceMin" onchange="changeTroopLive()"></select>
+            <label>Da - (minuti)</label>
+            <select id="selBounceMax" onchange="changeTroopLive()"></select>
           </div>
           <div style="flex:1">
-            <label>A + (minuti)</label>
-            <select id="selBounceMax" onchange="changeTroopLive()"></select>
+            <label>A - (minuti)</label>
+            <select id="selBounceMin" onchange="changeTroopLive()"></select>
           </div>
         </div>
       </div>
@@ -1048,8 +1048,9 @@
       let minOff = parseInt(document.getElementById('selBounceMin').value);
       let maxOff = parseInt(document.getElementById('selBounceMax').value);
       
-      let rStart = combatTime.getTime() - (maxOff * 60000);
-      let rEnd = combatTime.getTime() - (minOff * 60000);
+      // Finestra di Rientro RIGIDA (Es. Impact 21:00 - 7m = 20:53)
+      let rStart = combatTime.getTime() - (maxOff * 60000); 
+      let rEnd = combatTime.getTime() - (minOff * 60000);   
 
       let isDelayEnabled = document.getElementById('chkDelay').checked;
       
@@ -1061,22 +1062,29 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        let baseMs = dist * speed * 1000;
-        let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs;
+        let baseMs = dist * speed * 1000;              // Viaggio veloce (0% delay)
+        let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs; // Viaggio lento (5% delay)
 
-        let lStart_Ext = rStart - (2 * maxMs);
-        let lEnd_Ext = rEnd - (2 * baseMs);
+        // Calcoliamo la Finestra di Lancio a RITROSO
+        // Per rientrare PRESTO (rStart) viaggiando LENTI (maxMs), devo partire PRESTO
+        let lStart_Strict = rStart - (2 * maxMs);
+        
+        // Per rientrare TARDI (rEnd) viaggiando VELOCI (baseMs), devo partire TARDI
+        let lEnd_Strict = rEnd - (2 * baseMs);
 
-        if (now > lEnd_Ext) continue;
+        // Se ormai è troppo tardi per lanciare (anche correndo al massimo arrivo DOPO rEnd)
+        if (now > lEnd_Strict) continue;
 
-        let wait = Math.max(0, lStart_Ext - now);
+        let wait = Math.max(0, lStart_Strict - now);
 
         if (wait < minWait) {
           minWait = wait;
-          best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext };
+          best = { 
+            c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict 
+          };
           
-          if (wait === 0 && lEnd_Ext > (best ? best.lEnd_Ext : 0)) {
-               best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext };
+          if (wait === 0 && lEnd_Strict > (best ? best.lEnd_Strict : 0)) {
+               best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict };
           }
         }
       }
@@ -1106,7 +1114,7 @@
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          if (!r.target || Date.now() > r.target.lEnd_Ext) { 
+          if (!r.target || Date.now() > r.target.lEnd_Strict) { 
               r.target = findTarget(r.t, speed); 
               updateRow(i); 
           }
@@ -1132,26 +1140,27 @@
       let actDiv = document.getElementById(`act_${i}`);
       let now = Date.now();
       
-      let { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext } = r.target;
+      let { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict } = r.target;
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
-      // Calcoliamo i tempi per centrare la finestra
-      let targetReturnTime = (rStart + rEnd) / 2;
-      let neededOneWay = (targetReturnTime - now) / 2;
-      
-      if (neededOneWay < baseMs) neededOneWay = baseMs;
-      if (neededOneWay > maxMs) neededOneWay = maxMs;
+      // Calcolo validità e visualizzazione
+      let returnIfFast = now + (2 * baseMs);
+      let returnIfSlow = now + (2 * maxMs);
 
-      // CALCOLO FINESTRA IMPATTO (SOLA ANDATA)
-      // La finestra di impatto corrispondente alla finestra di ritorno
-      let impactStart = rStart - neededOneWay;
-      let impactEnd = rEnd - neededOneWay;
-
-      let d1 = new Date(impactStart);
-      let d2 = new Date(impactEnd);
-      let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
+      // Verifichiamo se l'intervallo di ritorno possibile ora si sovrappone alla finestra richiesta
+      let overlapStart = Math.max(returnIfFast, rStart);
+      let overlapEnd = Math.min(returnIfSlow, rEnd);
       
+      let isValidNow = (overlapStart <= overlapEnd);
+      
+      // Calcolo OneWay ideale per visualizzazione (miriamo al centro della sovrapposizione)
+      let targetReturn = (overlapStart + overlapEnd) / 2;
+      let neededOneWay = (targetReturn - now) / 2;
+      
+      let impactTime = now + neededOneWay;
+      let d1 = new Date(impactTime);
+      let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())}`;
       let distStr = `${dist.toFixed(1)} campi`;
 
       if (r.launched) {
@@ -1163,18 +1172,18 @@
         return;
       }
 
-      let wait = lStart_Ext - now;
+      let wait = lStart_Strict - now;
 
       if (wait > 0) {
         let m = Math.floor((wait % 3600000) / 60000);
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
+                               <span class="bounce-hl">Impatto Previsto: ${bStr}</span><br>
                                Distanza: ${distStr}
                              </div>`;
         actDiv.innerHTML = "";
-      } else if (now <= lEnd_Ext) {
+      } else if (isValidNow) {
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
                                <span class="bounce-hl">Impatto Target: ${bStr}</span><br>
