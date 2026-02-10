@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Dynamic</title>
+  <title>Self Trick - Clean</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -452,7 +452,7 @@
       justify-content: center;
       width: 100%;
       height: 32px;
-      background: rgba(52, 120, 211, 0.15); /* Modificato per differenziare */
+      background: rgba(52, 120, 211, 0.15); 
       border: 1px solid var(--accent);
       color: var(--accent);
       font-size: 12px;
@@ -477,7 +477,6 @@
         background: var(--green);
         color:#000;
     }
-
 
     .st-wait {
       color: var(--danger);
@@ -544,12 +543,6 @@
       box-shadow: 0 6px 20px rgba(0, 112, 186, 0.5);
     }
     
-    .dynamic-delay-tag {
-        font-weight: bold;
-        display: inline-block;
-        margin-top: 2px;
-    }
-
     #ai-assistant-container {
       position: fixed;
       bottom: 20px;
@@ -1054,7 +1047,7 @@
       let now = Date.now();
       let minOff = parseInt(document.getElementById('selBounceMin').value);
       let maxOff = parseInt(document.getElementById('selBounceMax').value);
-      // Finestra di rimbalzo desiderata (Ritorno truppe)
+      
       let rStart = combatTime.getTime() - (maxOff * 60000);
       let rEnd = combatTime.getTime() - (minOff * 60000);
 
@@ -1068,31 +1061,20 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        // Base Travel = velocità normale (0% ritardo) in ms
         let baseMs = dist * speed * 1000;
-        
-        // Max Travel = velocità minima (5% ritardo) in ms
         let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs;
 
-        // Finestra di lancio:
-        // Se parto prestissimo (lStart_Ext) con truppe lente, arrivo al tempo rStart.
         let lStart_Ext = rStart - (2 * maxMs);
-        // Se parto tardissimo (lEnd_Ext) con truppe veloci, arrivo al tempo rEnd.
         let lEnd_Ext = rEnd - (2 * baseMs);
 
-        // Se è troppo tardi per lanciare anche al massimo della velocità per rientrare nella finestra
         if (now > lEnd_Ext) continue;
 
         let wait = Math.max(0, lStart_Ext - now);
 
         if (wait < minWait) {
           minWait = wait;
-          // Salviamo i dati per calcolare il ritardo in tempo reale
-          best = { 
-              c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext 
-          };
+          best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext };
           
-          // Se siamo dentro la finestra (wait 0), preferiamo quello che ha la finestra di fine più lontana
           if (wait === 0 && lEnd_Ext > (best ? best.lEnd_Ext : 0)) {
                best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Ext, lEnd_Ext };
           }
@@ -1124,7 +1106,6 @@
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          // Se il target precedente è scaduto, cerchiamone un altro
           if (!r.target || Date.now() > r.target.lEnd_Ext) { 
               r.target = findTarget(r.t, speed); 
               updateRow(i); 
@@ -1155,31 +1136,19 @@
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
 
-      // Calcolo dinamico percentuale ritardo
-      // Cerchiamo di centrare la finestra di rimbalzo
-      let targetReturnTime = (rStart + rEnd) / 2;
-      let neededOneWay = (targetReturnTime - now) / 2;
+      // Formattazione Finestra di Rimbalzo
+      let d1 = new Date(rStart);
+      let d2 = new Date(rEnd);
+      let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
       
-      // Clamp values
-      if (neededOneWay < baseMs) neededOneWay = baseMs;
-      if (neededOneWay > maxMs) neededOneWay = maxMs;
-
-      let delayRatio = (neededOneWay / baseMs);
-      let delayPerc = (delayRatio - 1) * 100;
-      if (delayPerc < 0) delayPerc = 0;
-      if (delayPerc > 5) delayPerc = 5;
-
-      // HTML del ritardo dinamico
-      let delayColor = delayPerc > 0 ? 'var(--gold)' : 'var(--muted)';
-      if (delayPerc > 4.8) delayColor = 'var(--danger)'; // Avviso se siamo al limite
-      
-      let delayHtml = `<span class="dynamic-delay-tag" style="color:${delayColor}">🐢 Ritardo: ${delayPerc.toFixed(1)}%</span>`;
+      // Formattazione Distanza
+      let distStr = `${dist.toFixed(1)} campi`;
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
-                               Target: ${coordStr} (${dist})<br>
-                               ${delayHtml} usato
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Distanza: ${distStr}
                              </div>`;
         return;
       }
@@ -1191,22 +1160,22 @@
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Target: ${coordStr} (${dist})</span><br>
-                               ${delayHtml} (Previsto)
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Distanza: ${distStr}
                              </div>`;
         actDiv.innerHTML = "";
       } else if (now <= lEnd_Ext) {
-        // Finestra attiva
+        // Finestra attiva - LANCIA ORA
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Target: ${coordStr} (${dist})</span><br>
-                               ${delayHtml}
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Distanza: ${distStr}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
         }
       } else {
-        // Caso limite, scaduto
+        // Scaduto
         r.target = null;
       }
     }
