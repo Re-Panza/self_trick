@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - Battle Turns</title>
+  <title>Self Trick - OneWay Logic</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -1031,7 +1031,6 @@
       rows = [{ t: turn1End, type: 'garrison', turnNum: 1, covered: true, launched: false }];
 
       // Turno 2 inizia da StartT + 10min, finisce a StartT + 20min
-      // ... e così via per i turni successivi di 10 minuti
       let step = 2; // Partiamo dal Turno 2 da coprire
       while (available >= batch && step < 50) {
         // Fine del turno corrente (es. Turno 2 finisce a T0 + 20 min)
@@ -1060,15 +1059,12 @@
       let maxOff = parseInt(document.getElementById('selBounceMax').value); // es. 6 min dalla fine
       
       // Calcolo finestra di rientro basata sulla FINE DEL TURNO
-      // Es. Turno 2 finisce alle 21:20. Offset 6-3 min.
-      // Rientro 21:14 - 21:17.
       let rStart = turnEndTime.getTime() - (maxOff * 60000); 
       let rEnd = turnEndTime.getTime() - (minOff * 60000);   
 
       // VINCOLO: Il rientro deve avvenire DOPO l'inizio del turno specifico
-      // Turno N inizia 10 minuti prima della sua fine
       let turnStartTime = turnEndTime.getTime() - 600000;
-      if (rStart < turnStartTime) rStart = turnStartTime; // Clampiamo l'inizio finestra
+      if (rStart < turnStartTime) rStart = turnStartTime; 
       
       let isDelayEnabled = document.getElementById('chkDelay').checked;
       
@@ -1080,14 +1076,20 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        let baseMs = dist * speed * 1000;              // Viaggio veloce (0% delay)
-        let maxMs = isDelayEnabled ? (baseMs * 1.05) : baseMs; // Viaggio lento (5% delay)
+        let baseOneWay = dist * speed * 1000;  // Tempo base andata (0% ritardo)
+        let maxOneWay = isDelayEnabled ? (baseOneWay * 1.05) : baseOneWay; // Tempo max andata (5% ritardo)
+        
+        // Tempo TOTALE viaggio = Andata (Variabile) + Ritorno (Fisso BASE)
+        let tripFast = baseOneWay + baseOneWay;
+        let tripSlow = maxOneWay + baseOneWay;
 
         // Finestra di Lancio (A RITROSO DAL RIENTRO)
-        let lStart_Strict = rStart - (2 * maxMs);
-        let lEnd_Strict = rEnd - (2 * baseMs);
+        // Per rientrare a rStart viaggiando LENTO, devo partire prima.
+        let lStart_Strict = rStart - tripSlow;
+        
+        // Per rientrare a rEnd viaggiando VELOCE, devo partire dopo.
+        let lEnd_Strict = rEnd - tripFast;
 
-        // Se ormai è troppo tardi per lanciare (anche correndo al massimo arrivo DOPO rEnd)
         if (now > lEnd_Strict) continue;
 
         let wait = Math.max(0, lStart_Strict - now);
@@ -1095,11 +1097,11 @@
         if (wait < minWait) {
           minWait = wait;
           best = { 
-            c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict 
+            c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict 
           };
           
           if (wait === 0 && lEnd_Strict > (best ? best.lEnd_Strict : 0)) {
-               best = { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict };
+               best = { c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict };
           }
         }
       }
@@ -1118,7 +1120,6 @@
         let div = document.createElement('div'); div.className = "res-row" + (r.covered ? " covered" : "");
         div.id = `row_${i}`; div.onclick = () => resetLaunched(i);
         
-        // Etichetta Turno
         let label = (r.turnNum === 1) ? "TURNO 1" : `TURNO ${r.turnNum}`;
         let colTime = `<div class="col-time"><div class="t-label">${label}</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
         
@@ -1163,35 +1164,45 @@
       let actDiv = document.getElementById(`act_${i}`);
       let now = Date.now();
       
-      let { c, dist, baseMs, maxMs, rStart, rEnd, lStart_Strict, lEnd_Strict } = r.target;
+      let { c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict } = r.target;
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
-
-      let returnIfFast = now + (2 * baseMs);
-      let returnIfSlow = now + (2 * maxMs);
-
-      let overlapStart = Math.max(returnIfFast, rStart);
-      let overlapEnd = Math.min(returnIfSlow, rEnd);
-      
-      let isValidNow = (overlapStart <= overlapEnd);
-      
-      let targetReturn = (overlapStart + overlapEnd) / 2;
-      let neededOneWay = (targetReturn - now) / 2;
-      
-      let impactTime = now + neededOneWay;
-      let d1 = new Date(impactTime);
-      let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())}`;
       let distStr = `${dist.toFixed(1)} campi`;
 
-      let dR1 = new Date(rStart);
-      let dR2 = new Date(rEnd);
-      let rStr = `${pad(dR1.getHours())}:${pad(dR1.getMinutes())}-${pad(dR2.getHours())}:${pad(dR2.getMinutes())}`;
+      // 1. Calcolo LIMITI FISICI di impatto SE LANCI ORA
+      // Se lanci ora, l'impatto avverrà tra [Now + BaseOneWay] e [Now + MaxOneWay]
+      let phyMinImpact = now + baseOneWay;
+      let phyMaxImpact = now + maxOneWay;
+
+      // 2. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
+      // Il ritorno è fisso (baseOneWay). Quindi per rientrare entro [rStart, rEnd],
+      // l'impatto deve avvenire entro [rStart - baseOneWay, rEnd - baseOneWay]
+      let reqMinImpact = rStart - baseOneWay;
+      let reqMaxImpact = rEnd - baseOneWay;
+
+      // 3. Intersezione (Finestra di Impatto Valida ATTUALE)
+      let actualStart = Math.max(phyMinImpact, reqMinImpact);
+      let actualEnd = Math.min(phyMaxImpact, reqMaxImpact);
+      
+      let isValidNow = (actualStart <= actualEnd);
+      
+      // Formattazione Finestra Impatto
+      let d1 = new Date(actualStart);
+      let d2 = new Date(actualEnd);
+      let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}:${pad(d2.getSeconds())}`;
+      
+      // Fallback display se non valido ora ma attesa futura (mostra la finestra richiesta)
+      if (!isValidNow && (lStart_Strict > now)) {
+          let dReq1 = new Date(reqMinImpact);
+          let dReq2 = new Date(reqMaxImpact);
+          bStr = `${pad(dReq1.getHours())}:${pad(dReq1.getMinutes())}:${pad(dReq1.getSeconds())} - ...`;
+      }
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
-                               Rientro: ${rStr}
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Target: ${distStr}
                              </div>`;
         return;
       }
@@ -1203,15 +1214,14 @@
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
-                               Rientro: ${rStr}
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span>
                              </div>`;
         actDiv.innerHTML = "";
       } else if (isValidNow) {
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Impatto: ${bStr}</span><br>
-                               Rientro: ${rStr}
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Target: ${distStr}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
             actDiv.innerHTML = `<a class="lnk-btn-launch" href="${linkUrl}" onclick="event.stopPropagation(); markLaunched(${i})">LANCIA</a>`;
