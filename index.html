@@ -16,7 +16,7 @@
   </script>
   <link rel="apple-touch-icon" href="https://re-panza.github.io/lk_tool/icona.png">
 
-  <title>Self Trick - OneWay Logic</title>
+  <title>Self Trick - Locked Target</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -1047,8 +1047,16 @@
     }
 
     function forceRecalcTargets() {
+      // RESET COMPLETO dei target quando si ricalcola (es. cambio truppe)
+      rows.forEach(r => { 
+          if (r.type === 'wave') { 
+              r.launched = false; 
+              r.target = null; // Resetta il target bloccato
+          } 
+      });
+      
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
-      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.launched = false; r.target = findTarget(r.t, speed, r.turnNum); } });
+      rows.forEach(r => { if (r.type === 'wave' && !r.covered) { r.target = findTarget(r.t, speed, r.turnNum); } });
     }
 
     function changeTroopLive() { forceRecalcTargets(); renderList(); }
@@ -1084,25 +1092,27 @@
         let tripSlow = maxOneWay + baseOneWay;
 
         // Finestra di Lancio (A RITROSO DAL RIENTRO)
-        // Per rientrare a rStart viaggiando LENTO, devo partire prima.
         let lStart_Strict = rStart - tripSlow;
-        
-        // Per rientrare a rEnd viaggiando VELOCE, devo partire dopo.
         let lEnd_Strict = rEnd - tripFast;
 
         if (now > lEnd_Strict) continue;
 
         let wait = Math.max(0, lStart_Strict - now);
 
+        // LOGICA PRIORITA': Cerca il primo disponibile (wait == 0)
+        // Se wait < minWait (es. 0 < 5), diventa il migliore.
+        // Se wait == minWait (es. entrambi 0), prendi quello che ha la finestra più larga (lEnd maggiore)
+        
         if (wait < minWait) {
           minWait = wait;
           best = { 
             c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict 
           };
-          
-          if (wait === 0 && lEnd_Strict > (best ? best.lEnd_Strict : 0)) {
+        } else if (wait === minWait) {
+           // Break ties: se entrambi sono immediati, preferisci quello con più margine
+           if (best && lEnd_Strict > best.lEnd_Strict) {
                best = { c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict };
-          }
+           }
         }
       }
       return best;
@@ -1138,11 +1148,25 @@
       let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-          if (!r.target || Date.now() > r.target.lEnd_Strict) { 
-              r.target = findTarget(r.t, speed, r.turnNum); 
-              updateRow(i); 
+          
+          let needsUpdate = false;
+          if (!r.launched) {
+              if (!r.target) {
+                  // Se non ho un target, ne cerco uno
+                  needsUpdate = true;
+              } else {
+                  // Se ho un target, verifico se è SCADUTO
+                  if (Date.now() > r.target.lEnd_Strict) {
+                      needsUpdate = true;
+                  }
+              }
           }
-          else updateTimer(i);
+
+          if (needsUpdate) {
+              r.target = findTarget(r.t, speed, r.turnNum); 
+          }
+          
+          updateTimer(i);
         }
       });
     }
@@ -1170,28 +1194,24 @@
       let distStr = `${dist.toFixed(1)} campi`;
 
       // 1. Calcolo LIMITI FISICI di impatto SE LANCI ORA
-      // Se lanci ora, l'impatto avverrà tra [Now + BaseOneWay] e [Now + MaxOneWay]
       let phyMinImpact = now + baseOneWay;
       let phyMaxImpact = now + maxOneWay;
 
       // 2. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
-      // Il ritorno è fisso (baseOneWay). Quindi per rientrare entro [rStart, rEnd],
-      // l'impatto deve avvenire entro [rStart - baseOneWay, rEnd - baseOneWay]
       let reqMinImpact = rStart - baseOneWay;
       let reqMaxImpact = rEnd - baseOneWay;
 
-      // 3. Intersezione (Finestra di Impatto Valida ATTUALE)
+      // 3. Intersezione
       let actualStart = Math.max(phyMinImpact, reqMinImpact);
       let actualEnd = Math.min(phyMaxImpact, reqMaxImpact);
       
       let isValidNow = (actualStart <= actualEnd);
       
-      // Formattazione Finestra Impatto
       let d1 = new Date(actualStart);
       let d2 = new Date(actualEnd);
       let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}:${pad(d2.getSeconds())}`;
       
-      // Fallback display se non valido ora ma attesa futura (mostra la finestra richiesta)
+      // Fallback display se in attesa
       if (!isValidNow && (lStart_Strict > now)) {
           let dReq1 = new Date(reqMinImpact);
           let dReq2 = new Date(reqMaxImpact);
@@ -1214,7 +1234,8 @@
         let s = Math.floor((wait % 60000) / 1000);
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
-                               <span class="bounce-hl">Rimbalzo: ${bStr}</span>
+                               <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
+                               Target: ${distStr}
                              </div>`;
         actDiv.innerHTML = "";
       } else if (isValidNow) {
