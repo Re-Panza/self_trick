@@ -846,7 +846,7 @@
 
   <script>
     let GAME_DATA = null;
-    let DB = [], PLAYER_NAMES = {}, myCastle = null, worldId = null;
+    let DB = [], myCastle = null, worldId = null;
     let rows = [], ticker = null;
     let selectedRowIndex = -1;
 
@@ -970,27 +970,24 @@
         let w = lk.w;
         if (w !== worldId) {
           worldId = w;
-          let urlC, urlN;
+          let urlC;
           if (w === "327") {
             urlC = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
-            urlN = "https://raw.githubusercontent.com/Re-Panza/scanner_classifica327/main/database_classificamondo327.json";
             document.getElementById('areaBonusPaese').classList.add('active');
           } else {
-            urlC = `https://raw.githubusercontent.com/Re-Panza/lk_database/refs/heads/main/database_mondo_${w}.json`;
-            urlN = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_classificamondo${w}.json`;
+            urlC = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_mondo_${w}.json`;
             document.getElementById('areaBonusPaese').classList.remove('active');
             document.getElementById('selCountryBonus').value = "1";
           }
-          Promise.all([fetch(urlC + "?v=" + Date.now()).then(r => r.json()), fetch(urlN + "?v=" + Date.now()).then(r => r.json())])
-            .then(([cD, nD]) => {
+          fetch(urlC + "?v=" + Date.now())
+            .then(r => r.json())
+            .then(cD => {
               DB = [];
               const f = (n) => {
                 if (Array.isArray(n)) n.forEach(f);
                 else if (n && n.x) { n.p = n.p || n.pid || 0; DB.push(n); }
                 else if (typeof n === 'object') Object.values(n).forEach(f);
               }; f(cD);
-              PLAYER_NAMES = {};
-              if (Array.isArray(nD)) nD.forEach(p => { PLAYER_NAMES[p.id || p.p] = p.nick || p.name || p.n; });
             }).catch(() => { });
         }
       }
@@ -1028,10 +1025,13 @@
       document.getElementById('resArea').classList.remove('hidden');
 
       let castleObj = DB.find(c => c.x === myCastle.x && c.y === myCastle.y);
-      let pName = castleObj ? (PLAYER_NAMES[castleObj.p] || castleObj.n || "ID " + castleObj.p) : "Sconosciuto";
+      let pName = castleObj ? (castleObj.pn || "ID " + castleObj.p) : "Sconosciuto";
+      let cName = castleObj ? (castleObj.n || "") : "";
+      let cTypeRaw = castleObj ? castleObj.t : 0;
+      let cTypeStr = (cTypeRaw === 0) ? "Castello" : (cTypeRaw === 2) ? "Fortezza" : (cTypeRaw === 4) ? "Città" : "Metropoli";
       let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
 
-      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
+      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><span style="font-size:12px;color:var(--gold);display:block;margin-top:4px;">${cTypeStr} - ${cName}</span><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
 
       // Turno 1 (0-10 min): Coperto dalla Guarnigione
       // Questo turno finisce a StartT + 10 min
@@ -1221,6 +1221,9 @@
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
       let distStr = `${dist.toFixed(1)} campi`;
+      let targetPlayer = c.pn || "Sconosciuto";
+      let targetType = (c.t === 0) ? "Castello" : (c.t === 2) ? "Fortezza" : (c.t === 4) ? "Città" : "Metropoli";
+      let targetInfo = `<b>${targetPlayer}</b> (${targetType} - ${distStr})`;
 
       // 1. Calcolo LIMITI FISICI di impatto SE LANCI ORA
       let phyMinImpact = now + baseOneWay;
@@ -1259,7 +1262,7 @@
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-                               Target: ${distStr}
+                               Target: ${targetInfo}
                                ${delayHtml}
                              </div>`;
         return;
@@ -1273,7 +1276,7 @@
         infoDiv.innerHTML = `<div class="info-status st-wait">⏳ Attendi: ${m}m ${s}s</div>
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-                               Target: ${distStr}
+                               Target: ${targetInfo}
                                ${delayHtml}
                              </div>`;
         actDiv.innerHTML = "";
@@ -1281,7 +1284,7 @@
         infoDiv.innerHTML = `<div class="info-status st-now">▶ LANCIA ORA!</div>
                              <div class="info-sub">
                                <span class="bounce-hl">Rimbalzo: ${bStr}</span><br>
-                               Target: ${distStr}
+                               Target: ${targetInfo}
                                ${delayHtml}
                              </div>`;
         if (!actDiv.querySelector('.lnk-btn-launch')) {
