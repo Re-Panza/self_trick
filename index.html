@@ -478,7 +478,7 @@
       background: var(--green);
       color: #000;
     }
-    
+
     /* Nuovo pulsante SCOPRI */
     .btn-scopri {
       display: flex;
@@ -1277,34 +1277,21 @@
       let targetType = (c.t === 0) ? "Castello" : (c.t === 2) ? "Fortezza" : (c.t === 4) ? "Città" : "Metropoli";
       let targetInfo = `<b>${targetPlayer}</b> (${targetType} - ${distStr})`;
 
-      // 1. Calcolo LIMITI FISICI di impatto SE LANCI ORA
-      let phyMinImpact = now + baseOneWay;
-      let phyMaxImpact = now + maxOneWay;
-
-      // 2. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
+      // 1. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
       let reqMinImpact = rStart - baseOneWay;
       let reqMaxImpact = rEnd - baseOneWay;
 
-      // 3. Intersezione
-      let actualStart = Math.max(phyMinImpact, reqMinImpact);
-      let actualEnd = Math.min(phyMaxImpact, reqMaxImpact);
-
-      let isValidNow = (actualStart <= actualEnd);
-
-      let d1 = new Date(actualStart);
-      let d2 = new Date(actualEnd);
+      // La stringa del rimbalzo ora mostra SEMPRE l'intera finestra di impatto disponibile
+      let d1 = new Date(reqMinImpact);
+      let d2 = new Date(reqMaxImpact);
       let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}:${pad(d2.getSeconds())}`;
 
-      // Fallback display se in attesa
-      if (!isValidNow && (lStart_Strict > now)) {
-        let dReq1 = new Date(reqMinImpact);
-        let dReq2 = new Date(reqMaxImpact);
-        bStr = `${pad(dReq1.getHours())}:${pad(dReq1.getMinutes())}:${pad(dReq1.getSeconds())} - ...`;
-      }
+      // 2. Controllo validità temporale del pulsante "LANCIA ORA"
+      let isValidNow = (now >= lStart_Strict && now <= lEnd_Strict);
 
       // Check Ritardo Intelligente e Messaggi Dinamici
       let isDelayEnabledGlobal = document.getElementById('chkDelay').checked;
-      let isDelayNeeded = (now + baseOneWay) < reqMinImpact; // Serve rallentare per rientrare nella finestra giusta
+      let isDelayNeeded = (now + baseOneWay) < reqMinImpact; 
 
       let delayHtml = "";
       if (isDelayEnabledGlobal && isDelayNeeded) {
