@@ -478,6 +478,29 @@
       background: var(--green);
       color: #000;
     }
+    
+    /* Nuovo pulsante SCOPRI */
+    .btn-scopri {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 32px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-scopri:active {
+      background: var(--danger);
+      color: #fff;
+    }
 
     .st-wait {
       color: var(--danger);
@@ -1226,7 +1249,14 @@
       let r = rows[i]; if (r.type === 'garrison') return;
       let actDiv = document.getElementById(`act_${i}`), infoDiv = document.getElementById(`info_${i}`);
       if (!actDiv) return;
-      if (r.covered) { actDiv.innerHTML = ""; infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`; return; }
+      
+      // Se il turno è coperto, mostra il pulsante SCOPRI
+      if (r.covered) { 
+        infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`; 
+        actDiv.innerHTML = `<div class="btn-scopri" onclick="event.stopPropagation(); toggleCovered(${i})">SCOPRI</div>`;
+        return; 
+      }
+      
       if (r.launched) actDiv.innerHTML = `<div class="btn-copri active-cover" onclick="event.stopPropagation(); toggleCovered(${i})">COPRI</div>`;
       updateTimer(i);
     }
