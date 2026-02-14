@@ -760,7 +760,7 @@
         <div style="display:flex; gap:10px; align-items:center;">
           <div style="flex:1">
             <label>Da (Min prima)</label>
-            <select id="selBounceMax" onchange="changeTroopLive()"></select>
+            <select id="selBounceMax" onchange="updateBounceLimits()"></select>
           </div>
           <div style="flex:1">
             <label>A (Min prima)</label>
@@ -901,16 +901,40 @@
       });
       document.getElementById('selCountryBonus').innerHTML = htmlCB;
 
-      // Popola i minuti di rientro (es. da 1 min prima a 9 min prima della fine)
-      let htmlB = "";
-      for (let i = 1; i <= 9; i++) { htmlB += `<option value="${i}">${i} min</option>`; }
-      document.getElementById('selBounceMin').innerHTML = htmlB;
-      document.getElementById('selBounceMin').value = "3"; // Default 3 min prima della fine
-      document.getElementById('selBounceMax').innerHTML = htmlB;
-      document.getElementById('selBounceMax').value = "6"; // Default 6 min prima della fine
+      // Inizializza Da (Max) in ordine decrescente
+      let htmlMax = "";
+      for (let i = 9; i >= 1; i--) { htmlMax += `<option value="${i}">${i} min</option>`; }
+      document.getElementById('selBounceMax').innerHTML = htmlMax;
+      document.getElementById('selBounceMax').value = "6"; 
+
+      // Popola A (Min) basandosi su Da (Max)
+      updateBounceLimits(true);
 
       resetInput();
       updateUI();
+    }
+
+    // Aggiorna dinamicamente i valori selezionabili di "A (Min prima)"
+    function updateBounceLimits(isInit = false) {
+      let maxVal = parseInt(document.getElementById('selBounceMax').value);
+      let minSel = document.getElementById('selBounceMin');
+      let currentMin = isInit ? 3 : parseInt(minSel.value);
+
+      minSel.innerHTML = "";
+      for (let i = maxVal; i >= 1; i--) {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.text = i + " min";
+        minSel.appendChild(opt);
+      }
+
+      if (currentMin <= maxVal) {
+        minSel.value = currentMin;
+      } else {
+        minSel.value = maxVal;
+      }
+
+      if (!isInit) changeTroopLive();
     }
 
     function resetInput() {
@@ -1112,7 +1136,7 @@
         if (dist < 1) continue;
 
         let baseOneWay = dist * speed * 1000;  // Tempo base andata (0% ritardo)
-        let maxOneWay = isDelayEnabled ? (baseOneWay * 1.05) : baseOneWay; // Tempo max andata (5% ritardo)
+        let maxOneWay = isDelayEnabled ? (baseOneWay * 1.05) : baseOneWay; // Tempo max andata (5% ritardo se abilitato)
 
         // Tempo TOTALE viaggio = Andata (Variabile) + Ritorno (Fisso BASE)
         let tripFast = baseOneWay + baseOneWay;
@@ -1127,9 +1151,8 @@
         let wait = Math.max(0, lStart_Strict - now);
 
         // LOGICA PRIORITA': Cerca il primo disponibile (wait == 0)
-        // Se wait < minWait (es. 0 < 5), diventa il migliore.
+        // Se wait < minWait, diventa il migliore.
         // Se wait == minWait (es. entrambi 0), prendi quello che ha la finestra più larga (lEnd maggiore)
-
         if (wait < minWait) {
           minWait = wait;
           best = {
@@ -1162,7 +1185,6 @@
 
         if (r.type === 'garrison') {
           // MOSTRA LE TRUPPE USATE NEL TURNO 1
-          // let troopsInfo = r.troops ? ` (${r.troops})` : ""; // OLD LOGIC
           div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`;
         }
         else {
@@ -1220,7 +1242,7 @@
       let { c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict } = r.target;
       let coordStr = `${c.x},${c.y}`;
       let linkUrl = `l+k://coordinates?${coordStr}&${worldId}`;
-      let distStr = `${dist.toFixed(1)} campi`;
+      let distStr = `${dist} campi`;
       let targetPlayer = c.pn || "Sconosciuto";
       let targetType = (c.t === 0) ? "Castello" : (c.t === 2) ? "Fortezza" : (c.t === 4) ? "Città" : "Metropoli";
       let targetInfo = `<b>${targetPlayer}</b> (${targetType} - ${distStr})`;
@@ -1250,13 +1272,20 @@
         bStr = `${pad(dReq1.getHours())}:${pad(dReq1.getMinutes())}:${pad(dReq1.getSeconds())} - ...`;
       }
 
-      // Check se serve ritardo
-      // Se l'impatto "più veloce possibile" (baseOneWay) è PRIMA dell'inizio della finestra richiesta,
-      // allora stiamo rallentando (ritardo > 0%) per entrarci.
-      let isDelayNeeded = (now + baseOneWay) < reqMinImpact;
-      let delayHtml = isDelayNeeded
-        ? `<br><span style="color:var(--gold); font-weight:bold">🐢 Con Ritardo</span>`
-        : `<br><span style="color:var(--accent); font-weight:bold">⚡ Senza Ritardo</span>`;
+      // Check Ritardo Intelligente e Messaggi Dinamici
+      let isDelayEnabledGlobal = document.getElementById('chkDelay').checked;
+      let isDelayNeeded = (now + baseOneWay) < reqMinImpact; // Serve rallentare per rientrare nella finestra giusta
+
+      let delayHtml = "";
+      if (isDelayEnabledGlobal && isDelayNeeded) {
+        if (isValidNow) {
+            delayHtml = `<br><span style="color:var(--gold); font-weight:bold">🐢 Applica Ritardo</span>`;
+        } else {
+            delayHtml = `<br><span style="color:var(--muted); font-weight:bold">⏳ Calcolo Velocità...</span>`;
+        }
+      } else {
+        delayHtml = `<br><span style="color:var(--accent); font-weight:bold">⚡ Senza Ritardo</span>`;
+      }
 
       if (r.launched) {
         infoDiv.innerHTML = `<div class="info-status st-launched-text">⚠ LANCIATO</div>
