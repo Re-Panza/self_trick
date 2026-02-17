@@ -793,8 +793,6 @@
       </div>
     </div>
 
-    <div id="dbStatus" class="status-bar" style="display:none"></div>
-
     <div class="row">
       <div class="col" style="flex:2"><label>Truppa</label><select id="selTroop"></select></div>
       <div class="col"><label>Plotone</label>
@@ -1011,37 +1009,61 @@
       return base * factor;
     }
 
+    // GESTIONE DATABASE CON PULIZIA E FALLBACK (Risolve il bug del Mondo 327)
     function checkDB() {
       let lk = parseLK(document.getElementById('inCoord').value);
       if (lk) {
         let w = lk.w;
         if (w !== worldId) {
           worldId = w;
-          let urlC;
+          DB = []; // Svuota immediatamente per evitare che restino dati di altri mondi in memoria
+          
+          if(typeof showToast === 'function') showToast("Caricamento Database Mondo " + w + "...");
+
+          let urlMain, urlMaster;
           if (w === "327") {
-            urlC = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
+            urlMain = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/main/database_mondo_327.json";
+            urlMaster = "https://raw.githubusercontent.com/Re-Panza/lk_scanner/master/database_mondo_327.json";
             document.getElementById('areaBonusPaese').classList.add('active');
           } else {
-            urlC = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_mondo_${w}.json`;
+            urlMain = `https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_mondo_${w}.json`;
+            urlMaster = `https://raw.githubusercontent.com/Re-Panza/lk_database/master/database_mondo_${w}.json`;
             document.getElementById('areaBonusPaese').classList.remove('active');
             document.getElementById('selCountryBonus').value = "1";
           }
-          fetch(urlC + "?v=" + Date.now())
-            .then(r => r.json())
+          
+          // Esegue la fetch con fallback dal main al master
+          fetch(urlMain + "?v=" + Date.now())
+            .then(r => {
+              if (!r.ok) return fetch(urlMaster + "?v=" + Date.now());
+              return r;
+            })
+            .then(r => {
+              if (!r.ok) throw new Error("File non trovato su GitHub");
+              return r.json();
+            })
             .then(cD => {
-              DB = [];
+              let tempDB = [];
               const f = (n) => {
                 if (Array.isArray(n)) n.forEach(f);
-                else if (n && n.x) { n.p = n.p || n.pid || 0; DB.push(n); }
+                else if (n && n.x) { n.p = n.p || n.pid || 0; tempDB.push(n); }
                 else if (typeof n === 'object') Object.values(n).forEach(f);
-              }; f(cD);
-            }).catch(() => { });
+              }; 
+              f(cD);
+              DB = tempDB;
+              if(typeof showToast === 'function') showToast("Mondo " + w + " Pronto! (" + DB.length + " castelli)");
+            })
+            .catch(e => {
+              console.error("Errore fetch mondo:", e);
+              worldId = null; // Resetta l'id così può riprovare
+              alert("Attenzione: Impossibile caricare i dati del Mondo " + w + ". Verifica il repository su GitHub.");
+            });
         }
       }
     }
 
     function startCalc() {
-      if (!DB.length) return alert("Attendi il caricamento del DB!");
+      if (!DB.length) return alert("Attendi il caricamento del Database e riprova!");
       let lk = parseLK(document.getElementById('inCoord').value);
       if (!lk) return alert("Link non valido");
       myCastle = { x: lk.x, y: lk.y };
@@ -1078,7 +1100,8 @@
       let cTypeStr = (cTypeRaw === 0) ? "Castello" : (cTypeRaw === 2) ? "Fortezza" : (cTypeRaw === 4) ? "Città" : "Metropoli";
       let linkUrl = `l+k://coordinates?${myCastle.x},${myCastle.y}&${worldId}`;
 
-      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><span style="font-size:12px;color:var(--gold);display:block;margin-top:4px;">${cTypeStr} - ${cName}</span><a href="${linkUrl}">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
+      let cNameStr = cName ? ` - ${cName}` : "";
+      document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><span style="font-size:12px;color:var(--gold);display:block;margin-top:4px;">${cTypeStr}${cNameStr}</span><a href="${linkUrl}" style="word-break: break-all;">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;margin-top:4px;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
 
       // Turno 1 (0-10 min): Coperto dalla Guarnigione
       // Questo turno finisce a StartT + 10 min
@@ -1275,7 +1298,9 @@
       let distStr = `${dist} campi`;
       let targetPlayer = c.pn || "Sconosciuto";
       let targetType = (c.t === 0) ? "Castello" : (c.t === 2) ? "Fortezza" : (c.t === 4) ? "Città" : "Metropoli";
-      let targetInfo = `<b>${targetPlayer}</b> (${targetType} - ${distStr})`;
+      
+      // INSERITO IL NOME DEL CASTELLO C.N COME RICHIESTO!
+      let targetInfo = `<b>${targetPlayer}</b><br>${targetType} ${c.n || ""} - ${distStr}`;
 
       // 1. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
       let reqMinImpact = rStart - baseOneWay;
