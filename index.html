@@ -479,7 +479,6 @@
       color: #000;
     }
 
-    /* Nuovo pulsante SCOPRI */
     .btn-scopri {
       display: flex;
       align-items: center;
@@ -873,10 +872,17 @@
 
     async function loadGameData() {
       try {
-        const response = await fetch('https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_truppe.json?v=' + Date.now());
+        let response = await fetch('https://raw.githubusercontent.com/Re-Panza/lk_database/main/database_truppe.json?v=' + Date.now());
+        if (!response.ok) {
+           response = await fetch('https://raw.githubusercontent.com/Re-Panza/lk_database/master/database_truppe.json?v=' + Date.now());
+        }
         if (!response.ok) throw new Error("Errore HTTP: " + response.status);
+        
         const json = await response.json();
-        GAME_DATA = json.game_config;
+        GAME_DATA = (json && json.game_config) ? json.game_config : json;
+        
+        if (!GAME_DATA) throw new Error("File JSON truppe vuoto o non valido");
+        
         initUI();
       } catch (e) {
         console.error(e);
@@ -904,13 +910,14 @@
     function initUI() {
       let htmlT = "";
       TROOPS_UI.forEach(t => { htmlT += `<option value="${t.key}">${t.label}</option>`; });
-      document.getElementById('selTroop').innerHTML = htmlT;
-      document.getElementById('selBattleTroop').innerHTML = htmlT;
+      
+      let st = document.getElementById('selTroop'); if(st) st.innerHTML = htmlT;
+      let sbt = document.getElementById('selBattleTroop'); if(sbt) sbt.innerHTML = htmlT;
 
       let htmlL = "";
       for (let i = 1; i <= 30; i++) htmlL += `<option value="${i}">Lv ${i}</option>`;
-      document.getElementById('selCityLvl').innerHTML = htmlL;
-      document.getElementById('selMetropoliLvl').innerHTML = htmlL;
+      let scl = document.getElementById('selCityLvl'); if(scl) scl.innerHTML = htmlL;
+      let sml = document.getElementById('selMetropoliLvl'); if(sml) sml.innerHTML = htmlL;
 
       const countryMultipliers = [
         0.90, 0.89, 0.88, 0.87, 0.86, 0.85, 0.84, 0.83, 0.82, 0.81,
@@ -920,26 +927,25 @@
       countryMultipliers.forEach((val, i) => {
         htmlCB += `<option value="${val}">Livello ${i + 1} (${Math.round(val * 100)}%)</option>`;
       });
-      document.getElementById('selCountryBonus').innerHTML = htmlCB;
+      let scb = document.getElementById('selCountryBonus'); if(scb) scb.innerHTML = htmlCB;
 
-      // Inizializza Da (Max) in ordine decrescente
       let htmlMax = "";
       for (let i = 9; i >= 1; i--) { htmlMax += `<option value="${i}">${i} min</option>`; }
-      document.getElementById('selBounceMax').innerHTML = htmlMax;
-      document.getElementById('selBounceMax').value = "6"; 
+      let sbm = document.getElementById('selBounceMax');
+      if(sbm) { sbm.innerHTML = htmlMax; sbm.value = "6"; }
 
-      // Popola A (Min) basandosi su Da (Max)
       updateBounceLimits(true);
-
       resetInput();
       updateUI();
     }
 
-    // Aggiorna dinamicamente i valori selezionabili di "A (Min prima)"
     function updateBounceLimits(isInit = false) {
-      let maxVal = parseInt(document.getElementById('selBounceMax').value);
+      let maxEl = document.getElementById('selBounceMax');
       let minSel = document.getElementById('selBounceMin');
-      let currentMin = isInit ? 3 : parseInt(minSel.value);
+      if(!maxEl || !minSel) return;
+
+      let maxVal = parseInt(maxEl.value);
+      let currentMin = isInit ? 3 : parseInt(minSel.value || "3");
 
       minSel.innerHTML = "";
       for (let i = maxVal; i >= 1; i--) {
@@ -959,66 +965,91 @@
     }
 
     function resetInput() {
-      document.getElementById('inDate').value = "";
-      document.getElementById('inTime').value = "";
-      document.getElementById('inGarrison').value = "";
-      document.getElementById('inCoord').value = "";
+      let d = document.getElementById('inDate'); if(d) d.value = "";
+      let t = document.getElementById('inTime'); if(t) t.value = "";
+      let g = document.getElementById('inGarrison'); if(g) g.value = "";
+      let c = document.getElementById('inCoord'); if(c) c.value = "";
     }
 
     function updateUI() {
       if (!GAME_DATA) return;
-      let hab = document.querySelector('input[name="hab"]:checked').value;
+      
+      let habRadio = document.querySelector('input[name="hab"]:checked');
+      let hab = habRadio ? habRadio.value : 'castello';
+      
       document.querySelectorAll('.bonus-area').forEach(el => el.classList.remove('active'));
-      if (hab === 'castello') document.getElementById('optCastello').classList.add('active');
-      else if (hab === 'fortezza') document.getElementById('optFortezza').classList.add('active');
-      else if (hab === 'citta') document.getElementById('optCitta').classList.add('active');
-      else if (hab === 'metropoli') document.getElementById('optMetropoli').classList.add('active');
+      
+      let elCastello = document.getElementById('optCastello');
+      let elFortezza = document.getElementById('optFortezza');
+      let elCitta = document.getElementById('optCitta');
+      let elMetropoli = document.getElementById('optMetropoli');
+
+      if (hab === 'castello' && elCastello) elCastello.classList.add('active');
+      else if (hab === 'fortezza' && elFortezza) elFortezza.classList.add('active');
+      else if (hab === 'citta' && elCitta) elCitta.classList.add('active');
+      else if (hab === 'metropoli' && elMetropoli) elMetropoli.classList.add('active');
 
       let batchSelect = document.getElementById('selBatch');
-      batchSelect.innerHTML = "";
-      GAME_DATA.habitats[hab].batches.forEach(val => {
-        let opt = document.createElement('option'); opt.value = val; opt.innerText = val; batchSelect.appendChild(opt);
-      });
+      if (batchSelect && GAME_DATA.habitats && GAME_DATA.habitats[hab] && GAME_DATA.habitats[hab].batches) {
+        batchSelect.innerHTML = "";
+        GAME_DATA.habitats[hab].batches.forEach(val => {
+          let opt = document.createElement('option'); opt.value = val; opt.innerText = val; batchSelect.appendChild(opt);
+        });
+      }
     }
 
     function getSpeed(troopKey) {
-      if (!GAME_DATA) return 0;
-      let base = GAME_DATA.troops_base_seconds[troopKey];
-      let hab = document.querySelector('input[name="hab"]:checked').value;
-      let habConfig = GAME_DATA.habitats[hab];
-      let factor = habConfig.base_multiplier;
+      if (!GAME_DATA || !GAME_DATA.troops_base_seconds) return 0;
+      let base = GAME_DATA.troops_base_seconds[troopKey] || 0;
+      
+      let habRadio = document.querySelector('input[name="hab"]:checked');
+      let hab = habRadio ? habRadio.value : 'castello';
+      
+      let factor = 1.0;
+      if(GAME_DATA.habitats && GAME_DATA.habitats[hab]) {
+         factor = GAME_DATA.habitats[hab].base_multiplier || 1.0;
+         
+         if (hab === 'castello') {
+           let chk = document.getElementById('chkMap');
+           let evt = document.getElementById('selEventCastello');
+           if (chk && chk.checked) factor = 0.95;
+           if (evt && evt.value === "100") factor *= 0.5;
+         }
+         else if (hab === 'fortezza') {
+           let chk = document.getElementById('chkBussola');
+           let evt = document.getElementById('selEventFortezza');
+           if (chk && chk.checked) factor *= 0.95;
+           if (evt && evt.value === "100") factor *= 0.5;
+         }
+         else if (hab === 'citta') {
+           let lvl = document.getElementById('selCityLvl');
+           let evt = document.getElementById('selEventCitta');
+           if(lvl) factor *= GAME_DATA.habitats[hab].building_levels[parseInt(lvl.value)] || 1.0;
+           if (evt && evt.value === "100") factor *= 0.5;
+         }
+         else if (hab === 'metropoli') {
+           let lvl = document.getElementById('selMetropoliLvl');
+           let chk = document.getElementById('chkManovra');
+           let evt = document.getElementById('selEventMetropoli');
+           if(lvl) factor *= GAME_DATA.habitats[hab].building_levels[parseInt(lvl.value)] || 1.0;
+           if (chk && chk.checked) factor *= 0.90;
+           if (evt && evt.value === "100") factor *= 0.5;
+         }
+      }
 
-      if (hab === 'castello') {
-        if (document.getElementById('chkMap').checked) factor = 0.95;
-        if (document.getElementById('selEventCastello').value === "100") factor *= 0.5;
-      }
-      else if (hab === 'fortezza') {
-        if (document.getElementById('chkBussola').checked) factor *= 0.95;
-        if (document.getElementById('selEventFortezza').value === "100") factor *= 0.5;
-      }
-      else if (hab === 'citta') {
-        factor *= habConfig.building_levels[parseInt(document.getElementById('selCityLvl').value)] || 1.0;
-        if (document.getElementById('selEventCitta').value === "100") factor *= 0.5;
-      }
-      else if (hab === 'metropoli') {
-        factor *= habConfig.building_levels[parseInt(document.getElementById('selMetropoliLvl').value)] || 1.0;
-        if (document.getElementById('chkManovra').checked) factor *= 0.90;
-        if (document.getElementById('selEventMetropoli').value === "100") factor *= 0.5;
-      }
-      factor *= parseFloat(document.getElementById('selCountryBonus').value) || 1.0;
+      let selCB = document.getElementById('selCountryBonus');
+      if(selCB) factor *= parseFloat(selCB.value) || 1.0;
+      
       return base * factor;
     }
 
-    // GESTIONE DATABASE CON PULIZIA E FALLBACK (Risolve il bug del Mondo 327)
     function checkDB() {
       let lk = parseLK(document.getElementById('inCoord').value);
       if (lk) {
         let w = lk.w;
         if (w !== worldId) {
           worldId = w;
-          DB = []; // Svuota immediatamente per evitare che restino dati di altri mondi in memoria
-          
-          if(typeof showToast === 'function') showToast("Caricamento Database Mondo " + w + "...");
+          DB = []; 
 
           let urlMain, urlMaster;
           if (w === "327") {
@@ -1032,7 +1063,6 @@
             document.getElementById('selCountryBonus').value = "1";
           }
           
-          // Esegue la fetch con fallback dal main al master
           fetch(urlMain + "?v=" + Date.now())
             .then(r => {
               if (!r.ok) return fetch(urlMaster + "?v=" + Date.now());
@@ -1051,11 +1081,10 @@
               }; 
               f(cD);
               DB = tempDB;
-              if(typeof showToast === 'function') showToast("Mondo " + w + " Pronto! (" + DB.length + " castelli)");
             })
             .catch(e => {
               console.error("Errore fetch mondo:", e);
-              worldId = null; // Resetta l'id così può riprovare
+              worldId = null;
               alert("Attenzione: Impossibile caricare i dati del Mondo " + w + ". Verifica il repository su GitHub.");
             });
         }
@@ -1074,18 +1103,17 @@
       let garrison = parseInt(document.getElementById('inGarrison').value);
       if (!garrison) return alert("Inserisci Truppe Totali!");
 
-      let hab = document.querySelector('input[name="hab"]:checked').value;
-      let limits = GAME_DATA.habitats[hab].limits;
+      let habRadio = document.querySelector('input[name="hab"]:checked');
+      let hab = habRadio ? habRadio.value : 'castello';
+      let limits = (GAME_DATA && GAME_DATA.habitats && GAME_DATA.habitats[hab]) ? GAME_DATA.habitats[hab].limits : {min:1, max:999999};
+      
       if (garrison < limits.min) return alert(`Minimo ${limits.min}`);
       if (garrison > limits.max) return alert(`Massimo ${limits.max}`);
 
       let batch = parseInt(document.getElementById('selBatch').value);
 
-      // LOGICA RICHIESTA: 
       // Turno 1 usa il DOPPIO del plotone (2 * batch).
       let turn1_troops = batch * 2;
-
-      // Le truppe rimanenti per i turni successivi vengono calcolate togliendo il fabbisogno del Turno 1
       let available = garrison - turn1_troops;
       if (available < 0) available = 0;
 
@@ -1103,27 +1131,20 @@
       let cNameStr = cName ? ` - ${cName}` : "";
       document.getElementById('resHeaderInfo').innerHTML = `<b>👤 ${pName}</b><span style="font-size:12px;color:var(--gold);display:block;margin-top:4px;">${cTypeStr}${cNameStr}</span><a href="${linkUrl}" style="word-break: break-all;">${linkUrl}</a><span style="font-size:12px;color:#aaa;display:block;margin-top:4px;">Inizio Battaglia: ${pad(startT.getDate())}/${pad(startT.getMonth() + 1)} ${pad(startT.getHours())}:${pad(startT.getMinutes())}</span>`;
 
-      // Turno 1 (0-10 min): Coperto dalla Guarnigione
-      // Questo turno finisce a StartT + 10 min
       let turn1End = new Date(startT.getTime() + 600000);
 
-      // Salviamo l'informazione delle truppe usate per visualizzarla
       rows = [{
         t: turn1End,
         type: 'garrison',
         turnNum: 1,
         covered: true,
         launched: false,
-        troops: turn1_troops // 2x Batch
+        troops: turn1_troops 
       }];
 
-      // Turno 2 inizia da StartT + 10min, finisce a StartT + 20min
-      // ... e così via per i turni successivi, usando 1 batch alla volta
-      let step = 2; // Partiamo dal Turno 2 da coprire
+      let step = 2; 
       while (available >= batch && step < 50) {
-        // Fine del turno corrente (es. Turno 2 finisce a T0 + 20 min)
         let turnEndTime = new Date(startT.getTime() + (step * 600000));
-
         rows.push({
           t: turnEndTime,
           type: 'wave',
@@ -1131,7 +1152,7 @@
           target: null,
           covered: false,
           launched: false,
-          troops: batch // 1x Batch
+          troops: batch 
         });
         available -= batch;
         step++;
@@ -1144,11 +1165,10 @@
     }
 
     function forceRecalcTargets() {
-      // RESET COMPLETO dei target quando si ricalcola (es. cambio truppe)
       rows.forEach(r => {
         if (r.type === 'wave') {
           r.launched = false;
-          r.target = null; // Resetta il target bloccato
+          r.target = null; 
         }
       });
 
@@ -1160,18 +1180,17 @@
 
     function findTarget(turnEndTime, speed, turnNum) {
       let now = Date.now();
-      let minOff = parseInt(document.getElementById('selBounceMin').value); // es. 3 min dalla fine
-      let maxOff = parseInt(document.getElementById('selBounceMax').value); // es. 6 min dalla fine
+      let minOff = parseInt(document.getElementById('selBounceMin').value || "3");
+      let maxOff = parseInt(document.getElementById('selBounceMax').value || "6");
 
-      // Calcolo finestra di rientro basata sulla FINE DEL TURNO
       let rStart = turnEndTime.getTime() - (maxOff * 60000);
       let rEnd = turnEndTime.getTime() - (minOff * 60000);
 
-      // VINCOLO: Il rientro deve avvenire DOPO l'inizio del turno specifico
       let turnStartTime = turnEndTime.getTime() - 600000;
       if (rStart < turnStartTime) rStart = turnStartTime;
 
-      let isDelayEnabled = document.getElementById('chkDelay').checked;
+      let chk = document.getElementById('chkDelay');
+      let isDelayEnabled = chk ? chk.checked : false;
 
       let best = null;
       let minWait = Infinity;
@@ -1181,14 +1200,12 @@
         let dist = getDist(myCastle.x, myCastle.y, c.x, c.y);
         if (dist < 1) continue;
 
-        let baseOneWay = dist * speed * 1000;  // Tempo base andata (0% ritardo)
-        let maxOneWay = isDelayEnabled ? (baseOneWay * 1.05) : baseOneWay; // Tempo max andata (5% ritardo se abilitato)
+        let baseOneWay = dist * speed * 1000;  
+        let maxOneWay = isDelayEnabled ? (baseOneWay * 1.05) : baseOneWay; 
 
-        // Tempo TOTALE viaggio = Andata (Variabile) + Ritorno (Fisso BASE)
         let tripFast = baseOneWay + baseOneWay;
         let tripSlow = maxOneWay + baseOneWay;
 
-        // Finestra di Lancio (A RITROSO DAL RIENTRO)
         let lStart_Strict = rStart - tripSlow;
         let lEnd_Strict = rEnd - tripFast;
 
@@ -1196,16 +1213,12 @@
 
         let wait = Math.max(0, lStart_Strict - now);
 
-        // LOGICA PRIORITA': Cerca il primo disponibile (wait == 0)
-        // Se wait < minWait, diventa il migliore.
-        // Se wait == minWait (es. entrambi 0), prendi quello che ha la finestra più larga (lEnd maggiore)
         if (wait < minWait) {
           minWait = wait;
           best = {
             c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict
           };
         } else if (wait === minWait) {
-          // Break ties: se entrambi sono immediati, preferisci quello con più margine
           if (best && lEnd_Strict > best.lEnd_Strict) {
             best = { c, dist, baseOneWay, maxOneWay, rStart, rEnd, lStart_Strict, lEnd_Strict };
           }
@@ -1216,12 +1229,14 @@
 
     function syncDelay(id) {
       const v = document.getElementById(id).checked;
-      document.getElementById('chkDelay').checked = v; document.getElementById('chkDelayRes').checked = v;
+      let c1 = document.getElementById('chkDelay'); if(c1) c1.checked = v; 
+      let c2 = document.getElementById('chkDelayRes'); if(c2) c2.checked = v;
       changeTroopLive();
     }
 
     function renderList() {
-      let el = document.getElementById('resList'); el.innerHTML = "";
+      let el = document.getElementById('resList'); if(!el) return;
+      el.innerHTML = "";
       rows.forEach((r, i) => {
         let div = document.createElement('div'); div.className = "res-row" + (r.covered ? " covered" : "");
         div.id = `row_${i}`; div.onclick = () => resetLaunched(i);
@@ -1230,7 +1245,6 @@
         let colTime = `<div class="col-time"><div class="t-label">${label}</div><div class="t-val">${pad(r.t.getHours())}:${pad(r.t.getMinutes())}</div></div>`;
 
         if (r.type === 'garrison') {
-          // MOSTRA LE TRUPPE USATE NEL TURNO 1
           div.innerHTML = `${colTime}<div class="col-info" style="color:var(--green);font-weight:bold;">Coperto (Guarnigione)</div><div class="col-action"></div>`;
         }
         else {
@@ -1242,17 +1256,17 @@
     }
 
     function loop() {
-      let troopKey = document.getElementById('selBattleTroop').value, speed = getSpeed(troopKey);
+      let sbt = document.getElementById('selBattleTroop');
+      if(!sbt) return;
+      let troopKey = sbt.value, speed = getSpeed(troopKey);
+      
       rows.forEach((r, i) => {
         if (r.type !== 'garrison' && !r.covered) {
-
           let needsUpdate = false;
           if (!r.launched) {
             if (!r.target) {
-              // Se non ho un target, ne cerco uno
               needsUpdate = true;
             } else {
-              // Se ho un target, verifico se è SCADUTO
               if (Date.now() > r.target.lEnd_Strict) {
                 needsUpdate = true;
               }
@@ -1262,7 +1276,6 @@
           if (needsUpdate) {
             r.target = findTarget(r.t, speed, r.turnNum);
           }
-
           updateTimer(i);
         }
       });
@@ -1271,9 +1284,8 @@
     function updateRow(i) {
       let r = rows[i]; if (r.type === 'garrison') return;
       let actDiv = document.getElementById(`act_${i}`), infoDiv = document.getElementById(`info_${i}`);
-      if (!actDiv) return;
+      if (!actDiv || !infoDiv) return;
       
-      // Se il turno è coperto, mostra il pulsante SCOPRI
       if (r.covered) { 
         infoDiv.innerHTML = `<span class="st-covered-text">✅ Turno Coperto</span>`; 
         actDiv.innerHTML = `<div class="btn-scopri" onclick="event.stopPropagation(); toggleCovered(${i})">SCOPRI</div>`;
@@ -1299,23 +1311,19 @@
       let targetPlayer = c.pn || "Sconosciuto";
       let targetType = (c.t === 0) ? "Castello" : (c.t === 2) ? "Fortezza" : (c.t === 4) ? "Città" : "Metropoli";
       
-      // INSERITO IL NOME DEL CASTELLO C.N COME RICHIESTO!
       let targetInfo = `<b>${targetPlayer}</b><br>${targetType} ${c.n || ""} - ${distStr}`;
 
-      // 1. Calcolo LIMITI VALIDI di impatto (per rispettare il rientro)
       let reqMinImpact = rStart - baseOneWay;
       let reqMaxImpact = rEnd - baseOneWay;
 
-      // La stringa del rimbalzo ora mostra SEMPRE l'intera finestra di impatto disponibile
       let d1 = new Date(reqMinImpact);
       let d2 = new Date(reqMaxImpact);
       let bStr = `${pad(d1.getHours())}:${pad(d1.getMinutes())}:${pad(d1.getSeconds())} - ${pad(d2.getHours())}:${pad(d2.getMinutes())}:${pad(d2.getSeconds())}`;
 
-      // 2. Controllo validità temporale del pulsante "LANCIA ORA"
       let isValidNow = (now >= lStart_Strict && now <= lEnd_Strict);
 
-      // Check Ritardo Intelligente e Messaggi Dinamici
-      let isDelayEnabledGlobal = document.getElementById('chkDelay').checked;
+      let chk = document.getElementById('chkDelay');
+      let isDelayEnabledGlobal = chk ? chk.checked : false;
       let isDelayNeeded = (now + baseOneWay) < reqMinImpact; 
 
       let delayHtml = "";
@@ -1369,7 +1377,11 @@
     function markLaunched(i) { rows.forEach(r => r.launched = false); rows[i].launched = true; renderList(); }
     function resetLaunched(i) { if (rows[i].launched) { rows[i].launched = false; renderList(); } }
     function toggleCovered(i) { rows[i].covered = !rows[i].covered; rows[i].launched = false; renderList(); }
-    function reset() { document.getElementById('inputArea').classList.remove('hidden'); document.getElementById('resArea').classList.add('hidden'); if (ticker) clearInterval(ticker); resetInput(); }
+    function reset() { 
+      let ia = document.getElementById('inputArea'); if(ia) ia.classList.remove('hidden'); 
+      let ra = document.getElementById('resArea'); if(ra) ra.classList.add('hidden'); 
+      if (ticker) clearInterval(ticker); resetInput(); 
+    }
   </script>
 </body>
 
